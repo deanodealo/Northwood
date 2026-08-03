@@ -191,7 +191,7 @@ a { color: inherit; text-decoration: none; }
   position: relative;
   min-height: 100svh;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   overflow: hidden;
   background: var(--c-black);
 }
@@ -236,7 +236,7 @@ a { color: inherit; text-decoration: none; }
   z-index: 1;
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 0 var(--pad) 100px;
+  padding: 180px var(--pad) 90px;
   width: 100%;
 }
 
@@ -319,11 +319,12 @@ a { color: inherit; text-decoration: none; }
 
 .hero-scroll {
   position: absolute;
-  right: var(--pad);
-  bottom: 40px;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
   z-index: 1;
   width: 1px;
-  height: 60px;
+  height: 36px;
   background: rgba(255,255,255,0.3);
 }
 
@@ -392,6 +393,8 @@ a { color: inherit; text-decoration: none; }
 .offer-card {
   background: var(--c-white);
   border: 1px solid var(--c-grey-line-dark);
+  border-radius: 10px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
