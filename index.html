@@ -41,8 +41,7 @@
     <!-- ============ HERO ============ -->
     <section class="hero" id="hero">
       <div class="hero-media" aria-hidden="true">
-        <!-- Replace with real stadium photography -->
-        <img src="https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=2000&auto=format&fit=crop" alt="" class="hero-img">
+        <img src="images/Northwoodmain.jpg" alt="" class="hero-img">
         <div class="hero-scrim"></div>
         <div class="hero-lines" aria-hidden="true"></div>
       </div>
@@ -118,36 +117,96 @@
       </div>
     </section>
 
+    <!-- ============ ABOUT ============ -->
+    <section class="section about" id="about">
+      <img src="images/logored.png" alt="" class="about-mark" aria-hidden="true">
+      <div class="section-inner about-inner">
+        <p class="about-label">— Northwood Stadium</p>
+        <h2 class="about-title">Staffordshire's Home of Sport</h2>
+        <p class="about-sub">Home to Staffordshire's only certified track and field facility, in the heart of Stoke-on-Trent.</p>
+
+        <div class="about-details">
+          <div><span class="about-detail-label">Track</span><span class="about-detail-val">National 400m Standard</span></div>
+          <div><span class="about-detail-label">Facilities</span><span class="about-detail-val">Gym · Sports Hall · Pitches · Squash</span></div>
+          <div><span class="about-detail-label">Access</span><span class="about-detail-val">All Ages &amp; Abilities</span></div>
+        </div>
+
+        <a href="#offer" class="btn-about">Explore Our Facilities →</a>
+      </div>
+    </section>
+
     <!-- ============ ACTIVITIES (modular, add/remove per activity) ============ -->
     <section class="section activities" id="activities">
       <div class="section-inner">
-        <p class="section-eyebrow">— Activities</p>
-        <h2 class="section-title">TBD: activities grid (WNF, Funetics, ...)</h2>
-        <p class="section-note">Each activity will be a repeatable card block — easy to add/remove.</p>
+        <p class="section-eyebrow">— What's On</p>
+        <h2 class="section-title">Activities For Everyone</h2>
+
+        <div class="activities-features">
+
+          <!-- Copy this whole block to add/remove a live activity. Swap the "blue" class for a different theme colour per activity. -->
+          <div class="activity-feature blue">
+            <div class="activity-feature-media">
+              <img src="images/WNF.jpg" alt="Wednesday Night Football">
+            </div>
+            <div class="activity-feature-content">
+              <h3 class="activity-feature-title">Wednesday Night Football</h3>
+              <p class="activity-feature-body">Wednesday Night Football is our elite indoor coaching programme focused on technical development, game intelligence, and confidence on the ball. Delivered in partnership with professional coaches, sessions are structured, high-energy, and suitable for players of all abilities. A great pathway for those looking to improve and enjoy the game.</p>
+              <a href="#" class="activity-feature-link">Click here to book your session →</a>
+            </div>
+          </div>
+
+          <div class="activity-feature purple">
+            <div class="activity-feature-media">
+              <img src="images/funectics.jpeg" alt="Funetics">
+            </div>
+            <div class="activity-feature-content">
+              <h3 class="activity-feature-title">Funetics</h3>
+              <p class="activity-feature-body">Funetics is a fun, engaging multi-skills session designed to build children's confidence, coordination, and love for physical activity. Through games and structured activities, kids develop fundamental movement skills in a positive, supportive environment. Perfect for younger children starting their sporting journey.</p>
+              <a href="#" class="activity-feature-link">Click here to view availability and secure your place →</a>
+            </div>
+          </div>
+
+        </div>
       </div>
     </section>
 
-    <!-- ============ ABOUT ============ -->
-    <section class="section about" id="about">
+    <!-- ============ FIND US & OPENING TIMES ============ -->
+    <section class="section find-us" id="map">
       <div class="section-inner">
-        <p class="section-eyebrow">— About Us</p>
-        <h2 class="section-title">TBD: about Northwood</h2>
-      </div>
-    </section>
+        <p class="section-eyebrow">— Find Us</p>
+        <h2 class="section-title">Visit Northwood Stadium</h2>
 
-    <!-- ============ MAP ============ -->
-    <section class="section map-section" id="map">
-      <div class="section-inner">
-        <p class="section-eyebrow">— Find us</p>
-        <h2 class="section-title">TBD: map embed</h2>
-      </div>
-    </section>
+        <div class="find-us-grid">
 
-    <!-- ============ OPENING TIMES ============ -->
-    <section class="section hours" id="hours">
-      <div class="section-inner">
-        <p class="section-eyebrow">— Opening Times</p>
-        <h2 class="section-title">TBD: opening hours table</h2>
+          <div class="find-us-info">
+            <div class="find-us-logo-wrap">
+              <img src="images/logoblack.png" alt="Northwood Stadium" class="find-us-logo">
+            </div>
+
+            <div class="find-us-block">
+              <h3 class="find-us-heading">Opening Times</h3>
+              <div class="hours-row"><span>Monday – Friday</span><span>10:00 – 22:00</span></div>
+              <div class="hours-row"><span>Saturday – Sunday</span><span>09:00 – 17:00</span></div>
+            </div>
+
+            <div class="find-us-block">
+              <h3 class="find-us-heading">Address</h3>
+              <p class="find-us-address">Northwood Stadium<br>Keelings Road<br>Northwood<br>Stoke-on-Trent<br>ST1 6PA</p>
+              <a href="mailto:info@northwoodstadium.co.uk" class="find-us-email">info@northwoodstadium.co.uk</a>
+            </div>
+          </div>
+
+          <div class="find-us-map">
+            <iframe
+              src="https://www.google.com/maps?ll=53.026573,-2.159983&z=16&t=m&hl=en-GB&gl=US&mapclient=embed&cid=9374010041301847944"
+              width="100%" height="100%" style="border:0;"
+              allowfullscreen loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Northwood Stadium location">
+            </iframe>
+          </div>
+
+        </div>
       </div>
     </section>
 
