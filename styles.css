@@ -758,15 +758,124 @@ a { color: inherit; text-decoration: none; }
 .site-footer {
   background: var(--c-black);
   color: var(--c-white);
-  padding: 80px var(--pad);
+  padding: 80px var(--pad) 32px;
 }
 
-.footer-inner {
+.footer-inner-grid {
   max-width: var(--max-w);
   margin: 0 auto;
 }
 
-.site-footer .section-note { color: rgba(255,255,255,0.5); }
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 48px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 32px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.footer-logo {
+  height: 34px;
+  width: auto;
+  align-self: flex-start;
+}
+
+.footer-brand p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.45);
+  max-width: 260px;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.footer-social {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.6);
+  transition: all 0.2s var(--ease);
+}
+
+.footer-social:hover {
+  background: var(--c-red);
+  border-color: var(--c-red);
+  color: var(--c-white);
+}
+
+.footer-col h4 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--c-white);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.footer-col a {
+  display: block;
+  color: rgba(255,255,255,0.45);
+  font-size: 14px;
+  margin-bottom: 12px;
+  transition: color 0.2s var(--ease);
+}
+
+.footer-col a:hover { color: var(--c-white); }
+
+.footer-hours {
+  color: rgba(255,255,255,0.45);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.3);
+}
+
+.footer-credit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.3);
+  font-size: 13px;
+}
+
+.footer-credit img {
+  height: 40px;
+  width: auto;
+}
+
+@media (max-width: 900px) {
+  .footer-top { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 560px) {
+  .footer-top { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+}
 
 /* ==========================================================================
    RESPONSIVE
