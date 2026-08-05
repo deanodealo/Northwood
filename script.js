@@ -31,3 +31,26 @@ if (header) {
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 }
+
+// ============ PARTNER CONTACT MODAL ============
+const partnerContactBtn = document.getElementById('partnerContactBtn');
+const partnerContactModal = document.getElementById('partnerContactModal');
+
+if (partnerContactBtn && partnerContactModal) {
+  const openModal = () => {
+    partnerContactModal.classList.add('is-open');
+    partnerContactModal.setAttribute('aria-hidden', 'false');
+  };
+  const closeModal = () => {
+    partnerContactModal.classList.remove('is-open');
+    partnerContactModal.setAttribute('aria-hidden', 'true');
+  };
+
+  partnerContactBtn.addEventListener('click', openModal);
+  partnerContactModal.querySelectorAll('[data-close-modal]').forEach(el => {
+    el.addEventListener('click', closeModal);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+}

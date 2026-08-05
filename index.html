@@ -28,8 +28,6 @@
         <a href="#contact">Contact</a>
       </nav>
 
-      <a href="#booking" class="nav-cta">Book Now</a>
-
       <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
@@ -170,23 +168,41 @@
       </div>
     </section>
 
-    <!-- ============ PARTNER WITH US (local businesses/clubs) ============ -->
-    <section class="section about partner-grey" id="partner">
-      <img src="images/logored.png" alt="" class="about-mark" aria-hidden="true">
-      <div class="section-inner about-inner">
-        <p class="about-label">— For Local Businesses &amp; Clubs</p>
-        <h2 class="about-title">Partner With Northwood</h2>
-        <p class="about-sub">Independent business, club, league or coaching provider? Run your sessions from our football pitches, Track, Gym and Sports Hall, and make Northwood your new home.</p>
+<!-- ============ PARTNER WITH US (local businesses/clubs) ============ -->
+<section class="section about partner-grey" id="partner">
+  <img src="images/logored.png" alt="" class="about-mark" aria-hidden="true">
+  <div class="section-inner about-inner">
+    <p class="about-label">— For Local Businesses &amp; Clubs</p>
+    <h2 class="about-title">Partner With Northwood</h2>
+    <p class="about-sub">Independent business, club, league or coaching provider? Run your sessions from our football pitches, Track, Gym and Sports Hall, and make Northwood your new home.</p>
 
-        <div class="about-details">
-          <div><span class="about-detail-label">Space</span><span class="about-detail-val">Football Pitches, Track, Gym &amp; Sports Hall</span></div>
-          <div><span class="about-detail-label">Rates</span><span class="about-detail-val">Block Booking Discounts Available</span></div>
-          <div><span class="about-detail-label">Perfect For</span><span class="about-detail-val">Clubs · Leagues · Coaching Providers</span></div>
-        </div>
-        <a href="#contact" class="btn-about">Get In Touch →</a>
-        <p class="about-note">Get in touch with our dedicated &amp; friendly local business advisor to discuss our facilities and discounted rates.</p>
-      </div>
-    </section>
+    <div class="about-details">
+      <div><span class="about-detail-label">Space</span><span class="about-detail-val">Football Pitches, Track, Gym &amp; Sports Hall</span></div>
+      <div><span class="about-detail-label">Rates</span><span class="about-detail-val">Block Booking Discounts Available</span></div>
+      <div><span class="about-detail-label">Perfect For</span><span class="about-detail-val">Clubs · Leagues · Coaching Providers</span></div>
+    </div>
+    <button type="button" class="btn-about" id="partnerContactBtn">Get In Touch →</button>
+    <p class="about-note">Get in touch with our dedicated &amp; friendly local business advisor to discuss our facilities and discounted rates.</p>
+  </div>
+</section>
+
+<!-- ============ PARTNER CONTACT POPUP ============ -->
+<div class="contact-modal" id="partnerContactModal" aria-hidden="true">
+  <div class="contact-modal-backdrop" data-close-modal></div>
+  <div class="contact-modal-box" role="dialog" aria-modal="true" aria-labelledby="partnerModalTitle">
+    <button type="button" class="contact-modal-close" data-close-modal aria-label="Close">×</button>
+    <h3 id="partnerModalTitle">Get In Touch</h3>
+    <p>Speak to our local business advisor about pitches, rates and availability.</p>
+    <div class="contact-modal-options">
+      <a href="sms:07547438786" class="contact-modal-btn contact-modal-message">
+        Message us
+      </a>
+      <a href="tel:07547438786" class="contact-modal-btn contact-modal-call">
+        Call 07547 438786
+      </a>
+    </div>
+  </div>
+</div>
 
     <!-- ============ FOLLOW OUR JOURNEY (social embeds) ============ -->
     <section class="section about fb-blue" id="journey">
