@@ -976,6 +976,14 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.7;
 }
 
+.footer-phone {
+  color: rgba(255,255,255,0.45);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  margin-top: 12px;
+}
+
 .footer-bottom {
   display: flex;
   justify-content: space-between;
