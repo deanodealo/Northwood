@@ -523,32 +523,32 @@ a { color: inherit; text-decoration: none; }
   flex-direction: column;
 }
 
-.facebook-card { justify-content: center; }
-
-.fb-page-embed-wrap {
-  width: 100%;
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--c-white);
-  line-height: 0;
-}
-
-.fb-page-embed-wrap iframe {
-  width: 100%;
-  display: block;
-  border: none;
-}
-
-.instagram-card {
+.social-link-card {
   justify-content: center;
   padding: 32px;
 }
 
-.instagram-card-header {
+.social-card-header {
   display: flex;
   align-items: center;
   gap: 14px;
   margin-bottom: 20px;
+}
+
+.facebook-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--c-fb-blue);
+}
+
+.facebook-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: var(--c-white);
 }
 
 .instagram-icon {
@@ -567,28 +567,28 @@ a { color: inherit; text-decoration: none; }
   fill: var(--c-white);
 }
 
-.instagram-handle {
+.social-handle {
   display: block;
   color: var(--c-white);
   font-weight: 700;
   font-size: 16px;
 }
 
-.instagram-sub {
+.social-sub {
   display: block;
   color: rgba(255,255,255,0.6);
   font-size: 12px;
   letter-spacing: 0.5px;
 }
 
-.instagram-card p {
+.social-link-card p {
   color: rgba(255,255,255,0.85);
   font-size: 14px;
   line-height: 1.7;
   margin-bottom: 28px;
 }
 
-.btn-instagram {
+.btn-social-link {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
@@ -602,11 +602,11 @@ a { color: inherit; text-decoration: none; }
   transition: transform 0.2s var(--ease);
 }
 
-.btn-instagram:hover { transform: translateY(-2px); }
+.btn-social-link:hover { transform: translateY(-2px); }
 
 @media (max-width: 800px) {
   .social-embeds { grid-template-columns: 1fr; }
-  .instagram-card { padding: 28px; }
+  .social-link-card { padding: 28px; }
   .about.fb-blue {
     background: linear-gradient(180deg,
       var(--c-fb-blue-dark) 0%,
@@ -1159,4 +1159,11 @@ a { color: inherit; text-decoration: none; }
     gap: 32px;
   }
   .facility-detail { padding: 64px var(--pad); }
+}
+
+.about-note {
+  margin-top: 20px;
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  max-width: 460px;
 }
