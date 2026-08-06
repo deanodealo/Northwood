@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book an Activity (DEMO) | Northwood Stadium</title>
+<meta name="description" content="Book onto Wednesday Night Football, Funetics and other Northwood Stadium activities.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<meta name="theme-color" content="#0B0B0C">
+
+<!-- Firebase and Square SDKs deliberately NOT loaded in this demo —
+     nothing here is connected to a real backend. See notes at the
+     bottom of the script for what's mocked and why. -->
+
+<style>
+/* ══════════════════════════════════════════════════════════
+   ACTIVITY BOOKING — page-scoped styles, built on the site's
+   own tokens (--c-black, --c-red, --c-grey-light, --f-display,
+   --f-body from styles.css). No global stylesheet edits needed.
+   ══════════════════════════════════════════════════════════ */
+
+.hidden { display: none !important; }
+
+.ab-page { background: var(--c-grey-light); min-height: 100vh; }
+
+.ab-topbar {
+  background: var(--c-black);
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ab-topbar a.ab-logo-link { display: flex; align-items: center; }
+.ab-topbar img { height: 34px; }
+.ab-staff-link {
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+.ab-staff-link.is-active { background: var(--c-red); border-color: var(--c-red); color: white; }
+
+.ab-wrap { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+@media (max-width: 600px) { .ab-wrap { padding: 2rem 1.1rem 4rem; } }
+
+.ab-heading { text-align: center; margin-bottom: 2.25rem; }
+.ab-eyebrow {
+  font-family: var(--f-body);
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--c-red);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.ab-title {
+  font-family: var(--f-display);
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--c-black);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.ab-sub { font-family: var(--f-body); color: var(--c-grey-mid); margin-top: 0.5rem; font-size: 0.95rem; }
+
+/* — staff mode banner — */
+.ab-staff-banner {
+  background: var(--c-black);
+  color: white;
+  border-radius: 12px;
+  padding: 0.9rem 1.3rem;
+  margin-bottom: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.ab-staff-banner strong { color: var(--c-red); }
+.ab-staff-banner span { font-family: var(--f-body); font-size: 0.85rem; }
+.ab-staff-banner button {
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+}
+.ab-staff-banner button:hover { border-color: white; }
+
+/* — activity tabs — */
+.ab-tabs {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.ab-tab {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.7rem 1.4rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  background: white;
+  color: var(--c-black);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ab-tab:hover { border-color: var(--tab-accent, var(--c-red)); }
+.ab-tab.active {
+  background: var(--tab-accent, var(--c-red));
+  border-color: var(--tab-accent, var(--c-red));
+  color: white;
+}
+.ab-tab .ab-tab-provider {
+  display: block;
+  font-family: var(--f-body);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.75;
+  margin-top: 0.1rem;
+}
+
+.ab-empty {
+  text-align: center;
+  font-family: var(--f-body);
+  color: var(--c-grey-mid);
+  padding: 4rem 1rem;
+}
+
+/* — activity card — */
+.ab-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  padding: 2.25rem;
+  border-top: 4px solid var(--activity-accent, var(--c-red));
+}
+@media (max-width: 600px) { .ab-card { padding: 1.5rem; } }
+
+.ab-activity-head { margin-bottom: 1.75rem; }
+.ab-activity-name {
+  font-family: var(--f-display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--c-black);
+  text-transform: uppercase;
+}
+.ab-activity-meta {
+  font-family: var(--f-body);
+  font-size: 0.85rem;
+  color: var(--c-grey-mid);
+  margin-top: 0.35rem;
+  line-height: 1.6;
+}
+.ab-activity-desc {
+  font-family: var(--f-body);
+  font-size: 0.9rem;
+  color: var(--c-grey-mid);
+  line-height: 1.7;
+  margin-top: 0.75rem;
+}
+.ab-price-tag {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-family: var(--f-body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--c-black);
+  background: var(--c-grey-light);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+}
+
+.ab-section-label {
+  font-family: var(--f-body);
+  font-size: 0.68rem;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--c-grey-mid);
+  font-weight: 700;
+  margin: 1.75rem 0 0.9rem;
+}
+
+/* — session picker — */
+.session-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+.session-option {
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.session-option:hover { border-color: var(--activity-accent, var(--c-red)); }
+.session-option.selected { border-color: var(--activity-accent, var(--c-red)); background: rgba(0,0,0,0.02); }
+.session-option.full { opacity: 0.45; cursor: not-allowed; }
+.session-option-info {
+  font-family: var(--f-body);
+  font-size: 0.9rem;
+  color: var(--c-black);
+  font-weight: 600;
+}
+.session-option-info span { display: block; font-size: 0.76rem; color: var(--c-grey-mid); font-weight: 400; margin-top: 0.15rem; }
+.session-option-tag {
+  font-family: var(--f-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background: var(--c-grey-light);
+  color: var(--c-grey-mid);
+}
+.session-option.selected .session-option-tag { background: var(--activity-accent, var(--c-red)); color: white; }
+.session-option-tag.full-tag { background: #F3D9D9; color: #8C0000; }
+
+/* — form fields (shared look) — */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.form-row.single { grid-template-columns: 1fr; }
+@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+label {
+  display: block;
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--c-black);
+  margin-bottom: 0.4rem;
+}
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  font-family: var(--f-body);
+  font-size: 0.92rem;
+  color: var(--c-black);
+  background: var(--c-grey-light);
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  transition: border-color 0.15s, background 0.15s;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--activity-accent, var(--c-red)); background: white; }
+.required-mark { color: var(--c-red); }
+
+/* — payment method choice — */
+.pay-method-toggle { display: flex; gap: 0.6rem; margin-bottom: 1.25rem; }
+.pay-method-btn {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  font-family: var(--f-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--c-black);
+  background: var(--c-grey-light);
+  border: 1.5px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pay-method-btn:hover { border-color: var(--activity-accent, var(--c-red)); }
+.pay-method-btn.active { background: var(--activity-accent, var(--c-red)); border-color: var(--activity-accent, var(--c-red)); color: white; }
+
+.staff-collect-toggle { display: flex; gap: 0.6rem; margin-bottom: 1.25rem; }
+.staff-collect-btn {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  font-family: var(--f-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-black);
+  background: white;
+  border: 1.5px solid rgba(0,0,0,0.15);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.staff-collect-btn.active { background: var(--c-black); border-color: var(--c-black); color: white; }
+
+#card-container {
+  padding: 0.9rem;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background: var(--c-grey-light);
+  margin-bottom: 1.25rem;
+}
+
+.ab-summary-line {
+  font-family: var(--f-body);
+  font-size: 0.95rem;
+  color: var(--c-black);
+  font-weight: 600;
+  margin: 1.25rem 0;
+  padding: 0.9rem 1rem;
+  background: var(--c-grey-light);
+  border-radius: 8px;
+}
+.ab-summary-line span { color: var(--activity-accent, var(--c-red)); }
+
+.ab-submit-btn {
+  width: 100%;
+  padding: 1rem;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  border-radius: 10px;
+  background: var(--activity-accent, var(--c-red));
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.ab-submit-btn:hover { opacity: 0.9; }
+.ab-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.form-message { margin-top: 1rem; font-family: var(--f-body); font-size: 0.88rem; padding: 0.8rem 1rem; border-radius: 8px; display: none; }
+.form-message.error { display: block; background: #FBEAEA; color: #8C0000; }
+.form-message.success { display: block; background: #E8F5E9; color: #1B5E20; }
+
+/* — staff login modal — */
+.staff-modal-overlay {
+  position: fixed; inset: 0; background: rgba(11,11,12,0.6);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem; z-index: 100;
+}
+.staff-modal {
+  background: white; border-radius: 14px; padding: 2rem;
+  max-width: 360px; width: 100%;
+}
+.staff-modal h3 { font-family: var(--f-display); font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.25rem; }
+.staff-modal .form-message { margin-top: 0.75rem; }
+.staff-modal-actions { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+.staff-modal-actions button { flex: 1; }
+.staff-modal-cancel {
+  background: none; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px;
+  padding: 0.75rem; font-family: var(--f-body); font-weight: 600; cursor: pointer;
+}
+.demo-banner {
+  background: #FFF3CD; color: #7A5B00; text-align: center;
+  font-family: var(--f-body); font-size: 0.82rem; font-weight: 600;
+  padding: 0.6rem 1rem;
+}
+.demo-view-toggle { display: flex; gap: 0.4rem; }
+.demo-view-btn {
+  font-family: var(--f-body); font-size: 0.78rem; font-weight: 600;
+  padding: 0.4rem 0.9rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);
+  background: none; color: rgba(255,255,255,0.6); cursor: pointer;
+}
+.demo-view-btn.active { background: var(--c-red); border-color: var(--c-red); color: white; }
+</style>
+</head>
+<body class="ab-page">
+
+<div class="demo-banner">⚠️ DEMO MODE — no real Firebase/Square connection. Use the toggle below to preview what public visitors vs. logged-in staff see. Nothing here is saved.</div>
+
+<div class="ab-topbar">
+  <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
+  <div class="demo-view-toggle">
+    <button class="demo-view-btn" id="viewPublicBtn">Preview: Public</button>
+    <button class="demo-view-btn active" id="viewStaffBtn">Preview: Staff (logged in)</button>
+  </div>
+</div>
+
+<div class="ab-wrap">
+
+  <div class="ab-heading">
+    <div class="ab-eyebrow">Northwood Stadium</div>
+    <h1 class="ab-title">Book an Activity</h1>
+    <p class="ab-sub">Pick an activity below, choose your session, and book your place.</p>
+  </div>
+
+  <div class="ab-staff-banner" id="staffBanner">
+    <span><strong>Staff Mode is ON</strong> — bookings made now will be recorded as taken at the venue.</span>
+  </div>
+
+  <div class="ab-tabs" id="activityTabs"></div>
+
+  <div id="activityPanel"></div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ACTIVITIES CONFIG
+   ───────────────────────────────────────────────────────────
+   Each entry in this array is ONE bookable activity. Unlike the
+   camp page (one config = one camp = whole page), activities all
+   run side by side, so this is a LIST — add, edit, or remove
+   entries freely and the tabs above update automatically.
+
+   TO ADD A NEW ACTIVITY:
+     Copy an existing block, give it a new unique `id`, and fill
+     in its own name/provider/price/sessions. That's it — nothing
+     else on the page needs to change.
+
+   TO REMOVE / PAUSE AN ACTIVITY:
+     Set `status: "inactive"` to hide it immediately without
+     deleting it (handy if it's coming back next term), or delete
+     the whole block if it's gone for good.
+
+   SESSIONS:
+     Each activity has its own `sessions` list — its own dates,
+     times, and capacity. A session with a past `date` is
+     automatically hidden from the picker (same auto-expiry logic
+     as the camp page), so you can add a term's worth of dates up
+     front and not think about it again until it needs topping up.
+
+   accentColor:
+     Reuses the "Activity theme colours" already defined in
+     styles.css (--c-blue, --c-purple, --c-charcoal, --c-fb-blue)
+     so each activity's tab/card looks distinct without needing
+     new CSS. Pick any of those, or add a new pair to styles.css
+     if you need another colour.
+
+   payAtVenue:
+     Set to false for an activity that must always be paid online
+     in advance (e.g. limited capacity, non-refundable). Leave
+     true (default) to let people choose either payment method.
+   ═══════════════════════════════════════════════════════════ */
+
+const ACTIVITIES_CONFIG = [
+  {
+    id: "wnf",
+    name: "Wednesday Night Football",
+    provider: "Northwood Stadium",
+    accentColor: "var(--c-blue)",
+    description: "5-a-side, all abilities welcome. Turn up and play, or book ahead to guarantee your spot.",
+    venue: "3G Pitch, Northwood Stadium",
+    ageNote: "16+",
+    price: 6,
+    priceLabel: "£6 per session",
+    payAtVenue: true,
+    status: "active",
+    sessions: [
+      { id: "wnf-2026-08-12", date: "2026-08-12", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20, booked: 0 },
+      { id: "wnf-2026-08-19", date: "2026-08-19", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20, booked: 0 },
+      { id: "wnf-2026-08-26", date: "2026-08-26", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20, booked: 0 }
+    ]
+  },
+  {
+    id: "funetics",
+    name: "Funetics",
+    provider: "Funetics Coaching",
+    accentColor: "var(--c-purple)",
+    description: "Fun, multi-sport coaching sessions for kids — games-based, no pressure, lots of energy.",
+    venue: "Sports Hall, Northwood Stadium",
+    ageNote: "5 - 11 years",
+    price: 5,
+    priceLabel: "£5 per child / session",
+    payAtVenue: true,
+    status: "active",
+    sessions: [
+      { id: "funetics-2026-08-13", date: "2026-08-13", dow: "Thu", time: "4:30pm – 5:30pm", capacity: 16, booked: 0 },
+      { id: "funetics-2026-08-20", date: "2026-08-20", dow: "Thu", time: "4:30pm – 5:30pm", capacity: 16, booked: 0 }
+    ]
+  }
+
+  // ── Example of adding another provider's activity ──────────
+  // {
+  //   id: "yoga",
+  //   name: "Stadium Yoga",
+  //   provider: "FlexFit Studios",
+  //   accentColor: "var(--c-charcoal)",
+  //   description: "Relaxed evening yoga session, all levels.",
+  //   venue: "Function Room, Northwood Stadium",
+  //   ageNote: "16+",
+  //   price: 4,
+  //   priceLabel: "£4 per session",
+  //   payAtVenue: true,
+  //   status: "active",
+  //   sessions: [
+  //     { id: "yoga-2026-08-14", date: "2026-08-14", dow: "Fri", time: "6:00pm – 7:00pm", capacity: 12, booked: 0 }
+  //   ]
+  // }
+];
+
+/* ═══════════════════════════════════════════════════════════
+   DEMO MODE — this replaces the real Firebase/Square config
+   block from activity-booking.html. No real network calls are
+   made anywhere in this file: card capture is skipped, the
+   "charge" and "save booking" steps are mocked with a short
+   delay, and nothing is persisted. See the real file for the
+   live version once Northwood's Firebase + Square accounts exist.
+   ═══════════════════════════════════════════════════════════ */
+
+const IS_DEMO = true;
+
+/* ───────────────────────────────────────────────────────────
+   Page logic below. Shouldn't need touching to add/edit
+   activities — only if you want to change HOW the page behaves.
+   ─────────────────────────────────────────────────────────── */
+
+(function () {
+
+  function fmtDate(iso) {
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  }
+
+  function isSessionPast(session) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    return new Date(session.date + "T00:00:00") < today;
+  }
+
+  function sessionIsFull(session) {
+    return session.capacity != null && session.booked >= session.capacity;
+  }
+
+  const activeActivities = ACTIVITIES_CONFIG.filter(a => a.status === "active");
+
+  let currentActivityId = activeActivities.length ? activeActivities[0].id : null;
+  let selectedSessionId = null;
+  let isStaffMode = true; // demo defaults to Staff view since that's what was asked for
+  let card; // Square card instance — not used in this demo (see initSquare stub below)
+
+  const tabsEl = document.getElementById("activityTabs");
+  const panelEl = document.getElementById("activityPanel");
+
+  // ── Demo view toggle (replaces real Firebase Auth staff login) ─
+  const staffBanner = document.getElementById("staffBanner");
+  const viewPublicBtn = document.getElementById("viewPublicBtn");
+  const viewStaffBtn = document.getElementById("viewStaffBtn");
+
+  function setDemoView(staff) {
+    isStaffMode = staff;
+    staffBanner.classList.toggle("hidden", !isStaffMode);
+    viewPublicBtn.classList.toggle("active", !isStaffMode);
+    viewStaffBtn.classList.toggle("active", isStaffMode);
+    renderPanel();
+  }
+  viewPublicBtn.addEventListener("click", () => setDemoView(false));
+  viewStaffBtn.addEventListener("click", () => setDemoView(true));
+
+  // ── Tabs ────────────────────────────────────────────────────
+  function renderTabs() {
+    if (!activeActivities.length) {
+      tabsEl.innerHTML = "";
+      panelEl.innerHTML = '<div class="ab-empty">No activities are open for booking right now — check back soon.</div>';
+      return;
+    }
+    tabsEl.innerHTML = activeActivities.map(a => `
+      <button class="ab-tab${a.id === currentActivityId ? " active" : ""}"
+              style="--tab-accent:${a.accentColor}"
+              data-activity="${a.id}">
+        ${a.name}
+        <span class="ab-tab-provider">${a.provider}</span>
+      </button>
+    `).join("");
+
+    tabsEl.querySelectorAll(".ab-tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentActivityId = btn.dataset.activity;
+        selectedSessionId = null;
+        renderTabs();
+        renderPanel();
+      });
+    });
+  }
+
+  // ── Activity panel ──────────────────────────────────────────
+  function renderPanel() {
+    const activity = activeActivities.find(a => a.id === currentActivityId);
+    if (!activity) { panelEl.innerHTML = ""; return; }
+
+    const openSessions = activity.sessions.filter(s => !isSessionPast(s));
+
+    const sessionsHtml = openSessions.length
+      ? openSessions.map(s => {
+          const full = sessionIsFull(s);
+          return `
+            <div class="session-option${full ? " full" : ""}${s.id === selectedSessionId ? " selected" : ""}" data-session="${s.id}">
+              <div class="session-option-info">
+                ${s.dow} ${fmtDate(s.date)}
+                <span>${s.time}</span>
+              </div>
+              <div class="session-option-tag${full ? " full-tag" : ""}">${full ? "Full" : "Available"}</div>
+            </div>
+          `;
+        }).join("")
+      : '<div class="ab-empty" style="padding:2rem 0;">No upcoming sessions scheduled yet.</div>';
+
+    // Staff mode always uses "at venue" — no online/venue choice needed.
+    const paymentSectionHtml = isStaffMode ? `
+      <div class="ab-section-label">Payment (Staff)</div>
+      <div class="staff-collect-toggle">
+        <button type="button" class="staff-collect-btn active" data-collect="unpaid">Leave unpaid — collect later</button>
+        <button type="button" class="staff-collect-btn" data-collect="collected">Paid at venue now (cash/card)</button>
+      </div>
+    ` : `
+      <div class="ab-section-label">Payment</div>
+      <div class="pay-method-toggle">
+        <button type="button" class="pay-method-btn active" data-method="online">Pay online now</button>
+        ${activity.payAtVenue ? '<button type="button" class="pay-method-btn" data-method="venue">Pay at venue</button>' : ""}
+      </div>
+      <div id="squareBlock">
+        <div id="card-container"></div>
+      </div>
+    `;
+
+    panelEl.innerHTML = `
+      <div class="ab-card" style="--activity-accent:${activity.accentColor}">
+        <div class="ab-activity-head">
+          <div class="ab-activity-name">${activity.name}</div>
+          <div class="ab-activity-meta">${activity.provider} · ${activity.venue}${activity.ageNote ? " · " + activity.ageNote : ""}</div>
+          <div class="ab-activity-desc">${activity.description}</div>
+          <div class="ab-price-tag">${activity.priceLabel}</div>
+        </div>
+
+        <div class="ab-section-label">Choose a Session</div>
+        <div class="session-grid">${sessionsHtml}</div>
+
+        <form id="bookingForm">
+          <div class="ab-section-label">Your Details</div>
+          <div class="form-row">
+            <div>
+              <label>Name <span class="required-mark">*</span></label>
+              <input type="text" id="attendeeName" required>
+            </div>
+            <div>
+              <label>Phone <span class="required-mark">*</span></label>
+              <input type="tel" id="attendeePhone" required>
+            </div>
+          </div>
+          <div class="form-row single">
+            <label>Email ${isStaffMode ? "" : '<span class="required-mark">*</span>'}</label>
+            <input type="email" id="attendeeEmail" ${isStaffMode ? "" : "required"}>
+          </div>
+          <div class="form-row single">
+            <label>Notes (optional)</label>
+            <textarea id="attendeeNotes" rows="2"></textarea>
+          </div>
+
+          ${paymentSectionHtml}
+
+          <div class="ab-summary-line">Total: <span id="totalDisplay">£${activity.price.toFixed(2)}</span></div>
+
+          <button type="button" class="ab-submit-btn" id="submitBtn">
+            ${isStaffMode ? "Confirm Booking" : "Book & Pay"}
+          </button>
+          <div class="form-message" id="formMessage"></div>
+        </form>
+      </div>
+    `;
+
+    wireUpPanel(activity);
+  }
+
+  // ── Panel interactivity ─────────────────────────────────────
+  function wireUpPanel(activity) {
+    panelEl.querySelectorAll(".session-option").forEach(el => {
+      el.addEventListener("click", () => {
+        if (el.classList.contains("full")) return;
+        selectedSessionId = el.dataset.session;
+        panelEl.querySelectorAll(".session-option").forEach(o => o.classList.remove("selected"));
+        el.classList.add("selected");
+      });
+    });
+
+    let paymentMethod = "online";
+    let staffCollectState = "unpaid";
+    const submitBtn = document.getElementById("submitBtn");
+    const msg = document.getElementById("formMessage");
+
+    if (isStaffMode) {
+      panelEl.querySelectorAll(".staff-collect-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          staffCollectState = btn.dataset.collect;
+          panelEl.querySelectorAll(".staff-collect-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+        });
+      });
+    } else {
+      panelEl.querySelectorAll(".pay-method-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          paymentMethod = btn.dataset.method;
+          panelEl.querySelectorAll(".pay-method-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const squareBlock = document.getElementById("squareBlock");
+          if (squareBlock) squareBlock.classList.toggle("hidden", paymentMethod !== "online");
+        });
+      });
+      initSquare();
+    }
+
+    async function initSquare() {
+      const container = document.getElementById("card-container");
+      if (!container || !window.Square) return;
+      try {
+        const payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
+        card = await payments.card();
+        await card.attach("#card-container");
+      } catch (err) {
+        console.error("Square init error:", err);
+        msg.textContent = "Payment system could not be initialised. Please refresh.";
+        msg.className = "form-message error";
+      }
+    }
+
+    function generateIdempotencyKey() {
+      return `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+    }
+
+    submitBtn.addEventListener("click", async () => {
+      msg.textContent = ""; msg.className = "form-message";
+
+      const name = document.getElementById("attendeeName").value.trim();
+      const phone = document.getElementById("attendeePhone").value.trim();
+      const email = document.getElementById("attendeeEmail").value.trim();
+      const notes = document.getElementById("attendeeNotes").value.trim();
+
+      if (!name || !phone || (!isStaffMode && !email)) {
+        msg.textContent = "Please fill in the required details.";
+        msg.className = "form-message error";
+        return;
+      }
+      if (!selectedSessionId) {
+        msg.textContent = "Please choose a session.";
+        msg.className = "form-message error";
+        return;
+      }
+
+      const session = activity.sessions.find(s => s.id === selectedSessionId);
+      const effectivePaymentMethod = isStaffMode ? "venue" : paymentMethod;
+      const effectivePaymentStatus = isStaffMode
+        ? (staffCollectState === "collected" ? "collected" : "unpaid")
+        : (effectivePaymentMethod === "online" ? "paid" : "unpaid");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Processing...";
+
+      try {
+        // ── DEMO MOCK ──────────────────────────────────────────
+        // The real version tokenises the card via Square, verifies
+        // the buyer, calls createSquarePayment, then writes the
+        // booking + increments a capacity counter inside a Firestore
+        // transaction (see activity-booking.html for that code).
+        // None of that exists yet for Northwood, so this just fakes
+        // a short delay and a successful result instead.
+        await new Promise(resolve => setTimeout(resolve, 700));
+
+        const squarePaymentId = effectivePaymentMethod === "online" ? "demo_" + Date.now() : null;
+        session.booked += 1; // reflect immediately in this session's list, same as the real page
+        // ── END DEMO MOCK ──────────────────────────────────────
+
+        msg.textContent = effectivePaymentMethod === "online"
+          ? "🎉 Booking confirmed — payment received!"
+          : "🎉 Booking confirmed — pay at the venue.";
+        msg.className = "form-message success";
+        document.getElementById("bookingForm").reset();
+        selectedSessionId = null;
+        setTimeout(() => renderPanel(), 1200);
+
+      } catch (err) {
+        console.error("Booking error:", err);
+        if (err.message === "FULL") {
+          msg.textContent = "Sorry, that session just filled up — please pick another.";
+        } else {
+          msg.textContent = "An unexpected error occurred. Please try again or contact Northwood Stadium.";
+        }
+        msg.className = "form-message error";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isStaffMode ? "Confirm Booking" : "Book & Pay";
+      }
+    });
+  }
+
+  renderTabs();
+  setDemoView(true); // start in Staff view, as requested
+
+})();
+</script>
+
+</body>
+</html>
