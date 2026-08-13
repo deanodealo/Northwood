@@ -256,7 +256,7 @@ label {
   color: var(--c-black);
   margin-bottom: 0.4rem;
 }
-input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], textarea {
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], input[type="date"], textarea {
   width: 100%;
   padding: 0.7rem 0.85rem;
   font-family: var(--f-body);
@@ -487,8 +487,8 @@ input:focus, textarea:focus { outline: none; border-color: var(--activity-accent
       </div>
       <div class="form-row">
         <div>
-          <label>Age</label>
-          <input type="text" id="regAge" autocomplete="off" placeholder="e.g. 34">
+          <label>Date of Birth</label>
+          <input type="date" id="regDob" autocomplete="off">
         </div>
         <div>
           <label>Postcode</label>
@@ -678,6 +678,21 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   }
 
+  // Ages are calculated live from a stored date of birth rather than saved
+  // as a plain number — a saved age would quietly go stale (a "5 year old"
+  // saved in January is still "5" the following January in the DB unless
+  // something updates it, which nothing does). Returns null if no DOB set.
+  function calcAge(dobStr) {
+    if (!dobStr) return null;
+    const dob = new Date(dobStr + "T00:00:00");
+    if (isNaN(dob)) return null;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+    return age;
+  }
+
   function isSessionPast(session) {
     const today = new Date(); today.setHours(0,0,0,0);
     return new Date(session.date + "T00:00:00") < today;
@@ -855,7 +870,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       }
     } else {
       const name = document.getElementById("regName").value.trim();
-      const age = document.getElementById("regAge").value.trim();
+      const dob = document.getElementById("regDob").value;
       const postcode = document.getElementById("regPostcode").value.trim();
       const email = document.getElementById("regEmail").value.trim();
       const phone = document.getElementById("regPhone").value.trim();
@@ -881,7 +896,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         await db.collection("customers").doc(cred.user.uid).set({
           name, email, phone,
-          age: age || null,
+          dob: dob || null,
           postcode: postcode || null,
           familyMembers: [],
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -907,10 +922,12 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
   function renderFamilyModal() {
     const members = (currentCustomer && currentCustomer.familyMembers) || [];
-    familyMembersListEl.innerHTML = members.length ? members.map((m, idx) => `
+    familyMembersListEl.innerHTML = members.length ? members.map((m, idx) => {
+      const currentAge = calcAge(m.dob);
+      return `
       <div class="child-block" data-member="${m.id}">
         <div class="child-block-header">
-          <span>Family Member ${idx + 1}</span>
+          <span>Family Member ${idx + 1}${currentAge !== null ? " · Age " + currentAge : ""}</span>
           <button type="button" class="child-remove-btn" data-remove-member="${m.id}">Remove</button>
         </div>
         <div class="form-row">
@@ -919,8 +936,8 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
             <input type="text" data-field="name" data-member="${m.id}" value="${m.name}">
           </div>
           <div>
-            <label>Age</label>
-            <input type="text" data-field="age" data-member="${m.id}" value="${m.age || ""}" placeholder="e.g. 7">
+            <label>Date of Birth</label>
+            <input type="date" data-field="dob" data-member="${m.id}" value="${m.dob || ""}">
           </div>
         </div>
         <div class="form-row single">
@@ -928,13 +945,15 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           <textarea data-field="notes" data-member="${m.id}" rows="2">${m.notes || ""}</textarea>
         </div>
       </div>
-    `).join("") : '<p style="font-family:var(--f-body); font-size:0.85rem; color:var(--c-grey-mid);">No family members saved yet.</p>';
+    `;
+    }).join("") : '<p style="font-family:var(--f-body); font-size:0.85rem; color:var(--c-grey-mid);">No family members saved yet.</p>';
 
     familyMembersListEl.querySelectorAll("input, textarea").forEach(el => {
       el.addEventListener("change", async () => {
         const member = currentCustomer.familyMembers.find(m => m.id === el.dataset.member);
         if (member) member[el.dataset.field] = el.value;
         await saveFamilyMembers();
+        renderFamilyModal(); // refresh the "Age X" header if DOB changed
       });
     });
     familyMembersListEl.querySelectorAll("[data-remove-member]").forEach(btn => {
@@ -956,7 +975,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
   }
 
   addFamilyMemberBtn.addEventListener("click", async () => {
-    currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", age: "", notes: "" });
+    currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", dob: "", notes: "" });
     await saveFamilyMembers();
     renderFamilyModal();
   });
@@ -1012,13 +1031,13 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     let customerDoc = await db.collection("customers").doc(user.uid).get();
     if (!customerDoc.exists) {
       await db.collection("customers").doc(user.uid).set({
-        name: user.email, email: user.email, phone: "", age: null, postcode: null, familyMembers: [],
+        name: user.email, email: user.email, phone: "", dob: null, postcode: null, familyMembers: [],
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       customerDoc = await db.collection("customers").doc(user.uid).get();
     }
     const data = customerDoc.data();
-    currentCustomer = { uid: user.uid, name: data.name, email: data.email, phone: data.phone, age: data.age || "", postcode: data.postcode || "", familyMembers: data.familyMembers || [] };
+    currentCustomer = { uid: user.uid, name: data.name, email: data.email, phone: data.phone, dob: data.dob || "", postcode: data.postcode || "", familyMembers: data.familyMembers || [] };
 
     staffBanner.classList.add("hidden");
     customerBanner.classList.remove("hidden");
@@ -1198,12 +1217,15 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
     function renderSavedFamily() {
       if (!savedFamilyListEl) return;
-      savedFamilyListEl.innerHTML = currentCustomer.familyMembers.map(m => `
+      savedFamilyListEl.innerHTML = currentCustomer.familyMembers.map(m => {
+        const age = calcAge(m.dob);
+        return `
         <div class="who-option${selectedFamilyMemberIds.has(m.id) ? " checked" : ""}" data-saved-member="${m.id}">
           <input type="checkbox" ${selectedFamilyMemberIds.has(m.id) ? "checked" : ""} data-saved-checkbox="${m.id}">
-          <label>${m.name}${m.age ? " (" + m.age + ")" : ""}</label>
+          <label>${m.name}${age !== null ? " (" + age + ")" : ""}</label>
         </div>
-      `).join("");
+      `;
+      }).join("");
 
       savedFamilyListEl.querySelectorAll("[data-saved-checkbox]").forEach(cb => {
         cb.addEventListener("change", () => {
@@ -1228,8 +1250,8 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
               <input type="text" class="child-name" data-field="name" data-child="${c.id}" value="${c.name}">
             </div>
             <div>
-              <label>Child's Age <span class="required-mark">*</span></label>
-              <input type="text" class="child-age" data-field="age" data-child="${c.id}" value="${c.age}" placeholder="e.g. 7">
+              <label>Child's Date of Birth <span class="required-mark">*</span></label>
+              <input type="date" class="child-dob" data-field="dob" data-child="${c.id}" value="${c.dob}">
             </div>
           </div>
           <div class="form-row single">
@@ -1268,7 +1290,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     }
 
     function addChild() {
-      children.push({ id: nextChildId++, name: "", age: "", notes: "", saveToAccount: false });
+      children.push({ id: nextChildId++, name: "", dob: "", notes: "", saveToAccount: false });
       renderChildren();
       updateSummary();
     }
@@ -1377,8 +1399,8 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         msg.className = "form-message error";
         return;
       }
-      if (children.some(c => !c.name.trim() || !c.age.trim())) {
-        msg.textContent = "Please fill in each child's name and age, or remove any unused sections.";
+      if (children.some(c => !c.name.trim() || !c.dob)) {
+        msg.textContent = "Please fill in each child's name and date of birth, or remove any unused sections.";
         msg.className = "form-message error";
         return;
       }
@@ -1386,15 +1408,18 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       // Build the attendee list: the contact themself (if booking a place),
       // any ticked saved family members, plus any newly typed-in children.
       // This drives both the headcount (for pricing and capacity) and what
-      // shows on the admin dashboard.
+      // shows on the admin dashboard. Age is calculated live from DOB at
+      // the moment of booking, so the admin always sees the child's actual
+      // current age rather than a number that was accurate whenever it was
+      // first saved.
       const attendees = [];
       if (bookSelf) attendees.push({ type: "adult", name: contactName, notes: selfNotes || null });
       if (currentCustomer) {
         currentCustomer.familyMembers
           .filter(m => selectedFamilyMemberIds.has(m.id))
-          .forEach(m => attendees.push({ type: "child", name: m.name, age: m.age || "", notes: m.notes || null }));
+          .forEach(m => attendees.push({ type: "child", name: m.name, age: calcAge(m.dob), dob: m.dob || null, notes: m.notes || null }));
       }
-      children.forEach(c => attendees.push({ type: "child", name: c.name.trim(), age: c.age.trim(), notes: c.notes.trim() || null }));
+      children.forEach(c => attendees.push({ type: "child", name: c.name.trim(), age: calcAge(c.dob), dob: c.dob, notes: c.notes.trim() || null }));
 
       const attendeeCount = attendees.length;
       const totalAmount = attendeeCount * activity.price;
@@ -1513,7 +1538,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           if (toSave.length) {
             toSave.forEach(c => currentCustomer.familyMembers.push({
               id: "fam_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
-              name: c.name.trim(), age: c.age.trim(), notes: c.notes.trim() || null
+              name: c.name.trim(), dob: c.dob, notes: c.notes.trim() || null
             }));
             await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers });
           }

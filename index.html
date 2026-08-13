@@ -17,6 +17,9 @@
   <link rel="manifest" href="images/site.webmanifest">
   <meta name="theme-color" content="#0B0B0C">
 
+  <!-- Add to Home Screen popup (Android install prompt + iOS instructions) -->
+  <script src="add-to-home.js" defer></script>
+
   <!-- Firebase (compat SDK — same version used on the booking page) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -69,7 +72,7 @@
       <div id="accountRegisterPane" style="display:none;">
         <div class="account-field"><label>Your Name</label><input type="text" id="regName" autocomplete="name"></div>
         <div style="display:flex; gap:12px;">
-          <div class="account-field" style="flex:1;"><label>Age</label><input type="text" id="regAge" placeholder="e.g. 34"></div>
+          <div class="account-field" style="flex:1;"><label>Date of Birth</label><input type="date" id="regDob"></div>
           <div class="account-field" style="flex:1;"><label>Postcode</label><input type="text" id="regPostcode" placeholder="e.g. ST1 6PA"></div>
         </div>
         <div class="account-field"><label>Email</label><input type="email" id="regEmail" autocomplete="email"></div>
@@ -239,7 +242,7 @@
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Wednesday Night Football</h3>
               <p class="activity-feature-body">Wednesday Night Football is our elite indoor coaching programme focused on technical development, game intelligence, and confidence on the ball. Delivered in partnership with professional coaches, sessions are structured, high-energy, and suitable for players of all abilities. A great pathway for those looking to improve and enjoy the game.</p>
-              <a href="activitybooking.html" class="activity-feature-link">Click here to book your session →</a>
+              <a href="activitybookingdemo.html" class="activity-feature-link">Click here to book your session →</a>
             </div>
           </div>
 
@@ -250,7 +253,7 @@
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Funetics</h3>
               <p class="activity-feature-body">Funetics is a fun, engaging multi-skills session designed to build children's confidence, coordination, and love for physical activity. Through games and structured activities, kids develop fundamental movement skills in a positive, supportive environment. Perfect for younger children starting their sporting journey.</p>
-              <a href="activitybooking.html" class="activity-feature-link">Click here to view availability and secure your place →</a>
+              <a href="activitybookingdemo.html" class="activity-feature-link">Click here to view availability and secure your place →</a>
             </div>
           </div>
 
@@ -457,6 +460,20 @@
   (function () {
     let currentCustomer = null;
 
+    // Ages are calculated live from a stored date of birth rather than
+    // saved as a plain number — a saved age would quietly go stale over
+    // time. Returns null if no DOB is set.
+    function calcAge(dobStr) {
+      if (!dobStr) return null;
+      const dob = new Date(dobStr + "T00:00:00");
+      if (isNaN(dob)) return null;
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+      return age;
+    }
+
     const accountNavLink = document.getElementById("accountNavLink");
     const customerStatusBar = document.getElementById("customerStatusBar");
     const customerStatusName = document.getElementById("customerStatusName");
@@ -536,7 +553,7 @@
         }
       } else {
         const name = document.getElementById("regName").value.trim();
-        const age = document.getElementById("regAge").value.trim();
+        const dob = document.getElementById("regDob").value;
         const postcode = document.getElementById("regPostcode").value.trim();
         const email = document.getElementById("regEmail").value.trim();
         const phone = document.getElementById("regPhone").value.trim();
@@ -550,7 +567,7 @@
         try {
           const cred = await auth.createUserWithEmailAndPassword(email, password);
           await db.collection("customers").doc(cred.user.uid).set({
-            name, email, phone, age: age || null, postcode: postcode || null,
+            name, email, phone, dob: dob || null, postcode: postcode || null,
             familyMembers: [],
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
@@ -577,25 +594,29 @@
 
     function renderFamilyModal() {
       const members = (currentCustomer && currentCustomer.familyMembers) || [];
-      familyMembersListEl.innerHTML = members.length ? members.map((m, idx) => `
+      familyMembersListEl.innerHTML = members.length ? members.map((m, idx) => {
+        const currentAge = calcAge(m.dob);
+        return `
         <div class="family-member-block" data-member="${m.id}">
           <div class="family-member-header">
-            <span>Family Member ${idx + 1}</span>
+            <span>Family Member ${idx + 1}${currentAge !== null ? " · Age " + currentAge : ""}</span>
             <button type="button" class="family-remove-btn" data-remove-member="${m.id}">Remove</button>
           </div>
           <div style="display:flex; gap:12px;">
             <div class="account-field" style="flex:1;"><label>Name</label><input type="text" data-field="name" data-member="${m.id}" value="${m.name}"></div>
-            <div class="account-field" style="flex:1;"><label>Age</label><input type="text" data-field="age" data-member="${m.id}" value="${m.age || ""}" placeholder="e.g. 7"></div>
+            <div class="account-field" style="flex:1;"><label>Date of Birth</label><input type="date" data-field="dob" data-member="${m.id}" value="${m.dob || ""}"></div>
           </div>
           <div class="account-field"><label>Notes (dietary, medical, or other instructions)</label><textarea data-field="notes" data-member="${m.id}" rows="2" style="width:100%; padding:11px 13px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--c-grey-light); border:1.5px solid rgba(0,0,0,0.1); border-radius:8px; box-sizing:border-box;">${m.notes || ""}</textarea></div>
         </div>
-      `).join("") : '<p style="font-family:\'DM Sans\',sans-serif; font-size:14px; color:var(--c-grey-mid);">No family members saved yet.</p>';
+      `;
+      }).join("") : '<p style="font-family:\'DM Sans\',sans-serif; font-size:14px; color:var(--c-grey-mid);">No family members saved yet.</p>';
 
       familyMembersListEl.querySelectorAll("input, textarea").forEach(el => {
         el.addEventListener("change", async () => {
           const member = currentCustomer.familyMembers.find(m => m.id === el.dataset.member);
           if (member) member[el.dataset.field] = el.value;
           await saveFamilyMembers();
+          renderFamilyModal(); // refresh the "Age X" header if DOB changed
         });
       });
       familyMembersListEl.querySelectorAll("[data-remove-member]").forEach(btn => {
@@ -618,7 +639,7 @@
     }
 
     addFamilyMemberBtn.addEventListener("click", async () => {
-      currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", age: "", notes: "" });
+      currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", dob: "", notes: "" });
       await saveFamilyMembers();
       renderFamilyModal();
     });
@@ -656,13 +677,13 @@
       let customerDoc = await db.collection("customers").doc(user.uid).get();
       if (!customerDoc.exists) {
         await db.collection("customers").doc(user.uid).set({
-          name: user.email, email: user.email, phone: "", age: null, postcode: null, familyMembers: [],
+          name: user.email, email: user.email, phone: "", dob: null, postcode: null, familyMembers: [],
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         customerDoc = await db.collection("customers").doc(user.uid).get();
       }
       const data = customerDoc.data();
-      currentCustomer = { uid: user.uid, name: data.name, email: data.email, phone: data.phone, age: data.age || "", postcode: data.postcode || "", familyMembers: data.familyMembers || [] };
+      currentCustomer = { uid: user.uid, name: data.name, email: data.email, phone: data.phone, dob: data.dob || "", postcode: data.postcode || "", familyMembers: data.familyMembers || [] };
 
       customerStatusName.textContent = currentCustomer.name;
       customerStatusBar.style.display = "block";
