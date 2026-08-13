@@ -16,6 +16,11 @@
   <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
   <link rel="manifest" href="images/site.webmanifest">
   <meta name="theme-color" content="#0B0B0C">
+
+  <!-- Firebase (compat SDK — same version used on the booking page) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 </head>
 <body>
 
@@ -31,6 +36,7 @@
         <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
         <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
         <a href="#contact">Contact</a>
+        <a href="#" id="accountNavLink">My Account</a>
       </nav>
 
       <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
@@ -38,6 +44,85 @@
       </button>
     </div>
   </header>
+
+  <!-- ============ ACCOUNT STATUS BAR (shown only when signed in) ============ -->
+  <div id="customerStatusBar" style="display:none; position:fixed; top:var(--header-h); left:0; right:0; z-index:150; background:var(--c-red); color:var(--c-white); font-family:'DM Sans', sans-serif; font-size:13px; font-weight:500; padding:10px var(--pad); text-align:center;">
+    Signed in as <strong id="customerStatusName"></strong>
+    · <a href="#" id="manageFamilyNavLink" style="color:var(--c-white); text-decoration:underline;">Manage Family</a>
+    · <a href="#" id="customerLogoutNavLink" style="color:var(--c-white); text-decoration:underline;">Log Out</a>
+  </div>
+
+  <!-- ============ ACCOUNT MODAL: LOGIN / REGISTER ============ -->
+  <div id="accountModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(11,11,12,0.6); z-index:200; align-items:flex-start; justify-content:center; padding:24px; overflow-y:auto;">
+    <div style="background:white; border-radius:14px; padding:32px; max-width:380px; width:100%; margin:32px auto; font-family:'DM Sans', sans-serif;">
+      <div style="display:flex; gap:8px; margin-bottom:20px;">
+        <button type="button" id="accountTabLogin" class="account-modal-tab active">Log In</button>
+        <button type="button" id="accountTabRegister" class="account-modal-tab">Register</button>
+      </div>
+
+      <div id="accountLoginPane">
+        <div class="account-field"><label>Email</label><input type="email" id="loginEmail" autocomplete="username"></div>
+        <div class="account-field"><label>Password</label><input type="password" id="loginPassword" autocomplete="current-password"></div>
+        <a href="#" id="forgotPasswordLink" style="font-family:'DM Sans', sans-serif; font-size:13px; color:var(--c-red); text-decoration:underline;">Forgot password?</a>
+      </div>
+
+      <div id="accountRegisterPane" style="display:none;">
+        <div class="account-field"><label>Your Name</label><input type="text" id="regName" autocomplete="name"></div>
+        <div style="display:flex; gap:12px;">
+          <div class="account-field" style="flex:1;"><label>Age</label><input type="text" id="regAge" placeholder="e.g. 34"></div>
+          <div class="account-field" style="flex:1;"><label>Postcode</label><input type="text" id="regPostcode" placeholder="e.g. ST1 6PA"></div>
+        </div>
+        <div class="account-field"><label>Email</label><input type="email" id="regEmail" autocomplete="email"></div>
+        <div class="account-field"><label>Phone</label><input type="tel" id="regPhone" autocomplete="tel"></div>
+        <div class="account-field"><label>Password</label><input type="password" id="regPassword" autocomplete="new-password"></div>
+        <div class="account-field"><label>Confirm Password</label><input type="password" id="regPasswordConfirm" autocomplete="new-password"></div>
+      </div>
+
+      <div id="accountModalMsg" style="display:none; margin-top:12px; font-size:14px; padding:10px 14px; border-radius:8px;"></div>
+
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="button" id="accountModalCancel" style="flex:1; background:none; border:1.5px solid rgba(0,0,0,0.15); border-radius:8px; padding:12px; font-family:'DM Sans', sans-serif; font-weight:600; cursor:pointer;">Cancel</button>
+        <button type="button" id="accountModalSubmit" style="flex:1; background:var(--c-red); color:white; border:none; border-radius:8px; padding:12px; font-family:'Barlow Condensed', sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-size:16px; cursor:pointer;">Log In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MANAGE FAMILY MODAL ============ -->
+  <div id="familyModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(11,11,12,0.6); z-index:200; align-items:flex-start; justify-content:center; padding:24px; overflow-y:auto;">
+    <div style="background:white; border-radius:14px; padding:32px; max-width:480px; width:100%; margin:32px auto; font-family:'DM Sans', sans-serif;">
+      <h3 style="font-family:'Barlow Condensed', sans-serif; font-size:22px; font-weight:800; text-transform:uppercase; color:var(--c-black); margin-bottom:12px;">Manage Family</h3>
+      <p style="font-size:13px; color:var(--c-grey-mid); margin-bottom:16px;">Save your children's details here once, then just tick their name at booking time instead of retyping it.</p>
+      <div id="familyMembersList"></div>
+      <button type="button" id="addFamilyMemberBtn" style="width:100%; padding:12px; margin-bottom:20px; font-family:'DM Sans', sans-serif; font-size:14px; font-weight:600; color:var(--c-red); background:white; border:1.5px dashed var(--c-red); border-radius:8px; cursor:pointer;">+ Add a family member</button>
+      <div id="familyModalMsg" style="display:none; margin-bottom:12px; font-size:14px; padding:10px 14px; border-radius:8px;"></div>
+      <button type="button" id="familyModalClose" style="width:100%; background:none; border:1.5px solid rgba(0,0,0,0.15); border-radius:8px; padding:12px; font-family:'DM Sans', sans-serif; font-weight:600; cursor:pointer;">Close</button>
+    </div>
+  </div>
+
+  <style>
+    .account-modal-tab {
+      flex: 1; padding: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+      color: var(--c-black); background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.12);
+      border-radius: 8px; cursor: pointer;
+    }
+    .account-modal-tab.active { background: var(--c-red); border-color: var(--c-red); color: white; }
+    .account-field { margin-bottom: 14px; }
+    .account-field label { display: block; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--c-black); margin-bottom: 5px; }
+    .account-field input {
+      width: 100%; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 15px;
+      color: var(--c-black); background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1);
+      border-radius: 8px; box-sizing: border-box;
+    }
+    .account-field input:focus { outline: none; border-color: var(--c-red); background: white; }
+    .family-member-block {
+      border: 1.5px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 16px; margin-bottom: 14px; background: rgba(0,0,0,0.015);
+    }
+    .family-member-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .family-member-header span { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--c-grey-mid); }
+    .family-remove-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: #8C0000; background: none; border: none; cursor: pointer; }
+    .form-message-error { background: #FBEAEA; color: #8C0000; }
+    .form-message-success { background: #E8F5E9; color: #1B5E20; }
+  </style>
 
   <main id="top">
 
@@ -154,7 +239,7 @@
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Wednesday Night Football</h3>
               <p class="activity-feature-body">Wednesday Night Football is our elite indoor coaching programme focused on technical development, game intelligence, and confidence on the ball. Delivered in partnership with professional coaches, sessions are structured, high-energy, and suitable for players of all abilities. A great pathway for those looking to improve and enjoy the game.</p>
-              <a href="activitybookingdemo.html" class="activity-feature-link">Click here to book your session →</a>
+              <a href="activitybooking.html" class="activity-feature-link">Click here to book your session →</a>
             </div>
           </div>
 
@@ -165,7 +250,7 @@
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Funetics</h3>
               <p class="activity-feature-body">Funetics is a fun, engaging multi-skills session designed to build children's confidence, coordination, and love for physical activity. Through games and structured activities, kids develop fundamental movement skills in a positive, supportive environment. Perfect for younger children starting their sporting journey.</p>
-              <a href="activitybookingdemo.html" class="activity-feature-link">Click here to view availability and secure your place →</a>
+              <a href="activitybooking.html" class="activity-feature-link">Click here to view availability and secure your place →</a>
             </div>
           </div>
 
@@ -343,6 +428,247 @@
 
     </div>
   </footer>
+
+  <script>
+  /* ═══════════════════════════════════════════════════════════
+     CUSTOMER ACCOUNTS — Firebase config + login/register/family
+     ───────────────────────────────────────────────────────────
+     Same customer account system as activity-booking.html (shared
+     Firebase project, same `customers` collection), so someone can
+     register or log in from either page and it's the same account.
+     PLACEHOLDER VALUES below until Northwood's real Firebase
+     project exists — see activity-booking.html for the full setup
+     notes (Firebase project, Square, Cloud Function deployment).
+     ═══════════════════════════════════════════════════════════ */
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDGSOa02_oHzRARoisN-gA3zzsTTC9U9QQ",
+    authDomain: "northwood-stadium.firebaseapp.com",
+    projectId: "northwood-stadium",
+    storageBucket: "northwood-stadium.firebasestorage.app",
+    messagingSenderId: "146149087447",
+    appId: "1:146149087447:web:f5882364c8a525fa8c3892",
+    measurementId: "G-JKT47Q28YV"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+
+  (function () {
+    let currentCustomer = null;
+
+    const accountNavLink = document.getElementById("accountNavLink");
+    const customerStatusBar = document.getElementById("customerStatusBar");
+    const customerStatusName = document.getElementById("customerStatusName");
+    const customerLogoutNavLink = document.getElementById("customerLogoutNavLink");
+    const manageFamilyNavLink = document.getElementById("manageFamilyNavLink");
+
+    const accountModalOverlay = document.getElementById("accountModalOverlay");
+    const accountModalCancel = document.getElementById("accountModalCancel");
+    const accountModalSubmit = document.getElementById("accountModalSubmit");
+    const accountModalMsg = document.getElementById("accountModalMsg");
+    const accountTabLogin = document.getElementById("accountTabLogin");
+    const accountTabRegister = document.getElementById("accountTabRegister");
+    const accountLoginPane = document.getElementById("accountLoginPane");
+    const accountRegisterPane = document.getElementById("accountRegisterPane");
+
+    let accountMode = "login";
+
+    function showAccountMsg(text, type) {
+      accountModalMsg.textContent = text;
+      accountModalMsg.style.display = text ? "block" : "none";
+      accountModalMsg.className = type === "error" ? "form-message-error" : "form-message-success";
+    }
+
+    function setAccountMode(mode) {
+      accountMode = mode;
+      accountTabLogin.classList.toggle("active", mode === "login");
+      accountTabRegister.classList.toggle("active", mode === "register");
+      accountLoginPane.style.display = mode === "login" ? "block" : "none";
+      accountRegisterPane.style.display = mode === "register" ? "block" : "none";
+      accountModalSubmit.textContent = mode === "login" ? "Log In" : "Register";
+      showAccountMsg("", null);
+    }
+    accountTabLogin.addEventListener("click", () => setAccountMode("login"));
+    accountTabRegister.addEventListener("click", () => setAccountMode("register"));
+
+    accountNavLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (currentCustomer) return; // status bar handles logged-in state
+      setAccountMode("login");
+      accountModalOverlay.style.display = "flex";
+    });
+    accountModalCancel.addEventListener("click", () => accountModalOverlay.style.display = "none");
+    accountModalOverlay.addEventListener("click", (e) => {
+      if (e.target === accountModalOverlay) accountModalOverlay.style.display = "none";
+    });
+
+    document.getElementById("forgotPasswordLink").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      if (!email) { showAccountMsg("Enter your email above first, then click Forgot password.", "error"); return; }
+      try {
+        await auth.sendPasswordResetEmail(email);
+        showAccountMsg("Password reset email sent — check your inbox.", "success");
+      } catch (err) {
+        showAccountMsg("Couldn't send reset email — check the address and try again.", "error");
+      }
+    });
+
+    accountModalSubmit.addEventListener("click", async () => {
+      showAccountMsg("", null);
+
+      if (accountMode === "login") {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        if (!email || !password) { showAccountMsg("Enter your email and password.", "error"); return; }
+        try {
+          const cred = await auth.signInWithEmailAndPassword(email, password);
+          const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+          if (staffDoc.exists) {
+            await auth.signOut();
+            showAccountMsg("This is a staff account — staff should log in via the booking page's Staff Login.", "error");
+            return;
+          }
+          accountModalOverlay.style.display = "none";
+        } catch (err) {
+          showAccountMsg("Login failed — check your details and try again.", "error");
+        }
+      } else {
+        const name = document.getElementById("regName").value.trim();
+        const age = document.getElementById("regAge").value.trim();
+        const postcode = document.getElementById("regPostcode").value.trim();
+        const email = document.getElementById("regEmail").value.trim();
+        const phone = document.getElementById("regPhone").value.trim();
+        const password = document.getElementById("regPassword").value;
+        const passwordConfirm = document.getElementById("regPasswordConfirm").value;
+
+        if (!name || !email || !phone || !password) { showAccountMsg("Please fill in all required fields.", "error"); return; }
+        if (password.length < 6) { showAccountMsg("Password must be at least 6 characters.", "error"); return; }
+        if (password !== passwordConfirm) { showAccountMsg("Passwords don't match.", "error"); return; }
+
+        try {
+          const cred = await auth.createUserWithEmailAndPassword(email, password);
+          await db.collection("customers").doc(cred.user.uid).set({
+            name, email, phone, age: age || null, postcode: postcode || null,
+            familyMembers: [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          accountModalOverlay.style.display = "none";
+        } catch (err) {
+          showAccountMsg(
+            err.code === "auth/email-already-in-use"
+              ? "An account already exists with that email — try logging in instead."
+              : "Registration failed. Please check your details and try again.",
+            "error"
+          );
+        }
+      }
+    });
+
+    customerLogoutNavLink.addEventListener("click", (e) => { e.preventDefault(); auth.signOut(); });
+
+    // ── Manage Family ──────────────────────────────────────────
+    const familyModalOverlay = document.getElementById("familyModalOverlay");
+    const familyModalClose = document.getElementById("familyModalClose");
+    const familyMembersListEl = document.getElementById("familyMembersList");
+    const addFamilyMemberBtn = document.getElementById("addFamilyMemberBtn");
+    const familyModalMsg = document.getElementById("familyModalMsg");
+
+    function renderFamilyModal() {
+      const members = (currentCustomer && currentCustomer.familyMembers) || [];
+      familyMembersListEl.innerHTML = members.length ? members.map((m, idx) => `
+        <div class="family-member-block" data-member="${m.id}">
+          <div class="family-member-header">
+            <span>Family Member ${idx + 1}</span>
+            <button type="button" class="family-remove-btn" data-remove-member="${m.id}">Remove</button>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <div class="account-field" style="flex:1;"><label>Name</label><input type="text" data-field="name" data-member="${m.id}" value="${m.name}"></div>
+            <div class="account-field" style="flex:1;"><label>Age</label><input type="text" data-field="age" data-member="${m.id}" value="${m.age || ""}" placeholder="e.g. 7"></div>
+          </div>
+          <div class="account-field"><label>Notes (dietary, medical, or other instructions)</label><textarea data-field="notes" data-member="${m.id}" rows="2" style="width:100%; padding:11px 13px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--c-grey-light); border:1.5px solid rgba(0,0,0,0.1); border-radius:8px; box-sizing:border-box;">${m.notes || ""}</textarea></div>
+        </div>
+      `).join("") : '<p style="font-family:\'DM Sans\',sans-serif; font-size:14px; color:var(--c-grey-mid);">No family members saved yet.</p>';
+
+      familyMembersListEl.querySelectorAll("input, textarea").forEach(el => {
+        el.addEventListener("change", async () => {
+          const member = currentCustomer.familyMembers.find(m => m.id === el.dataset.member);
+          if (member) member[el.dataset.field] = el.value;
+          await saveFamilyMembers();
+        });
+      });
+      familyMembersListEl.querySelectorAll("[data-remove-member]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          currentCustomer.familyMembers = currentCustomer.familyMembers.filter(m => m.id !== btn.dataset.removeMember);
+          await saveFamilyMembers();
+          renderFamilyModal();
+        });
+      });
+    }
+
+    async function saveFamilyMembers() {
+      try {
+        await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers });
+      } catch (err) {
+        familyModalMsg.textContent = "Couldn't save — please try again.";
+        familyModalMsg.style.display = "block";
+        familyModalMsg.className = "form-message-error";
+      }
+    }
+
+    addFamilyMemberBtn.addEventListener("click", async () => {
+      currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", age: "", notes: "" });
+      await saveFamilyMembers();
+      renderFamilyModal();
+    });
+
+    manageFamilyNavLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      renderFamilyModal();
+      familyModalOverlay.style.display = "flex";
+    });
+    familyModalClose.addEventListener("click", () => familyModalOverlay.style.display = "none");
+    familyModalOverlay.addEventListener("click", (e) => {
+      if (e.target === familyModalOverlay) familyModalOverlay.style.display = "none";
+    });
+
+    // ── Auth state ────────────────────────────────────────────
+    // Same staff-vs-customer check as the booking page: being logged
+    // in isn't enough on its own, since staff and customers share the
+    // same Firebase Auth pool. Staff who land here just see the normal
+    // "My Account" link do nothing extra — this page has no staff tools,
+    // so there's no staff banner here, only the customer one.
+    auth.onAuthStateChanged(async user => {
+      if (!user) {
+        currentCustomer = null;
+        customerStatusBar.style.display = "none";
+        return;
+      }
+
+      const staffDoc = await db.collection("staff").doc(user.uid).get();
+      if (staffDoc.exists) {
+        currentCustomer = null;
+        customerStatusBar.style.display = "none";
+        return;
+      }
+
+      let customerDoc = await db.collection("customers").doc(user.uid).get();
+      if (!customerDoc.exists) {
+        await db.collection("customers").doc(user.uid).set({
+          name: user.email, email: user.email, phone: "", age: null, postcode: null, familyMembers: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        customerDoc = await db.collection("customers").doc(user.uid).get();
+      }
+      const data = customerDoc.data();
+      currentCustomer = { uid: user.uid, name: data.name, email: data.email, phone: data.phone, age: data.age || "", postcode: data.postcode || "", familyMembers: data.familyMembers || [] };
+
+      customerStatusName.textContent = currentCustomer.name;
+      customerStatusBar.style.display = "block";
+    });
+  })();
+  </script>
 
   <script src="script.js"></script>
 </body>

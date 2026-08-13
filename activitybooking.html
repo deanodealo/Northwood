@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Book an Activity (DEMO) | Northwood Stadium</title>
+<title>Book an Activity | Northwood Stadium</title>
 <meta name="description" content="Book onto Wednesday Night Football, Funetics and other Northwood Stadium activities.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,9 +12,13 @@
 <link rel="stylesheet" href="styles.css">
 <meta name="theme-color" content="#0B0B0C">
 
-<!-- Firebase and Square SDKs deliberately NOT loaded in this demo —
-     nothing here is connected to a real backend. See notes at the
-     bottom of the script for what's mocked and why. -->
+<!-- Square Web Payments SDK (Production) -->
+<script src="https://web.squarecdn.com/v1/square.js"></script>
+
+<!-- Firebase (compat SDK — same version as the rest of the site) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
 <style>
 /* ══════════════════════════════════════════════════════════
@@ -252,7 +256,7 @@ label {
   color: var(--c-black);
   margin-bottom: 0.4rem;
 }
-input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea {
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], textarea {
   width: 100%;
   padding: 0.7rem 0.85rem;
   font-family: var(--f-body);
@@ -382,12 +386,14 @@ input:focus, textarea:focus { outline: none; border-color: var(--activity-accent
 /* — staff login modal — */
 .staff-modal-overlay {
   position: fixed; inset: 0; background: rgba(11,11,12,0.6);
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: flex-start; justify-content: center;
   padding: 1.5rem; z-index: 100;
+  overflow-y: auto;
 }
 .staff-modal {
   background: white; border-radius: 14px; padding: 2rem;
   max-width: 360px; width: 100%;
+  margin: 2rem auto;
 }
 .staff-modal h3 { font-family: var(--f-display); font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.25rem; }
 .staff-modal .form-message { margin-top: 0.75rem; }
@@ -397,29 +403,15 @@ input:focus, textarea:focus { outline: none; border-color: var(--activity-accent
   background: none; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px;
   padding: 0.75rem; font-family: var(--f-body); font-weight: 600; cursor: pointer;
 }
-.demo-banner {
-  background: #FFF3CD; color: #7A5B00; text-align: center;
-  font-family: var(--f-body); font-size: 0.82rem; font-weight: 600;
-  padding: 0.6rem 1rem;
-}
-.demo-view-toggle { display: flex; gap: 0.4rem; }
-.demo-view-btn {
-  font-family: var(--f-body); font-size: 0.78rem; font-weight: 600;
-  padding: 0.4rem 0.9rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);
-  background: none; color: rgba(255,255,255,0.6); cursor: pointer;
-}
-.demo-view-btn.active { background: var(--c-red); border-color: var(--c-red); color: white; }
 </style>
 </head>
 <body class="ab-page">
 
-<div class="demo-banner">⚠️ DEMO MODE — no real Firebase/Square connection. Use the toggle below to preview what public visitors vs. logged-in staff see. Nothing here is saved.</div>
-
 <div class="ab-topbar">
   <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
-  <div class="demo-view-toggle">
-    <button class="demo-view-btn" id="viewPublicBtn">Preview: Public</button>
-    <button class="demo-view-btn active" id="viewStaffBtn">Preview: Staff (logged in)</button>
+  <div style="display:flex; gap:0.6rem;">
+    <button class="ab-staff-link" id="accountBtn">My Account</button>
+    <button class="ab-staff-link" id="staffLoginBtn">Staff Login</button>
   </div>
 </div>
 
@@ -431,14 +423,116 @@ input:focus, textarea:focus { outline: none; border-color: var(--activity-accent
     <p class="ab-sub">Pick an activity below, choose your session, and book your place.</p>
   </div>
 
-  <div class="ab-staff-banner" id="staffBanner">
+  <div class="ab-staff-banner hidden" id="staffBanner">
     <span><strong>Staff Mode is ON</strong> — bookings made now will be recorded as taken at the venue.</span>
+    <button id="staffLogoutBtn">Log out</button>
+  </div>
+
+  <div class="ab-staff-banner hidden" id="customerBanner" style="background:var(--activity-accent, var(--c-blue));">
+    <span>Signed in as <strong id="customerBannerName"></strong> — <a href="#" id="manageFamilyLink" style="color:white; text-decoration:underline;">Manage family</a></span>
+    <button id="customerLogoutBtn">Log out</button>
   </div>
 
   <div class="ab-tabs" id="activityTabs"></div>
 
   <div id="activityPanel"></div>
 
+</div>
+
+<!-- Staff login modal -->
+<div class="staff-modal-overlay hidden" id="staffModalOverlay">
+  <div class="staff-modal">
+    <h3>Staff Login</h3>
+    <div class="form-row single">
+      <label>Email</label>
+      <input type="email" id="staffEmail" autocomplete="username">
+    </div>
+    <div class="form-row single">
+      <label>Password</label>
+      <input type="password" id="staffPassword" autocomplete="current-password">
+    </div>
+    <a href="#" id="staffForgotPasswordLink" style="font-family:var(--f-body); font-size:0.78rem; color:var(--c-red); text-decoration:underline;">Forgot password?</a>
+    <div class="form-message" id="staffLoginMsg"></div>
+    <div class="staff-modal-actions">
+      <button class="staff-modal-cancel" id="staffModalCancel">Cancel</button>
+      <button class="ab-submit-btn" id="staffModalSubmit" style="flex:1;">Log In</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer account modal: login / register -->
+<div class="staff-modal-overlay hidden" id="accountModalOverlay">
+  <div class="staff-modal">
+    <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem;">
+      <button type="button" class="pay-method-btn active" id="accountTabLogin" style="flex:1;">Log In</button>
+      <button type="button" class="pay-method-btn" id="accountTabRegister" style="flex:1;">Register</button>
+    </div>
+
+    <div id="accountLoginPane">
+      <div class="form-row single">
+        <label>Email</label>
+        <input type="email" id="loginEmail" autocomplete="username">
+      </div>
+      <div class="form-row single">
+        <label>Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password">
+      </div>
+      <a href="#" id="forgotPasswordLink" style="font-family:var(--f-body); font-size:0.78rem; color:var(--c-red); text-decoration:underline;">Forgot password?</a>
+    </div>
+
+    <div id="accountRegisterPane" class="hidden">
+      <div class="form-row single">
+        <label>Your Name</label>
+        <input type="text" id="regName" autocomplete="name">
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Age</label>
+          <input type="text" id="regAge" autocomplete="off" placeholder="e.g. 34">
+        </div>
+        <div>
+          <label>Postcode</label>
+          <input type="text" id="regPostcode" autocomplete="postal-code" placeholder="e.g. ST1 6PA">
+        </div>
+      </div>
+      <div class="form-row single">
+        <label>Email</label>
+        <input type="email" id="regEmail" autocomplete="email">
+      </div>
+      <div class="form-row single">
+        <label>Phone</label>
+        <input type="tel" id="regPhone" autocomplete="tel">
+      </div>
+      <div class="form-row single">
+        <label>Password</label>
+        <input type="password" id="regPassword" autocomplete="new-password">
+      </div>
+      <div class="form-row single">
+        <label>Confirm Password</label>
+        <input type="password" id="regPasswordConfirm" autocomplete="new-password">
+      </div>
+    </div>
+
+    <div class="form-message" id="accountModalMsg"></div>
+    <div class="staff-modal-actions">
+      <button class="staff-modal-cancel" id="accountModalCancel">Cancel</button>
+      <button class="ab-submit-btn" id="accountModalSubmit" style="flex:1;">Log In</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage family modal -->
+<div class="staff-modal-overlay hidden" id="familyModalOverlay">
+  <div class="staff-modal" style="max-width:480px;">
+    <h3>Manage Family</h3>
+    <p style="font-family:var(--f-body); font-size:0.82rem; color:var(--c-grey-mid); margin-bottom:1rem;">Save your children's details here once, then just tick their name at booking time instead of retyping it.</p>
+    <div id="familyMembersList"></div>
+    <button type="button" class="add-child-btn" id="addFamilyMemberBtn">+ Add a family member</button>
+    <div class="form-message" id="familyModalMsg"></div>
+    <div class="staff-modal-actions">
+      <button class="staff-modal-cancel" id="familyModalClose" style="flex:1;">Close</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -537,15 +631,40 @@ const ACTIVITIES_CONFIG = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
-   DEMO MODE — this replaces the real Firebase/Square config
-   block from activity-booking.html. No real network calls are
-   made anywhere in this file: card capture is skipped, the
-   "charge" and "save booking" steps are mocked with a short
-   delay, and nothing is persisted. See the real file for the
-   live version once Northwood's Firebase + Square accounts exist.
+   PAYMENT + FIREBASE CONFIG
+   ───────────────────────────────────────────────────────────
+   PLACEHOLDER VALUES — Northwood doesn't have its own Firebase
+   project or Square account set up yet. Once they exist:
+     1. Swap firebaseConfig for the real Northwood project config
+        (Firebase Console → Project Settings).
+     2. Swap SQUARE_APP_ID / SQUARE_LOCATION_ID for Northwood's
+        own Square production values.
+     3. Deploy the SAME createSquarePayment Cloud Function (from
+        functions/index.js) to the Northwood Firebase project,
+        with Northwood's own SQUARE_ACCESS_TOKEN secret and CORS
+        origin set to Northwood's real domain.
+   Nothing else on this page needs to change — it already calls
+   the function generically via bookingType/description, same as
+   the camp and tournament pages.
    ═══════════════════════════════════════════════════════════ */
 
-const IS_DEMO = true;
+const firebaseConfig = {
+  apiKey: "AIzaSyDGSOa02_oHzRARoisN-gA3zzsTTC9U9QQ",
+  authDomain: "northwood-stadium.firebaseapp.com",
+  projectId: "northwood-stadium",
+  storageBucket: "northwood-stadium.firebasestorage.app",
+  messagingSenderId: "146149087447",
+  appId: "1:146149087447:web:f5882364c8a525fa8c3892",
+  measurementId: "G-JKT47Q28YV"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+const SQUARE_APP_ID      = "TODO_NORTHWOOD_SQUARE_APP_ID";
+const SQUARE_LOCATION_ID = "TODO_NORTHWOOD_SQUARE_LOCATION_ID";
+const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctions.net/createSquarePayment";
 
 /* ───────────────────────────────────────────────────────────
    Page logic below. Shouldn't need touching to add/edit
@@ -572,26 +691,341 @@ const IS_DEMO = true;
 
   let currentActivityId = activeActivities.length ? activeActivities[0].id : null;
   let selectedSessionId = null;
-  let isStaffMode = true; // demo defaults to Staff view since that's what was asked for
-  let card; // Square card instance — not used in this demo (see initSquare stub below)
+  let isStaffMode = false;
+  let currentCustomer = null; // { uid, name, email, phone, familyMembers: [...] } or null if not logged in as a customer
+  let card; // Square card instance, (re)initialised per activity view
 
   const tabsEl = document.getElementById("activityTabs");
   const panelEl = document.getElementById("activityPanel");
 
-  // ── Demo view toggle (replaces real Firebase Auth staff login) ─
+  // ── Staff auth ──────────────────────────────────────────────
+  // Logging in successfully is not enough to mean "staff" — customer
+  // accounts share the same Firebase Auth pool. Staff are added by hand
+  // to the `staff` collection (doc ID = their Auth UID) at the same time
+  // their login is created in Firebase Console. This checks that record
+  // exists before granting staff mode, and signs out + shows an error
+  // for anyone who logs in successfully but isn't on that list — most
+  // often a customer who mistakenly used the Staff Login button.
+  const staffLoginBtn = document.getElementById("staffLoginBtn");
   const staffBanner = document.getElementById("staffBanner");
-  const viewPublicBtn = document.getElementById("viewPublicBtn");
-  const viewStaffBtn = document.getElementById("viewStaffBtn");
+  const staffLogoutBtn = document.getElementById("staffLogoutBtn");
+  const staffModalOverlay = document.getElementById("staffModalOverlay");
+  const staffModalCancel = document.getElementById("staffModalCancel");
+  const staffModalSubmit = document.getElementById("staffModalSubmit");
 
-  function setDemoView(staff) {
-    isStaffMode = staff;
-    staffBanner.classList.toggle("hidden", !isStaffMode);
-    viewPublicBtn.classList.toggle("active", !isStaffMode);
-    viewStaffBtn.classList.toggle("active", isStaffMode);
-    renderPanel();
+  staffLoginBtn.addEventListener("click", () => {
+    if (isStaffMode) return; // already logged in, button just shows state
+    staffModalOverlay.classList.remove("hidden");
+  });
+  staffModalCancel.addEventListener("click", () => staffModalOverlay.classList.add("hidden"));
+  staffModalOverlay.addEventListener("click", (e) => { if (e.target === staffModalOverlay) staffModalOverlay.classList.add("hidden"); });
+
+  document.getElementById("staffForgotPasswordLink").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("staffEmail").value.trim();
+    const msg = document.getElementById("staffLoginMsg");
+    if (!email) {
+      msg.textContent = "Enter your email above first, then click Forgot password.";
+      msg.className = "form-message error";
+      return;
+    }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      msg.textContent = "Password reset email sent — check your inbox.";
+      msg.className = "form-message success";
+    } catch (err) {
+      msg.textContent = "Couldn't send reset email — check the address and try again.";
+      msg.className = "form-message error";
+    }
+  });
+
+  staffModalSubmit.addEventListener("click", async () => {
+    const email = document.getElementById("staffEmail").value.trim();
+    const password = document.getElementById("staffPassword").value;
+    const msg = document.getElementById("staffLoginMsg");
+    msg.className = "form-message";
+    msg.textContent = "";
+    if (!email || !password) {
+      msg.textContent = "Enter your email and password.";
+      msg.className = "form-message error";
+      return;
+    }
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+      if (!staffDoc.exists) {
+        await auth.signOut();
+        msg.textContent = "This account isn't set up for staff access.";
+        msg.className = "form-message error";
+        return;
+      }
+      staffModalOverlay.classList.add("hidden");
+    } catch (err) {
+      msg.textContent = "Login failed — check your details and try again.";
+      msg.className = "form-message error";
+    }
+  });
+
+  staffLogoutBtn.addEventListener("click", () => auth.signOut());
+
+  // ── Customer accounts ────────────────────────────────────────
+  const accountBtn = document.getElementById("accountBtn");
+  const customerBanner = document.getElementById("customerBanner");
+  const customerBannerName = document.getElementById("customerBannerName");
+  const customerLogoutBtn = document.getElementById("customerLogoutBtn");
+  const accountModalOverlay = document.getElementById("accountModalOverlay");
+  const accountModalCancel = document.getElementById("accountModalCancel");
+  const accountModalSubmit = document.getElementById("accountModalSubmit");
+  const accountModalMsg = document.getElementById("accountModalMsg");
+  const accountTabLogin = document.getElementById("accountTabLogin");
+  const accountTabRegister = document.getElementById("accountTabRegister");
+  const accountLoginPane = document.getElementById("accountLoginPane");
+  const accountRegisterPane = document.getElementById("accountRegisterPane");
+  const manageFamilyLink = document.getElementById("manageFamilyLink");
+
+  let accountMode = "login";
+
+  function setAccountMode(mode) {
+    accountMode = mode;
+    accountTabLogin.classList.toggle("active", mode === "login");
+    accountTabRegister.classList.toggle("active", mode === "register");
+    accountLoginPane.classList.toggle("hidden", mode !== "login");
+    accountRegisterPane.classList.toggle("hidden", mode !== "register");
+    accountModalSubmit.textContent = mode === "login" ? "Log In" : "Register";
+    accountModalMsg.textContent = "";
+    accountModalMsg.className = "form-message";
   }
-  viewPublicBtn.addEventListener("click", () => setDemoView(false));
-  viewStaffBtn.addEventListener("click", () => setDemoView(true));
+  accountTabLogin.addEventListener("click", () => setAccountMode("login"));
+  accountTabRegister.addEventListener("click", () => setAccountMode("register"));
+
+  accountBtn.addEventListener("click", () => {
+    if (currentCustomer) return; // already logged in, button just shows state
+    setAccountMode("login");
+    accountModalOverlay.classList.remove("hidden");
+  });
+  accountModalCancel.addEventListener("click", () => accountModalOverlay.classList.add("hidden"));
+  accountModalOverlay.addEventListener("click", (e) => { if (e.target === accountModalOverlay) accountModalOverlay.classList.add("hidden"); });
+
+  document.getElementById("forgotPasswordLink").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("loginEmail").value.trim();
+    if (!email) {
+      accountModalMsg.textContent = "Enter your email above first, then click Forgot password.";
+      accountModalMsg.className = "form-message error";
+      return;
+    }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      accountModalMsg.textContent = "Password reset email sent — check your inbox.";
+      accountModalMsg.className = "form-message success";
+    } catch (err) {
+      accountModalMsg.textContent = "Couldn't send reset email — check the address and try again.";
+      accountModalMsg.className = "form-message error";
+    }
+  });
+
+  accountModalSubmit.addEventListener("click", async () => {
+    accountModalMsg.textContent = "";
+    accountModalMsg.className = "form-message";
+
+    if (accountMode === "login") {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      if (!email || !password) {
+        accountModalMsg.textContent = "Enter your email and password.";
+        accountModalMsg.className = "form-message error";
+        return;
+      }
+      try {
+        const cred = await auth.signInWithEmailAndPassword(email, password);
+        const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+        if (staffDoc.exists) {
+          // A staff member used the customer login by mistake — keep the
+          // two flows distinct rather than silently granting them a
+          // customer profile too.
+          await auth.signOut();
+          accountModalMsg.textContent = "This is a staff account — please use Staff Login instead.";
+          accountModalMsg.className = "form-message error";
+          return;
+        }
+        accountModalOverlay.classList.add("hidden");
+      } catch (err) {
+        accountModalMsg.textContent = "Login failed — check your details and try again.";
+        accountModalMsg.className = "form-message error";
+      }
+    } else {
+      const name = document.getElementById("regName").value.trim();
+      const age = document.getElementById("regAge").value.trim();
+      const postcode = document.getElementById("regPostcode").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const phone = document.getElementById("regPhone").value.trim();
+      const password = document.getElementById("regPassword").value;
+      const passwordConfirm = document.getElementById("regPasswordConfirm").value;
+
+      if (!name || !email || !phone || !password) {
+        accountModalMsg.textContent = "Please fill in all required fields.";
+        accountModalMsg.className = "form-message error";
+        return;
+      }
+      if (password.length < 6) {
+        accountModalMsg.textContent = "Password must be at least 6 characters.";
+        accountModalMsg.className = "form-message error";
+        return;
+      }
+      if (password !== passwordConfirm) {
+        accountModalMsg.textContent = "Passwords don't match.";
+        accountModalMsg.className = "form-message error";
+        return;
+      }
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        await db.collection("customers").doc(cred.user.uid).set({
+          name, email, phone,
+          age: age || null,
+          postcode: postcode || null,
+          familyMembers: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        accountModalOverlay.classList.add("hidden");
+      } catch (err) {
+        accountModalMsg.textContent = err.code === "auth/email-already-in-use"
+          ? "An account already exists with that email — try logging in instead."
+          : "Registration failed. Please check your details and try again.";
+        accountModalMsg.className = "form-message error";
+      }
+    }
+  });
+
+  customerLogoutBtn.addEventListener("click", () => auth.signOut());
+
+  // ── Manage Family modal ──────────────────────────────────────
+  const familyModalOverlay = document.getElementById("familyModalOverlay");
+  const familyModalClose = document.getElementById("familyModalClose");
+  const familyMembersListEl = document.getElementById("familyMembersList");
+  const addFamilyMemberBtn = document.getElementById("addFamilyMemberBtn");
+  const familyModalMsg = document.getElementById("familyModalMsg");
+
+  function renderFamilyModal() {
+    const members = (currentCustomer && currentCustomer.familyMembers) || [];
+    familyMembersListEl.innerHTML = members.length ? members.map((m, idx) => `
+      <div class="child-block" data-member="${m.id}">
+        <div class="child-block-header">
+          <span>Family Member ${idx + 1}</span>
+          <button type="button" class="child-remove-btn" data-remove-member="${m.id}">Remove</button>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Name</label>
+            <input type="text" data-field="name" data-member="${m.id}" value="${m.name}">
+          </div>
+          <div>
+            <label>Age</label>
+            <input type="text" data-field="age" data-member="${m.id}" value="${m.age || ""}" placeholder="e.g. 7">
+          </div>
+        </div>
+        <div class="form-row single">
+          <label>Notes (dietary, medical, or other instructions)</label>
+          <textarea data-field="notes" data-member="${m.id}" rows="2">${m.notes || ""}</textarea>
+        </div>
+      </div>
+    `).join("") : '<p style="font-family:var(--f-body); font-size:0.85rem; color:var(--c-grey-mid);">No family members saved yet.</p>';
+
+    familyMembersListEl.querySelectorAll("input, textarea").forEach(el => {
+      el.addEventListener("change", async () => {
+        const member = currentCustomer.familyMembers.find(m => m.id === el.dataset.member);
+        if (member) member[el.dataset.field] = el.value;
+        await saveFamilyMembers();
+      });
+    });
+    familyMembersListEl.querySelectorAll("[data-remove-member]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        currentCustomer.familyMembers = currentCustomer.familyMembers.filter(m => m.id !== btn.dataset.removeMember);
+        await saveFamilyMembers();
+        renderFamilyModal();
+      });
+    });
+  }
+
+  async function saveFamilyMembers() {
+    try {
+      await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers });
+    } catch (err) {
+      familyModalMsg.textContent = "Couldn't save — please try again.";
+      familyModalMsg.className = "form-message error";
+    }
+  }
+
+  addFamilyMemberBtn.addEventListener("click", async () => {
+    currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", age: "", notes: "" });
+    await saveFamilyMembers();
+    renderFamilyModal();
+  });
+
+  manageFamilyLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    renderFamilyModal();
+    familyModalOverlay.classList.remove("hidden");
+  });
+  familyModalClose.addEventListener("click", () => {
+    familyModalOverlay.classList.add("hidden");
+    renderPanel(); // reflect any family member edits in the booking form
+  });
+  familyModalOverlay.addEventListener("click", (e) => {
+    if (e.target === familyModalOverlay) {
+      familyModalOverlay.classList.add("hidden");
+      renderPanel();
+    }
+  });
+
+  // ── Single auth-state handler decides the visitor's role ────
+  // Firebase Auth has one session at a time for this page, shared by
+  // staff and customer logins. On any change, work out which (if
+  // either) applies and update all the account UI together.
+  auth.onAuthStateChanged(async user => {
+    if (!user) {
+      isStaffMode = false;
+      currentCustomer = null;
+      staffBanner.classList.add("hidden");
+      customerBanner.classList.add("hidden");
+      staffLoginBtn.classList.remove("is-active");
+      staffLoginBtn.textContent = "Staff Login";
+      accountBtn.textContent = "My Account";
+      renderPanel();
+      return;
+    }
+
+    const staffDoc = await db.collection("staff").doc(user.uid).get();
+    if (staffDoc.exists) {
+      isStaffMode = true;
+      currentCustomer = null;
+      staffBanner.classList.remove("hidden");
+      customerBanner.classList.add("hidden");
+      staffLoginBtn.classList.add("is-active");
+      staffLoginBtn.textContent = "Staff: Logged In";
+      renderPanel();
+      return;
+    }
+
+    // Not staff — treat as a customer. Load (or lazily create, in case
+    // the profile write during registration didn't finish) their profile.
+    isStaffMode = false;
+    let customerDoc = await db.collection("customers").doc(user.uid).get();
+    if (!customerDoc.exists) {
+      await db.collection("customers").doc(user.uid).set({
+        name: user.email, email: user.email, phone: "", age: null, postcode: null, familyMembers: [],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      customerDoc = await db.collection("customers").doc(user.uid).get();
+    }
+    const data = customerDoc.data();
+    currentCustomer = { uid: user.uid, name: data.name, email: data.email, phone: data.phone, age: data.age || "", postcode: data.postcode || "", familyMembers: data.familyMembers || [] };
+
+    staffBanner.classList.add("hidden");
+    customerBanner.classList.remove("hidden");
+    customerBannerName.textContent = currentCustomer.name;
+    accountBtn.textContent = "My Account";
+    renderPanel();
+  });
 
   // ── Tabs ────────────────────────────────────────────────────
   function renderTabs() {
@@ -677,16 +1111,16 @@ const IS_DEMO = true;
           <div class="form-row">
             <div>
               <label>Name <span class="required-mark">*</span></label>
-              <input type="text" id="contactName" required>
+              <input type="text" id="contactName" required value="${currentCustomer ? currentCustomer.name : ""}">
             </div>
             <div>
               <label>Phone <span class="required-mark">*</span></label>
-              <input type="tel" id="contactPhone" required>
+              <input type="tel" id="contactPhone" required value="${currentCustomer ? currentCustomer.phone : ""}">
             </div>
           </div>
           <div class="form-row single">
             <label>Email ${isStaffMode ? "" : '<span class="required-mark">*</span>'}</label>
-            <input type="email" id="contactEmail" ${isStaffMode ? "" : "required"}>
+            <input type="email" id="contactEmail" ${isStaffMode ? "" : "required"} value="${currentCustomer ? currentCustomer.email : ""}">
           </div>
 
           <div class="ab-section-label">Who's Booking On?</div>
@@ -707,8 +1141,11 @@ const IS_DEMO = true;
           </div>
 
           <div id="childrenBlock" class="hidden">
+            ${currentCustomer && currentCustomer.familyMembers.length ? `
+              <div id="savedFamilyList" style="margin-bottom:0.9rem;"></div>
+            ` : ""}
             <div id="childrenList"></div>
-            <button type="button" class="add-child-btn" id="addChildBtn">+ Add another child</button>
+            <button type="button" class="add-child-btn" id="addChildBtn">+ Add ${currentCustomer && currentCustomer.familyMembers.length ? "someone new" : "another child"}</button>
           </div>
 
           ${paymentSectionHtml}
@@ -744,8 +1181,9 @@ const IS_DEMO = true;
 
     // ── Who's booking on: self / children ────────────────────
     let bookSelf = false;
-    let children = []; // { id, name, age, notes }
+    let children = []; // { id, name, age, notes, saveToAccount }
     let nextChildId = 1;
+    let selectedFamilyMemberIds = new Set(); // saved family member IDs ticked for this booking
 
     const selfCheckbox = document.getElementById("bookSelf");
     const childCheckbox = document.getElementById("bookChild");
@@ -754,15 +1192,35 @@ const IS_DEMO = true;
     const selfNotesBlock = document.getElementById("selfNotesBlock");
     const childrenBlock = document.getElementById("childrenBlock");
     const childrenListEl = document.getElementById("childrenList");
+    const savedFamilyListEl = document.getElementById("savedFamilyList");
     const addChildBtn = document.getElementById("addChildBtn");
     const summaryLine = document.getElementById("summaryLine");
+
+    function renderSavedFamily() {
+      if (!savedFamilyListEl) return;
+      savedFamilyListEl.innerHTML = currentCustomer.familyMembers.map(m => `
+        <div class="who-option${selectedFamilyMemberIds.has(m.id) ? " checked" : ""}" data-saved-member="${m.id}">
+          <input type="checkbox" ${selectedFamilyMemberIds.has(m.id) ? "checked" : ""} data-saved-checkbox="${m.id}">
+          <label>${m.name}${m.age ? " (" + m.age + ")" : ""}</label>
+        </div>
+      `).join("");
+
+      savedFamilyListEl.querySelectorAll("[data-saved-checkbox]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const id = cb.dataset.savedCheckbox;
+          if (cb.checked) selectedFamilyMemberIds.add(id); else selectedFamilyMemberIds.delete(id);
+          cb.closest(".who-option").classList.toggle("checked", cb.checked);
+          updateSummary();
+        });
+      });
+    }
 
     function renderChildren() {
       childrenListEl.innerHTML = children.map((c, idx) => `
         <div class="child-block" data-child="${c.id}">
           <div class="child-block-header">
-            <span>Child ${idx + 1}</span>
-            ${children.length > 1 ? `<button type="button" class="child-remove-btn" data-remove="${c.id}">Remove</button>` : ""}
+            <span>${currentCustomer && currentCustomer.familyMembers.length ? "New Person " + (idx + 1) : "Child " + (idx + 1)}</span>
+            <button type="button" class="child-remove-btn" data-remove="${c.id}">Remove</button>
           </div>
           <div class="form-row">
             <div>
@@ -778,13 +1236,26 @@ const IS_DEMO = true;
             <label>Notes (dietary, medical, or other instructions)</label>
             <textarea class="child-notes" data-field="notes" data-child="${c.id}" rows="2">${c.notes}</textarea>
           </div>
+          ${currentCustomer ? `
+            <div class="who-option${c.saveToAccount ? " checked" : ""}" style="margin-top:0.6rem;">
+              <input type="checkbox" id="save-${c.id}" data-save-account="${c.id}" ${c.saveToAccount ? "checked" : ""}>
+              <label for="save-${c.id}">Save to my account for next time</label>
+            </div>
+          ` : ""}
         </div>
       `).join("");
 
-      childrenListEl.querySelectorAll("input, textarea").forEach(el => {
+      childrenListEl.querySelectorAll("input[data-field], textarea[data-field]").forEach(el => {
         el.addEventListener("input", () => {
           const child = children.find(c => c.id === Number(el.dataset.child));
           if (child) child[el.dataset.field] = el.value;
+        });
+      });
+      childrenListEl.querySelectorAll("[data-save-account]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const child = children.find(c => c.id === Number(cb.dataset.saveAccount));
+          if (child) child.saveToAccount = cb.checked;
+          cb.closest(".child-block").querySelector(".who-option").classList.toggle("checked", cb.checked);
         });
       });
       childrenListEl.querySelectorAll("[data-remove]").forEach(btn => {
@@ -797,14 +1268,14 @@ const IS_DEMO = true;
     }
 
     function addChild() {
-      children.push({ id: nextChildId++, name: "", age: "", notes: "" });
+      children.push({ id: nextChildId++, name: "", age: "", notes: "", saveToAccount: false });
       renderChildren();
       updateSummary();
     }
 
     function updateSummary() {
       const adults = bookSelf ? 1 : 0;
-      const kids = children.length;
+      const kids = children.length + selectedFamilyMemberIds.size;
       const totalPeople = adults + kids;
       const total = totalPeople * activity.price;
 
@@ -829,11 +1300,18 @@ const IS_DEMO = true;
       const on = childCheckbox.checked;
       childOption.classList.toggle("checked", on);
       childrenBlock.classList.toggle("hidden", !on);
-      if (on && children.length === 0) addChild();
-      if (!on) { children = []; renderChildren(); }
+      if (on) {
+        if (currentCustomer && currentCustomer.familyMembers.length) {
+          renderSavedFamily();
+        } else if (children.length === 0) {
+          addChild();
+        }
+      }
+      if (!on) { children = []; selectedFamilyMemberIds = new Set(); renderChildren(); }
       updateSummary();
     });
 
+    if (currentCustomer && currentCustomer.familyMembers.length) renderSavedFamily();
     addChildBtn.addEventListener("click", addChild);
     updateSummary();
 
@@ -882,6 +1360,7 @@ const IS_DEMO = true;
       const contactName = document.getElementById("contactName").value.trim();
       const contactPhone = document.getElementById("contactPhone").value.trim();
       const contactEmail = document.getElementById("contactEmail").value.trim();
+      const selfNotes = document.getElementById("selfNotes").value.trim();
 
       if (!contactName || !contactPhone || (!isStaffMode && !contactEmail)) {
         msg.textContent = "Please fill in the required contact details.";
@@ -893,20 +1372,30 @@ const IS_DEMO = true;
         msg.className = "form-message error";
         return;
       }
-      if (!bookSelf && children.length === 0) {
+      if (!bookSelf && children.length === 0 && selectedFamilyMemberIds.size === 0) {
         msg.textContent = "Please select who you're booking a place for.";
         msg.className = "form-message error";
         return;
       }
       if (children.some(c => !c.name.trim() || !c.age.trim())) {
-        msg.textContent = "Please fill in each child's name and age, or remove any unused child sections.";
+        msg.textContent = "Please fill in each child's name and age, or remove any unused sections.";
         msg.className = "form-message error";
         return;
       }
 
+      // Build the attendee list: the contact themself (if booking a place),
+      // any ticked saved family members, plus any newly typed-in children.
+      // This drives both the headcount (for pricing and capacity) and what
+      // shows on the admin dashboard.
       const attendees = [];
-      if (bookSelf) attendees.push({ type: "adult", name: contactName });
+      if (bookSelf) attendees.push({ type: "adult", name: contactName, notes: selfNotes || null });
+      if (currentCustomer) {
+        currentCustomer.familyMembers
+          .filter(m => selectedFamilyMemberIds.has(m.id))
+          .forEach(m => attendees.push({ type: "child", name: m.name, age: m.age || "", notes: m.notes || null }));
+      }
       children.forEach(c => attendees.push({ type: "child", name: c.name.trim(), age: c.age.trim(), notes: c.notes.trim() || null }));
+
       const attendeeCount = attendees.length;
       const totalAmount = attendeeCount * activity.price;
 
@@ -920,25 +1409,115 @@ const IS_DEMO = true;
       submitBtn.textContent = "Processing...";
 
       try {
-        // ── DEMO MOCK ──────────────────────────────────────────
-        // The real version tokenises the card via Square, verifies
-        // the buyer, calls createSquarePayment, then writes the
-        // booking + increments a capacity counter (by attendeeCount,
-        // not just 1) inside a Firestore transaction — see
-        // activity-booking.html for that code. None of that exists
-        // yet for Northwood, so this just fakes a short delay and a
-        // successful result instead, but still respects capacity
-        // against the in-memory session data so "Full" behaves the
-        // same way it would for real.
-        if (session.capacity != null && (session.booked + attendeeCount) > session.capacity) {
-          throw new Error("FULL");
+        let squarePaymentId = null;
+
+        // Only charge via Square if this is an online payment.
+        if (effectivePaymentMethod === "online") {
+          if (!card) {
+            msg.textContent = "Payment system isn't ready yet. Please wait a moment and try again.";
+            msg.className = "form-message error";
+            return;
+          }
+          const result = await card.tokenize();
+          if (result.status !== "OK") {
+            msg.textContent = result.errors ? result.errors.map(e => e.message).join(", ") : "Invalid card details.";
+            msg.className = "form-message error";
+            return;
+          }
+
+          const amountPence = Math.round(totalAmount * 100);
+          const payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
+          const verificationResult = await payments.verifyBuyer(result.token, {
+            amount: totalAmount.toFixed(2),
+            currencyCode: "GBP",
+            intent: "CHARGE",
+            billingContact: { email: contactEmail }
+          });
+          if (!verificationResult || !verificationResult.token) {
+            msg.textContent = "Payment verification failed. Please try again.";
+            msg.className = "form-message error";
+            return;
+          }
+
+          const bookingRef = generateIdempotencyKey();
+          const idempotencyKey = generateIdempotencyKey();
+          const response = await fetch(CHARGE_FUNCTION_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sourceId: result.token,
+              verificationToken: verificationResult.token,
+              registrationId: bookingRef,
+              idempotencyKey,
+              amountMoney: { amount: amountPence, currency: "GBP" },
+              bookingType: "activity",
+              description: `Northwood ${activity.name} - ${contactName} (${attendeeCount}) - ${session.dow} ${session.date}`,
+              buyerEmail: contactEmail
+            })
+          });
+          const chargeResult = await response.json();
+          if (!response.ok || !chargeResult.success) {
+            msg.textContent = chargeResult.error || "Payment failed. Please try again.";
+            msg.className = "form-message error";
+            return;
+          }
+          squarePaymentId = chargeResult.paymentId;
         }
 
-        await new Promise(resolve => setTimeout(resolve, 700));
+        // Capacity-safe write: a transaction reads the live booked count
+        // for this session (kept in a small counter doc, since sessions
+        // themselves live in this file's config, not Firestore), checks
+        // it can fit the WHOLE group (attendeeCount, not just 1), then
+        // writes the booking. This protects against a staff desk booking
+        // and an online booking landing on the last spot(s) at once.
+        const counterRef = db.collection("activitySessionCounts").doc(selectedSessionId);
+        const bookingRef = db.collection("activityBookings").doc();
 
-        const squarePaymentId = effectivePaymentMethod === "online" ? "demo_" + Date.now() : null;
-        session.booked += attendeeCount; // reflect immediately in this session's list, same as the real page
-        // ── END DEMO MOCK ──────────────────────────────────────
+        await db.runTransaction(async (tx) => {
+          const counterDoc = await tx.get(counterRef);
+          const currentBooked = counterDoc.exists ? (counterDoc.data().booked || 0) : 0;
+
+          if (session.capacity != null && (currentBooked + attendeeCount) > session.capacity) {
+            throw new Error("FULL");
+          }
+
+          tx.set(counterRef, { booked: currentBooked + attendeeCount }, { merge: true });
+          tx.set(bookingRef, {
+            activityId: activity.id,
+            activityName: activity.name,
+            provider: activity.provider,
+            sessionId: session.id,
+            sessionDate: session.date,
+            sessionTime: session.time,
+            contactName,
+            contactEmail: contactEmail || null,
+            contactPhone,
+            attendees,
+            attendeeCount,
+            paymentMethod: effectivePaymentMethod,
+            paymentStatus: effectivePaymentStatus,
+            amount: totalAmount,
+            squarePaymentId: squarePaymentId || null,
+            bookedBy: isStaffMode ? "staff" : "public",
+            staffEmail: isStaffMode ? auth.currentUser.email : null,
+            customerId: currentCustomer ? currentCustomer.uid : null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+
+        // Persist any newly typed-in children that were ticked "save to my
+        // account" — so next visit they show up in the saved-family picker
+        // instead of needing retyping.
+        if (currentCustomer) {
+          const toSave = children.filter(c => c.saveToAccount);
+          if (toSave.length) {
+            toSave.forEach(c => currentCustomer.familyMembers.push({
+              id: "fam_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+              name: c.name.trim(), age: c.age.trim(), notes: c.notes.trim() || null
+            }));
+            await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers });
+          }
+        }
 
         msg.textContent = effectivePaymentMethod === "online"
           ? "🎉 Booking confirmed — payment received!"
@@ -946,6 +1525,7 @@ const IS_DEMO = true;
         msg.className = "form-message success";
         document.getElementById("bookingForm").reset();
         selectedSessionId = null;
+        session.booked += attendeeCount; // reflect immediately in this session's list
         setTimeout(() => renderPanel(), 1200);
 
       } catch (err) {
@@ -964,7 +1544,7 @@ const IS_DEMO = true;
   }
 
   renderTabs();
-  setDemoView(true); // start in Staff view, as requested
+  renderPanel();
 
 })();
 </script>

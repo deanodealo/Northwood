@@ -3,12 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Activities Admin (DEMO) | Northwood Stadium</title>
+<title>Activities Admin | Northwood Stadium</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <meta name="theme-color" content="#0B0B0C">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
 <style>
 .hidden { display: none !important; }
@@ -86,20 +90,27 @@
 .mark-collected-btn:hover { background: var(--c-black); color: white; }
 
 .aa-empty { text-align: center; font-family: var(--f-body); color: var(--c-grey-mid); padding: 3rem 1rem; }
-
-.demo-banner {
-  background: #FFF3CD; color: #7A5B00; text-align: center;
-  font-family: var(--f-body); font-size: 0.82rem; font-weight: 600;
-  padding: 0.6rem 1rem;
-}
 </style>
 </head>
 <body class="aa-page">
 
-<div class="demo-banner">⚠️ DEMO MODE — showing made-up sample bookings, not connected to Firebase. Nothing here is real or saved.</div>
+<!-- ── Login gate ─────────────────────────────────────────── -->
+<div class="aa-login-wrap" id="loginWrap">
+  <h1>Staff Login</h1>
+  <div style="margin-bottom:1rem;">
+    <label style="display:block;font-family:var(--f-body);font-size:0.78rem;font-weight:600;margin-bottom:0.35rem;">Email</label>
+    <input type="email" id="adminEmail" style="width:100%;padding:0.65rem;border:1.5px solid rgba(0,0,0,0.15);border-radius:8px;font-family:var(--f-body);">
+  </div>
+  <div style="margin-bottom:1rem;">
+    <label style="display:block;font-family:var(--f-body);font-size:0.78rem;font-weight:600;margin-bottom:0.35rem;">Password</label>
+    <input type="password" id="adminPassword" style="width:100%;padding:0.65rem;border:1.5px solid rgba(0,0,0,0.15);border-radius:8px;font-family:var(--f-body);">
+  </div>
+  <div id="loginMsg" style="font-family:var(--f-body);font-size:0.82rem;color:#8C0000;margin-bottom:1rem;"></div>
+  <button id="loginBtn" style="width:100%;padding:0.8rem;background:var(--c-red);color:white;border:none;border-radius:8px;font-family:var(--f-display);font-weight:700;text-transform:uppercase;cursor:pointer;">Log In</button>
+</div>
 
 <!-- ── Dashboard ──────────────────────────────────────────── -->
-<div class="aa-wrap" id="dashboardWrap">
+<div class="aa-wrap hidden" id="dashboardWrap">
   <div class="aa-header">
     <div class="aa-title">Activities Admin</div>
     <div style="display:flex; gap:0.6rem;">
@@ -147,28 +158,71 @@ const ACTIVITY_LOOKUP = {
   funetics: { name: "Funetics",                 provider: "Funetics Coaching", price: 5 }
 };
 
-/* ─────────────────────────────────────────────────────────
-   DEMO DATA — this replaces the real Firestore query below.
-   Nothing here is real; it exists purely so you can see the
-   dashboard's layout, filters, and CSV export working before
-   the real Firebase project + bookings exist. Swap this whole
-   block back out for the Firestore version once that's live
-   (see activities-admin.html for the real version).
-   ───────────────────────────────────────────────────────── */
-const DEMO_BOOKINGS = [
-  { id: "d1", activityId: "wnf", activityName: "Wednesday Night Football", provider: "Northwood Stadium", sessionDate: "2026-08-12", sessionTime: "7:00pm – 8:00pm", contactName: "Josh Bennett", contactEmail: "josh.b@example.com", contactPhone: "07700 900111", attendees: [{ type: "adult", name: "Josh Bennett" }], attendeeCount: 1, amount: 6, paymentMethod: "online", paymentStatus: "paid", bookedBy: "public", staffEmail: null },
-  { id: "d2", activityId: "wnf", activityName: "Wednesday Night Football", provider: "Northwood Stadium", sessionDate: "2026-08-12", sessionTime: "7:00pm – 8:00pm", contactName: "Callum Ridgeway", contactEmail: "callum.r@example.com", contactPhone: "07700 900222", attendees: [{ type: "adult", name: "Callum Ridgeway" }], attendeeCount: 1, amount: 6, paymentMethod: "venue", paymentStatus: "unpaid", bookedBy: "public", staffEmail: null },
-  { id: "d3", activityId: "wnf", activityName: "Wednesday Night Football", provider: "Northwood Stadium", sessionDate: "2026-08-19", sessionTime: "7:00pm – 8:00pm", contactName: "Aaron Whitfield", contactEmail: null, contactPhone: "07700 900333", attendees: [{ type: "adult", name: "Aaron Whitfield" }], attendeeCount: 1, amount: 6, paymentMethod: "venue", paymentStatus: "collected", bookedBy: "staff", staffEmail: "reception@northwoodstadium.co.uk" },
-  { id: "d4", activityId: "funetics", activityName: "Funetics", provider: "Funetics Coaching", sessionDate: "2026-08-13", sessionTime: "4:30pm – 5:30pm", contactName: "Sarah Carter", contactEmail: "sarah.carter@example.com", contactPhone: "07700 900444", attendees: [{ type: "child", name: "Millie Carter", age: "5", notes: "First session" }], attendeeCount: 1, amount: 5, paymentMethod: "online", paymentStatus: "paid", bookedBy: "public", staffEmail: null },
-  { id: "d5", activityId: "funetics", activityName: "Funetics", provider: "Funetics Coaching", sessionDate: "2026-08-13", sessionTime: "4:30pm – 5:30pm", contactName: "Rachel Deakin", contactEmail: "rachel.d@example.com", contactPhone: "07700 900555", attendees: [{ type: "child", name: "Oscar Deakin", age: "7", notes: null }, { type: "child", name: "Ivy Deakin", age: "5", notes: "Nut allergy — carries own EpiPen" }], attendeeCount: 2, amount: 10, paymentMethod: "venue", paymentStatus: "unpaid", bookedBy: "public", staffEmail: null },
-  { id: "d6", activityId: "funetics", activityName: "Funetics", provider: "Funetics Coaching", sessionDate: "2026-08-20", sessionTime: "4:30pm – 5:30pm", contactName: "Mark Bould", contactEmail: null, contactPhone: "07700 900666", attendees: [{ type: "child", name: "Freya Bould", age: "6", notes: null }], attendeeCount: 1, amount: 5, paymentMethod: "venue", paymentStatus: "collected", bookedBy: "staff", staffEmail: "reception@northwoodstadium.co.uk" },
-  { id: "d7", activityId: "wnf", activityName: "Wednesday Night Football", provider: "Northwood Stadium", sessionDate: "2026-08-19", sessionTime: "7:00pm – 8:00pm", contactName: "Dan Perkins", contactEmail: "dan.p@example.com", contactPhone: "07700 900777", attendees: [{ type: "adult", name: "Dan Perkins" }], attendeeCount: 1, amount: 6, paymentMethod: "online", paymentStatus: "paid", bookedBy: "public", staffEmail: null },
-  { id: "d8", activityId: "wnf", activityName: "Wednesday Night Football", provider: "Northwood Stadium", sessionDate: "2026-08-26", sessionTime: "7:00pm – 8:00pm", contactName: "Priya Shah", contactEmail: "priya.s@example.com", contactPhone: "07700 900888", attendees: [{ type: "adult", name: "Priya Shah", notes: null }, { type: "child", name: "Ravi Shah", age: "15", notes: "Plays in goal" }], attendeeCount: 2, amount: 12, paymentMethod: "online", paymentStatus: "paid", bookedBy: "public", staffEmail: null }
-];
+const firebaseConfig = {
+  apiKey: "AIzaSyDGSOa02_oHzRARoisN-gA3zzsTTC9U9QQ",
+  authDomain: "northwood-stadium.firebaseapp.com",
+  projectId: "northwood-stadium",
+  storageBucket: "northwood-stadium.firebasestorage.app",
+  messagingSenderId: "146149087447",
+  appId: "1:146149087447:web:f5882364c8a525fa8c3892",
+  measurementId: "G-JKT47Q28YV"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
 (function () {
 
+  const loginWrap = document.getElementById("loginWrap");
   const dashboardWrap = document.getElementById("dashboardWrap");
+
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+    const msg = document.getElementById("loginMsg");
+    msg.textContent = "";
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      // onAuthStateChanged below does the staff check and reacts accordingly.
+    } catch (err) {
+      msg.textContent = "Login failed — check your details.";
+    }
+  });
+  document.getElementById("logoutBtn").addEventListener("click", () => auth.signOut());
+
+  // Once customer accounts exist in the same Firebase project, "logged in"
+  // is no longer enough to mean "staff" — a customer account signing in
+  // here must NOT see the dashboard. Staff are added by hand to the
+  // `staff` collection (doc ID = their Auth UID) at the same time their
+  // login is created in Firebase Console → Authentication. This checks
+  // that record exists before granting access, and signs out + shows an
+  // error for anyone who logs in successfully but isn't on that list.
+  auth.onAuthStateChanged(async user => {
+    if (!user) {
+      loginWrap.classList.remove("hidden");
+      dashboardWrap.classList.add("hidden");
+      return;
+    }
+
+    const msg = document.getElementById("loginMsg");
+    try {
+      const staffDoc = await db.collection("staff").doc(user.uid).get();
+      if (!staffDoc.exists) {
+        msg.textContent = "This account isn't set up for staff access.";
+        await auth.signOut();
+        return;
+      }
+    } catch (err) {
+      console.error("Staff check failed:", err);
+      msg.textContent = "Couldn't verify staff access. Please try again.";
+      await auth.signOut();
+      return;
+    }
+
+    loginWrap.classList.add("hidden");
+    dashboardWrap.classList.remove("hidden");
+    loadBookings();
+  });
 
   let allBookings = [];
   let statusFilter = "all";
@@ -176,18 +230,12 @@ const DEMO_BOOKINGS = [
   let dateFilter = "all";
   let searchTerm = "";
 
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    alert("This is the demo version — there's no real login/logout here. Refresh the page to reset the sample data.");
-  });
-
   async function loadBookings() {
-    // Real version: db.collection("activityBookings").orderBy("createdAt","desc").get()
-    allBookings = DEMO_BOOKINGS.map(b => ({ ...b }));
+    const snapshot = await db.collection("activityBookings").orderBy("createdAt", "desc").get();
+    allBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     renderActivityFilters();
     renderAll();
   }
-
-  loadBookings();
 
   function renderActivityFilters() {
     const activityIds = [...new Set(allBookings.map(b => b.activityId))];
@@ -201,7 +249,7 @@ const DEMO_BOOKINGS = [
     filtersEl.querySelectorAll(".aa-filter-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         activityFilter = btn.dataset.activity;
-        dateFilter = "all";
+        dateFilter = "all"; // switching activity clears any date pick — dates don't carry across activities
         filtersEl.querySelectorAll(".aa-filter-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         renderDateFilter();
@@ -210,6 +258,9 @@ const DEMO_BOOKINGS = [
     });
   }
 
+  // Date dropdown only makes sense once a single activity is chosen —
+  // "12 Aug" means something different for WNF vs Funetics, so with
+  // "All Activities" selected it stays hidden.
   function renderDateFilter() {
     const row = document.getElementById("dateFilterRow");
     const select = document.getElementById("dateFilterSelect");
@@ -262,6 +313,10 @@ const DEMO_BOOKINGS = [
     });
   }
 
+  // Bookings now cover a whole group (contact + any children), not just
+  // one name, so these helpers pull out a consistent display/search/count
+  // regardless of whether a booking used the old single-name shape or the
+  // newer contact+attendees shape.
   function attendeeCountOf(b) {
     return b.attendeeCount || 1;
   }
@@ -301,6 +356,9 @@ const DEMO_BOOKINGS = [
     renderBookingsList();
   }
 
+  // Shown only once a specific activity + specific date are both picked —
+  // e.g. "WNF, 12 Aug" — answers "how many booked on, who, and income"
+  // for that exact session in one glance, on top of the full list below.
   function renderSessionSummary() {
     const grid = document.getElementById("sessionSummaryGrid");
     if (activityFilter === "all" || dateFilter === "all") { grid.innerHTML = ""; return; }
@@ -325,6 +383,14 @@ const DEMO_BOOKINGS = [
     `;
   }
 
+  // Both the top summary boxes and the per-activity breakdown grid
+  // should respect whichever activity tab is currently selected —
+  // "WNF" selected should never show Funetics numbers anywhere on
+  // the page. Date filter is deliberately NOT applied here: these
+  // two sections show "this activity, all dates" totals, while the
+  // red-bordered session summary box above covers the specific-date
+  // case. Keeping them separate avoids the date filter making these
+  // look like they're showing something different to what they say.
   function scopedToActivity() {
     return activityFilter === "all"
       ? allBookings
@@ -382,10 +448,10 @@ const DEMO_BOOKINGS = [
 
     listEl.querySelectorAll(".mark-collected-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
-        // Real version: db.collection("activityBookings").doc(id).update({ paymentStatus: "collected" })
-        const booking = allBookings.find(b => b.id === btn.dataset.id);
-        if (booking) booking.paymentStatus = "collected";
-        renderAll();
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+        await db.collection("activityBookings").doc(btn.dataset.id).update({ paymentStatus: "collected" });
+        await loadBookings();
       });
     });
   }
