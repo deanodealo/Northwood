@@ -109,10 +109,10 @@
       border-radius: 8px; cursor: pointer;
     }
     .account-modal-tab.active { background: var(--c-red); border-color: var(--c-red); color: white; }
-    .account-field { margin-bottom: 14px; }
+    .account-field { margin-bottom: 14px; min-width: 0; }
     .account-field label { display: block; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--c-black); margin-bottom: 5px; }
     .account-field input {
-      width: 100%; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 15px;
+      width: 100%; min-width: 0; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 15px;
       color: var(--c-black); background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1);
       border-radius: 8px; box-sizing: border-box;
     }
@@ -123,6 +123,13 @@
     .family-member-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .family-member-header span { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--c-grey-mid); }
     .family-remove-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: #8C0000; background: none; border: none; cursor: pointer; }
+    .family-save-btn {
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: white;
+      background: var(--c-red); border: none; border-radius: 8px; padding: 10px 18px; cursor: pointer;
+    }
+    .family-save-btn:hover { opacity: 0.9; }
+    .family-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .family-saved-msg { display: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: #1B5E20; }
     .form-message-error { background: #FBEAEA; color: #8C0000; }
     .form-message-success { background: #E8F5E9; color: #1B5E20; }
   </style>
@@ -242,7 +249,7 @@
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Wednesday Night Football</h3>
               <p class="activity-feature-body">Wednesday Night Football is our elite indoor coaching programme focused on technical development, game intelligence, and confidence on the ball. Delivered in partnership with professional coaches, sessions are structured, high-energy, and suitable for players of all abilities. A great pathway for those looking to improve and enjoy the game.</p>
-              <a href="activitybookingdemo.html" class="activity-feature-link">Click here to book your session →</a>
+              <a href="activitybooking.html" class="activity-feature-link">Click here to book your session →</a>
             </div>
           </div>
 
@@ -253,7 +260,7 @@
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Funetics</h3>
               <p class="activity-feature-body">Funetics is a fun, engaging multi-skills session designed to build children's confidence, coordination, and love for physical activity. Through games and structured activities, kids develop fundamental movement skills in a positive, supportive environment. Perfect for younger children starting their sporting journey.</p>
-              <a href="activitybookingdemo.html" class="activity-feature-link">Click here to view availability and secure your place →</a>
+              <a href="activitybooking.html" class="activity-feature-link">Click here to view availability and secure your place →</a>
             </div>
           </div>
 
@@ -592,6 +599,10 @@
     const addFamilyMemberBtn = document.getElementById("addFamilyMemberBtn");
     const familyModalMsg = document.getElementById("familyModalMsg");
 
+    function fullFamilyName(m) {
+      return [m.name, m.surname].filter(Boolean).join(" ").trim();
+    }
+
     function renderFamilyModal() {
       const members = (currentCustomer && currentCustomer.familyMembers) || [];
       familyMembersListEl.innerHTML = members.length ? members.map((m, idx) => {
@@ -603,22 +614,59 @@
             <button type="button" class="family-remove-btn" data-remove-member="${m.id}">Remove</button>
           </div>
           <div style="display:flex; gap:12px;">
-            <div class="account-field" style="flex:1;"><label>Name</label><input type="text" data-field="name" data-member="${m.id}" value="${m.name}"></div>
-            <div class="account-field" style="flex:1;"><label>Date of Birth</label><input type="date" data-field="dob" data-member="${m.id}" value="${m.dob || ""}"></div>
+            <div class="account-field" style="flex:1;"><label>First Name</label><input type="text" data-field="name" data-member="${m.id}" value="${m.name}"></div>
+            <div class="account-field" style="flex:1;"><label>Surname</label><input type="text" data-field="surname" data-member="${m.id}" value="${m.surname || ""}"></div>
           </div>
+          <div class="account-field"><label>Date of Birth</label><input type="date" data-field="dob" data-member="${m.id}" value="${m.dob || ""}"></div>
           <div class="account-field"><label>Notes (dietary, medical, or other instructions)</label><textarea data-field="notes" data-member="${m.id}" rows="2" style="width:100%; padding:11px 13px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--c-grey-light); border:1.5px solid rgba(0,0,0,0.1); border-radius:8px; box-sizing:border-box;">${m.notes || ""}</textarea></div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <button type="button" class="family-save-btn" data-save-member="${m.id}">Save</button>
+            <span class="family-saved-msg" data-saved-msg="${m.id}">✓ Saved</span>
+          </div>
         </div>
       `;
       }).join("") : '<p style="font-family:\'DM Sans\',sans-serif; font-size:14px; color:var(--c-grey-mid);">No family members saved yet.</p>';
 
+      // Fields just update the in-memory record as you type — nothing is
+      // written to the database until "Save" is clicked, so the save
+      // action is explicit with a clear confirmation, rather than a
+      // silent save-on-blur with no visible feedback.
       familyMembersListEl.querySelectorAll("input, textarea").forEach(el => {
-        el.addEventListener("change", async () => {
+        el.addEventListener("input", () => {
           const member = currentCustomer.familyMembers.find(m => m.id === el.dataset.member);
           if (member) member[el.dataset.field] = el.value;
-          await saveFamilyMembers();
-          renderFamilyModal(); // refresh the "Age X" header if DOB changed
         });
       });
+
+      familyMembersListEl.querySelectorAll("[data-save-member]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.saveMember;
+          const member = currentCustomer.familyMembers.find(m => m.id === id);
+          if (!member || !member.name.trim()) {
+            familyModalMsg.textContent = "Please enter at least a first name before saving.";
+            familyModalMsg.style.display = "block";
+            familyModalMsg.className = "form-message-error";
+            return;
+          }
+          familyModalMsg.style.display = "none";
+          btn.disabled = true;
+          btn.textContent = "Saving...";
+
+          member.isNew = false;
+          await saveFamilyMembers();
+
+          btn.disabled = false;
+          btn.textContent = "Save";
+          const savedMsg = familyMembersListEl.querySelector(`[data-saved-msg="${id}"]`);
+          if (savedMsg) savedMsg.style.display = "inline";
+
+          // Re-render after a short pause so the "Saved" confirmation is
+          // actually visible before the header refreshes to show the
+          // recalculated age.
+          setTimeout(() => renderFamilyModal(), 1600);
+        });
+      });
+
       familyMembersListEl.querySelectorAll("[data-remove-member]").forEach(btn => {
         btn.addEventListener("click", async () => {
           currentCustomer.familyMembers = currentCustomer.familyMembers.filter(m => m.id !== btn.dataset.removeMember);
@@ -630,7 +678,8 @@
 
     async function saveFamilyMembers() {
       try {
-        await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers });
+        const toPersist = currentCustomer.familyMembers.filter(m => !m.isNew);
+        await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: toPersist });
       } catch (err) {
         familyModalMsg.textContent = "Couldn't save — please try again.";
         familyModalMsg.style.display = "block";
@@ -638,9 +687,10 @@
       }
     }
 
-    addFamilyMemberBtn.addEventListener("click", async () => {
-      currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", dob: "", notes: "" });
-      await saveFamilyMembers();
+    addFamilyMemberBtn.addEventListener("click", () => {
+      // Not written to Firestore yet — only becomes a real saved record
+      // once its own Save button is used.
+      currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", surname: "", dob: "", notes: "", isNew: true });
       renderFamilyModal();
     });
 
@@ -649,7 +699,12 @@
       renderFamilyModal();
       familyModalOverlay.style.display = "flex";
     });
-    familyModalClose.addEventListener("click", () => familyModalOverlay.style.display = "none");
+    familyModalClose.addEventListener("click", () => {
+      // Drop any newly-added-but-never-saved entries so they don't linger
+      // as ghost unsaved rows if the modal's reopened this session.
+      currentCustomer.familyMembers = currentCustomer.familyMembers.filter(m => !m.isNew);
+      familyModalOverlay.style.display = "none";
+    });
     familyModalOverlay.addEventListener("click", (e) => {
       if (e.target === familyModalOverlay) familyModalOverlay.style.display = "none";
     });

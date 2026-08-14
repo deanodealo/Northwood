@@ -244,7 +244,8 @@
 .session-option-tag.full-tag { background: #F3D9D9; color: #8C0000; }
 
 /* — form fields (shared look) — */
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; min-width: 0; }
+.form-row > div { min-width: 0; }
 .form-row.single { grid-template-columns: 1fr; }
 @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
 
@@ -258,6 +259,7 @@ label {
 }
 input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], input[type="date"], textarea {
   width: 100%;
+  min-width: 0;
   padding: 0.7rem 0.85rem;
   font-family: var(--f-body);
   font-size: 0.92rem;
@@ -375,6 +377,17 @@ input:focus, textarea:focus { outline: none; border-color: var(--activity-accent
   color: #8C0000; background: none; border: none; cursor: pointer; padding: 0.2rem 0.4rem;
 }
 .child-remove-btn:hover { text-decoration: underline; }
+.family-save-btn {
+  font-family: var(--f-body); font-size: 0.82rem; font-weight: 700;
+  color: white; background: var(--c-red); border: none; border-radius: 8px;
+  padding: 0.6rem 1.1rem; cursor: pointer;
+}
+.family-save-btn:hover { opacity: 0.9; }
+.family-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.family-saved-msg {
+  display: none; align-items: center; gap: 0.3rem;
+  font-family: var(--f-body); font-size: 0.82rem; font-weight: 600; color: #1B5E20;
+}
 .add-child-btn {
   width: 100%; padding: 0.75rem; margin-bottom: 1.25rem;
   font-family: var(--f-body); font-size: 0.85rem; font-weight: 600;
@@ -920,6 +933,10 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
   const addFamilyMemberBtn = document.getElementById("addFamilyMemberBtn");
   const familyModalMsg = document.getElementById("familyModalMsg");
 
+  function fullFamilyName(m) {
+    return [m.name, m.surname].filter(Boolean).join(" ").trim();
+  }
+
   function renderFamilyModal() {
     const members = (currentCustomer && currentCustomer.familyMembers) || [];
     familyMembersListEl.innerHTML = members.length ? members.map((m, idx) => {
@@ -932,30 +949,70 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         </div>
         <div class="form-row">
           <div>
-            <label>Name</label>
+            <label>First Name</label>
             <input type="text" data-field="name" data-member="${m.id}" value="${m.name}">
           </div>
           <div>
-            <label>Date of Birth</label>
-            <input type="date" data-field="dob" data-member="${m.id}" value="${m.dob || ""}">
+            <label>Surname</label>
+            <input type="text" data-field="surname" data-member="${m.id}" value="${m.surname || ""}">
           </div>
+        </div>
+        <div class="form-row single">
+          <label>Date of Birth</label>
+          <input type="date" data-field="dob" data-member="${m.id}" value="${m.dob || ""}">
         </div>
         <div class="form-row single">
           <label>Notes (dietary, medical, or other instructions)</label>
           <textarea data-field="notes" data-member="${m.id}" rows="2">${m.notes || ""}</textarea>
         </div>
+        <div style="display:flex; align-items:center; gap:0.9rem; margin-top:0.4rem;">
+          <button type="button" class="family-save-btn" data-save-member="${m.id}">Save</button>
+          <span class="family-saved-msg" data-saved-msg="${m.id}">✓ Saved</span>
+        </div>
       </div>
     `;
     }).join("") : '<p style="font-family:var(--f-body); font-size:0.85rem; color:var(--c-grey-mid);">No family members saved yet.</p>';
 
+    // Fields just update the in-memory record as you type — nothing is
+    // written to the database until "Save" is clicked. This makes the
+    // save action explicit and gives a clear confirmation, rather than
+    // silently saving on every blur with no visible feedback.
     familyMembersListEl.querySelectorAll("input, textarea").forEach(el => {
-      el.addEventListener("change", async () => {
+      el.addEventListener("input", () => {
         const member = currentCustomer.familyMembers.find(m => m.id === el.dataset.member);
         if (member) member[el.dataset.field] = el.value;
-        await saveFamilyMembers();
-        renderFamilyModal(); // refresh the "Age X" header if DOB changed
       });
     });
+
+    familyMembersListEl.querySelectorAll("[data-save-member]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.saveMember;
+        const member = currentCustomer.familyMembers.find(m => m.id === id);
+        if (!member || !member.name.trim()) {
+          familyModalMsg.textContent = "Please enter at least a first name before saving.";
+          familyModalMsg.className = "form-message error";
+          return;
+        }
+        familyModalMsg.textContent = "";
+        familyModalMsg.className = "form-message";
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        member.isNew = false; // it's being persisted now, so no longer "unsaved"
+        await saveFamilyMembers();
+
+        btn.disabled = false;
+        btn.textContent = "Save";
+        const savedMsg = familyMembersListEl.querySelector(`[data-saved-msg="${id}"]`);
+        if (savedMsg) savedMsg.style.display = "inline-flex";
+
+        // Re-render after a short pause (not immediately) so the "Saved"
+        // confirmation is actually visible before the header refreshes
+        // to show the recalculated age.
+        setTimeout(() => renderFamilyModal(), 1600);
+      });
+    });
+
     familyMembersListEl.querySelectorAll("[data-remove-member]").forEach(btn => {
       btn.addEventListener("click", async () => {
         currentCustomer.familyMembers = currentCustomer.familyMembers.filter(m => m.id !== btn.dataset.removeMember);
@@ -967,16 +1024,21 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
   async function saveFamilyMembers() {
     try {
-      await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers });
+      // Only ever persist members that have actually been saved at least
+      // once — a freshly added, still-blank block shouldn't hit the
+      // database until its own Save button is used.
+      const toPersist = currentCustomer.familyMembers.filter(m => !m.isNew);
+      await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: toPersist });
     } catch (err) {
       familyModalMsg.textContent = "Couldn't save — please try again.";
       familyModalMsg.className = "form-message error";
     }
   }
 
-  addFamilyMemberBtn.addEventListener("click", async () => {
-    currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", dob: "", notes: "" });
-    await saveFamilyMembers();
+  addFamilyMemberBtn.addEventListener("click", () => {
+    // Not written to Firestore yet — just added to the on-screen list.
+    // It only becomes a real saved record once its Save button is used.
+    currentCustomer.familyMembers.push({ id: "fam_" + Date.now(), name: "", surname: "", dob: "", notes: "", isNew: true });
     renderFamilyModal();
   });
 
@@ -986,6 +1048,9 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     familyModalOverlay.classList.remove("hidden");
   });
   familyModalClose.addEventListener("click", () => {
+    // Drop any newly-added-but-never-saved entries so they don't linger
+    // in this session as ghost unsaved rows if the modal's reopened.
+    currentCustomer.familyMembers = currentCustomer.familyMembers.filter(m => !m.isNew);
     familyModalOverlay.classList.add("hidden");
     renderPanel(); // reflect any family member edits in the booking form
   });
@@ -1222,7 +1287,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         return `
         <div class="who-option${selectedFamilyMemberIds.has(m.id) ? " checked" : ""}" data-saved-member="${m.id}">
           <input type="checkbox" ${selectedFamilyMemberIds.has(m.id) ? "checked" : ""} data-saved-checkbox="${m.id}">
-          <label>${m.name}${age !== null ? " (" + age + ")" : ""}</label>
+          <label>${fullFamilyName(m)}${age !== null ? " (" + age + ")" : ""}</label>
         </div>
       `;
       }).join("");
@@ -1246,13 +1311,17 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           </div>
           <div class="form-row">
             <div>
-              <label>Child's Name <span class="required-mark">*</span></label>
+              <label>Child's First Name <span class="required-mark">*</span></label>
               <input type="text" class="child-name" data-field="name" data-child="${c.id}" value="${c.name}">
             </div>
             <div>
-              <label>Child's Date of Birth <span class="required-mark">*</span></label>
-              <input type="date" class="child-dob" data-field="dob" data-child="${c.id}" value="${c.dob}">
+              <label>Surname</label>
+              <input type="text" class="child-surname" data-field="surname" data-child="${c.id}" value="${c.surname || ""}">
             </div>
+          </div>
+          <div class="form-row single">
+            <label>Child's Date of Birth <span class="required-mark">*</span></label>
+            <input type="date" class="child-dob" data-field="dob" data-child="${c.id}" value="${c.dob}">
           </div>
           <div class="form-row single">
             <label>Notes (dietary, medical, or other instructions)</label>
@@ -1290,7 +1359,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     }
 
     function addChild() {
-      children.push({ id: nextChildId++, name: "", dob: "", notes: "", saveToAccount: false });
+      children.push({ id: nextChildId++, name: "", surname: "", dob: "", notes: "", saveToAccount: false });
       renderChildren();
       updateSummary();
     }
@@ -1417,9 +1486,9 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       if (currentCustomer) {
         currentCustomer.familyMembers
           .filter(m => selectedFamilyMemberIds.has(m.id))
-          .forEach(m => attendees.push({ type: "child", name: m.name, age: calcAge(m.dob), dob: m.dob || null, notes: m.notes || null }));
+          .forEach(m => attendees.push({ type: "child", name: fullFamilyName(m), age: calcAge(m.dob), dob: m.dob || null, notes: m.notes || null }));
       }
-      children.forEach(c => attendees.push({ type: "child", name: c.name.trim(), age: calcAge(c.dob), dob: c.dob, notes: c.notes.trim() || null }));
+      children.forEach(c => attendees.push({ type: "child", name: [c.name.trim(), c.surname.trim()].filter(Boolean).join(" "), age: calcAge(c.dob), dob: c.dob, notes: c.notes.trim() || null }));
 
       const attendeeCount = attendees.length;
       const totalAmount = attendeeCount * activity.price;
@@ -1538,9 +1607,9 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           if (toSave.length) {
             toSave.forEach(c => currentCustomer.familyMembers.push({
               id: "fam_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
-              name: c.name.trim(), dob: c.dob, notes: c.notes.trim() || null
+              name: c.name.trim(), surname: c.surname.trim(), dob: c.dob, notes: c.notes.trim() || null
             }));
-            await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers });
+            await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers.filter(m => !m.isNew) });
           }
         }
 
