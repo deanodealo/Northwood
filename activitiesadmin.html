@@ -43,6 +43,28 @@
 
 /* — filter tabs — */
 .aa-filters { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+.aa-filter-field {
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.aa-filter-field label {
+  font-family: var(--f-body); font-size: 0.8rem; font-weight: 600; color: var(--c-black);
+  white-space: nowrap; flex-shrink: 0;
+}
+.aa-filter-field input, .aa-filter-field select {
+  font-family: var(--f-body); font-size: 0.85rem; padding: 0.5rem 0.8rem;
+  border: 1.5px solid rgba(0,0,0,0.12); border-radius: 20px; min-width: 0;
+}
+.aa-filter-field .aa-age-input { width: 70px; flex-shrink: 0; }
+.aa-filter-field .aa-age-dash { color: var(--c-grey-mid); flex-shrink: 0; }
+.aa-filter-field select { min-width: 140px; }
+@media (max-width: 700px) {
+  .aa-filters { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+  .aa-filter-field { width: 100%; }
+  .aa-filter-field select { flex: 1; min-width: 0; }
+  .aa-filter-field input[type="text"], .aa-filter-field input[type="number"]:not(.aa-age-input) { flex: 1; min-width: 0; }
+  .aa-filter-field.aa-search { margin-left: 0; }
+  .aa-search input { width: 100%; }
+}
 .aa-filter-btn {
   font-family: var(--f-body); font-weight: 600; font-size: 0.82rem;
   padding: 0.5rem 1rem; border-radius: 20px; border: 1.5px solid rgba(0,0,0,0.12);
@@ -169,39 +191,51 @@
     <div class="summary-grid" id="customerSummaryGrid"></div>
 
     <div class="aa-filters">
-      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Activity:</label>
-      <select id="activityFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
-        <option value="all">All Activities</option>
-      </select>
+      <div class="aa-filter-field">
+        <label>Activity:</label>
+        <select id="activityFilterSelect">
+          <option value="all">All Activities</option>
+        </select>
+      </div>
     </div>
     <div class="aa-filters">
-      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Postcode starts with:</label>
-      <input type="text" id="postcodeFilterInput" placeholder="e.g. ST1" style="width:100px; font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
-      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Age:</label>
-      <input type="number" id="ageMinInput" placeholder="Min" style="width:60px; font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
-      <span style="font-family:var(--f-body);color:var(--c-grey-mid);">–</span>
-      <input type="number" id="ageMaxInput" placeholder="Max" style="width:60px; font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+      <div class="aa-filter-field">
+        <label>Postcode starts with:</label>
+        <input type="text" id="postcodeFilterInput" placeholder="e.g. ST1">
+      </div>
+      <div class="aa-filter-field">
+        <label>Age:</label>
+        <input type="number" id="ageMinInput" placeholder="Min" class="aa-age-input">
+        <span class="aa-age-dash">–</span>
+        <input type="number" id="ageMaxInput" placeholder="Max" class="aa-age-input">
+      </div>
     </div>
     <div class="aa-filters">
-      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Family members:</label>
-      <select id="familyFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
-        <option value="all">Any</option>
-        <option value="yes">Has family members</option>
-        <option value="no">No family members</option>
-      </select>
-      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Booking history:</label>
-      <select id="bookedFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
-        <option value="all">Any</option>
-        <option value="yes">Has booked an activity</option>
-        <option value="no">Never booked</option>
-      </select>
-      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Account:</label>
-      <select id="accountFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
-        <option value="all">Any</option>
-        <option value="registered">Registered account</option>
-        <option value="guest">Guest only (no account)</option>
-      </select>
-      <div class="aa-search"><input type="text" id="customerSearchInput" placeholder="Search name/email..."></div>
+      <div class="aa-filter-field">
+        <label>Family members:</label>
+        <select id="familyFilterSelect">
+          <option value="all">Any</option>
+          <option value="yes">Has family members</option>
+          <option value="no">No family members</option>
+        </select>
+      </div>
+      <div class="aa-filter-field">
+        <label>Booking history:</label>
+        <select id="bookedFilterSelect">
+          <option value="all">Any</option>
+          <option value="yes">Has booked an activity</option>
+          <option value="no">Never booked</option>
+        </select>
+      </div>
+      <div class="aa-filter-field">
+        <label>Account:</label>
+        <select id="accountFilterSelect">
+          <option value="all">Any</option>
+          <option value="registered">Registered account</option>
+          <option value="guest">Guest only (no account)</option>
+        </select>
+      </div>
+      <div class="aa-filter-field aa-search"><input type="text" id="customerSearchInput" placeholder="Search name/email..."></div>
     </div>
 
     <div id="customersList"></div>
