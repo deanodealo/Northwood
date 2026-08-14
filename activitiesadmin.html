@@ -114,32 +114,98 @@
   <div class="aa-header">
     <div class="aa-title">Activities Admin</div>
     <div style="display:flex; gap:0.6rem;">
-      <button id="exportCsvBtn">Export CSV</button>
       <button id="logoutBtn">Log Out</button>
     </div>
   </div>
 
-  <div class="summary-grid" id="summaryGrid"></div>
-
-  <div class="aa-filters" id="activityFilters"></div>
-
-  <div class="aa-filters hidden" id="dateFilterRow">
-    <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Session date:</label>
-    <select id="dateFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.5rem 0.8rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;"></select>
+  <div class="aa-filters" style="margin-bottom:2rem;">
+    <button class="aa-filter-btn active" id="mainTabLive" style="font-size:0.9rem;">Live Bookings</button>
+    <button class="aa-filter-btn" id="mainTabCustomers" style="font-size:0.9rem;">Customers</button>
   </div>
 
-  <div class="breakdown-grid" id="sessionSummaryGrid"></div>
+  <!-- ══════════════ LIVE BOOKINGS TAB ══════════════ -->
+  <div id="liveTabContent">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+      <button id="exportCsvBtn">Export CSV</button>
+    </div>
 
-  <div class="aa-section-title">Bookings</div>
-  <div class="aa-filters">
-    <button class="aa-filter-btn active" data-status="all">All</button>
-    <button class="aa-filter-btn" data-status="unpaid">Unpaid</button>
-    <button class="aa-filter-btn" data-status="paid">Paid Online</button>
-    <button class="aa-filter-btn" data-status="collected">Collected at Venue</button>
-    <div class="aa-search"><input type="text" id="searchInput" placeholder="Search name..."></div>
+    <div class="summary-grid" id="summaryGrid"></div>
+
+    <div class="aa-filters" id="activityFilters"></div>
+
+    <div class="aa-filters hidden" id="dateFilterRow">
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Session date:</label>
+      <select id="dateFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.5rem 0.8rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;"></select>
+    </div>
+
+    <div class="breakdown-grid" id="sessionSummaryGrid"></div>
+
+    <div class="aa-section-title">Bookings</div>
+    <div class="aa-filters">
+      <button class="aa-filter-btn active" data-status="all">All</button>
+      <button class="aa-filter-btn" data-status="unpaid">Unpaid</button>
+      <button class="aa-filter-btn" data-status="paid">Paid Online</button>
+      <button class="aa-filter-btn" data-status="collected">Collected at Venue</button>
+    </div>
+    <div class="aa-filters">
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">From:</label>
+      <input type="date" id="dateFromInput" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">To:</label>
+      <input type="date" id="dateToInput" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+      <div class="aa-search"><input type="text" id="searchInput" placeholder="Search name..."></div>
+    </div>
+
+    <div id="bookingsList"></div>
   </div>
 
-  <div id="bookingsList"></div>
+  <!-- ══════════════ CUSTOMERS TAB ══════════════ -->
+  <div id="customersTabContent" class="hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.6rem;">
+      <button id="loadFullHistoryBtn" style="background:white; border:1.5px solid var(--c-red); color:var(--c-red); font-weight:600;">Load Full History</button>
+      <button id="exportCustomersCsvBtn">Export CSV</button>
+    </div>
+    <p id="historyStatusNote" style="font-family:var(--f-body); font-size:0.78rem; color:var(--c-grey-mid); margin-bottom:1.25rem;"></p>
+
+    <div class="summary-grid" id="customerSummaryGrid"></div>
+
+    <div class="aa-filters">
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Activity:</label>
+      <select id="activityFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+        <option value="all">All Activities</option>
+      </select>
+    </div>
+    <div class="aa-filters">
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Postcode starts with:</label>
+      <input type="text" id="postcodeFilterInput" placeholder="e.g. ST1" style="width:100px; font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Age:</label>
+      <input type="number" id="ageMinInput" placeholder="Min" style="width:60px; font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+      <span style="font-family:var(--f-body);color:var(--c-grey-mid);">–</span>
+      <input type="number" id="ageMaxInput" placeholder="Max" style="width:60px; font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+    </div>
+    <div class="aa-filters">
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Family members:</label>
+      <select id="familyFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+        <option value="all">Any</option>
+        <option value="yes">Has family members</option>
+        <option value="no">No family members</option>
+      </select>
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Booking history:</label>
+      <select id="bookedFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+        <option value="all">Any</option>
+        <option value="yes">Has booked an activity</option>
+        <option value="no">Never booked</option>
+      </select>
+      <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">Account:</label>
+      <select id="accountFilterSelect" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
+        <option value="all">Any</option>
+        <option value="registered">Registered account</option>
+        <option value="guest">Guest only (no account)</option>
+      </select>
+      <div class="aa-search"><input type="text" id="customerSearchInput" placeholder="Search name/email..."></div>
+    </div>
+
+    <div id="customersList"></div>
+  </div>
 </div>
 
 <script>
@@ -224,18 +290,92 @@ const auth = firebase.auth();
     loadBookings();
   });
 
+  // ── Main tab switching (Live Bookings / Customers) ─────────
+  const liveTabContent = document.getElementById("liveTabContent");
+  const customersTabContent = document.getElementById("customersTabContent");
+  const mainTabLive = document.getElementById("mainTabLive");
+  const mainTabCustomers = document.getElementById("mainTabCustomers");
+  let customersLoaded = false;
+
+  mainTabLive.addEventListener("click", () => {
+    mainTabLive.classList.add("active");
+    mainTabCustomers.classList.remove("active");
+    liveTabContent.classList.remove("hidden");
+    customersTabContent.classList.add("hidden");
+  });
+  mainTabCustomers.addEventListener("click", async () => {
+    mainTabCustomers.classList.add("active");
+    mainTabLive.classList.remove("active");
+    customersTabContent.classList.remove("hidden");
+    liveTabContent.classList.add("hidden");
+    updateHistoryBtn();
+    if (!customersLoaded) {
+      customersLoaded = true;
+      await loadCustomers();
+    }
+  });
+
   let allBookings = [];
   let statusFilter = "all";
   let activityFilter = "all";
   let dateFilter = "all";
+  let dateFrom = "";
+  let dateTo = "";
   let searchTerm = "";
 
+  // Login stays fast by only pulling in a recent window of bookings —
+  // last 60 days plus anything upcoming — rather than every booking ever
+  // made. That's enough for the day-to-day Live Bookings tab. The
+  // Customers tab is where "Load Full History" lives instead, since
+  // accurate all-time totals (e.g. "how much has Funetics earned") need
+  // the complete dataset, not just the recent window.
+  const DEFAULT_WINDOW_DAYS = 60;
+  let fullHistoryLoaded = false;
+
+  function defaultCutoffDate() {
+    const d = new Date();
+    d.setDate(d.getDate() - DEFAULT_WINDOW_DAYS);
+    return d.toISOString().slice(0, 10);
+  }
+
   async function loadBookings() {
-    const snapshot = await db.collection("activityBookings").orderBy("createdAt", "desc").get();
+    const snapshot = await db.collection("activityBookings")
+      .where("sessionDate", ">=", defaultCutoffDate())
+      .orderBy("sessionDate", "asc")
+      .get();
     allBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    fullHistoryLoaded = false;
     renderActivityFilters();
     renderAll();
   }
+
+  async function loadFullHistory() {
+    const btn = document.getElementById("loadFullHistoryBtn");
+    btn.disabled = true;
+    btn.textContent = "Loading...";
+    const snapshot = await db.collection("activityBookings").orderBy("createdAt", "desc").get();
+    allBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    fullHistoryLoaded = true;
+    updateHistoryBtn();
+    renderActivityFilters();
+    renderAll();
+    renderCustomersAll();
+  }
+
+  function updateHistoryBtn() {
+    const btn = document.getElementById("loadFullHistoryBtn");
+    const note = document.getElementById("historyStatusNote");
+    btn.disabled = fullHistoryLoaded;
+    btn.textContent = fullHistoryLoaded ? "✓ Full history loaded" : "Load Full History";
+    note.textContent = fullHistoryLoaded
+      ? "Showing all-time data — totals below are complete."
+      : `Showing bookings from the last ${DEFAULT_WINDOW_DAYS} days + upcoming. Click "Load Full History" for accurate all-time totals (e.g. total revenue per activity).`;
+  }
+
+  document.getElementById("loadFullHistoryBtn").addEventListener("click", loadFullHistory);
+
+  document.getElementById("dateFromInput").addEventListener("change", (e) => { dateFrom = e.target.value; renderAll(); });
+  document.getElementById("dateToInput").addEventListener("change", (e) => { dateTo = e.target.value; renderAll(); });
 
   function renderActivityFilters() {
     const activityIds = [...new Set(allBookings.map(b => b.activityId))];
@@ -307,6 +447,8 @@ const auth = firebase.auth();
     return allBookings.filter(b => {
       if (activityFilter !== "all" && b.activityId !== activityFilter) return false;
       if (dateFilter !== "all" && b.sessionDate !== dateFilter) return false;
+      if (dateFrom && b.sessionDate && b.sessionDate < dateFrom) return false;
+      if (dateTo && b.sessionDate && b.sessionDate > dateTo) return false;
       if (statusFilter !== "all" && b.paymentStatus !== statusFilter) return false;
       if (searchTerm && !bookingSearchText(b).includes(searchTerm)) return false;
       return true;
@@ -345,7 +487,7 @@ const auth = firebase.auth();
   }
 
   function bookingSearchText(b) {
-    const names = [bookingContactName(b)];
+    const names = [bookingContactName(b), bookingContactEmail(b)];
     if (b.attendees) b.attendees.forEach(a => names.push(a.name));
     return names.join(" ").toLowerCase();
   }
@@ -478,6 +620,251 @@ const auth = firebase.auth();
     const a = document.createElement("a");
     a.href = url;
     a.download = `northwood-activity-bookings-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  /* ═══════════════════════════════════════════════════════════
+     CUSTOMERS TAB
+     ───────────────────────────────────────────────────────────
+     Everyone who's registered an account (from the `customers`
+     collection) — separate from bookings, since someone can be
+     registered without ever having booked anything. Cross-references
+     against allBookings (already loaded) to work out who's actually
+     booked something, so that doesn't need a second Firestore read.
+     ═══════════════════════════════════════════════════════════ */
+
+  let allCustomers = [];
+  let postcodeFilter = "";
+  let ageMinFilter = "";
+  let ageMaxFilter = "";
+  let familyFilter = "all";
+  let bookedFilter = "all";
+  let accountFilter = "all";
+  let activityNameFilter = "all";
+  let customerSearchTerm = "";
+
+  // Uses the canonical ACTIVITY_LOOKUP list rather than whatever happens
+  // to appear in allBookings, so an activity still shows as a filter
+  // option even if none of its bookings fall inside the current load
+  // window (e.g. before "Load Full History" is clicked).
+  const activityFilterSelectEl = document.getElementById("activityFilterSelect");
+  activityFilterSelectEl.innerHTML = `<option value="all">All Activities</option>` +
+    Object.entries(ACTIVITY_LOOKUP).map(([id, a]) => `<option value="${id}">${a.name}</option>`).join("");
+  activityFilterSelectEl.addEventListener("change", (e) => { activityNameFilter = e.target.value; renderCustomersAll(); });
+
+  // Same DOB → age calculation used on the booking page and homepage —
+  // ages are never stored as a plain number, so this keeps them accurate
+  // regardless of how long ago someone registered.
+  function calcAge(dobStr) {
+    if (!dobStr) return null;
+    const dob = new Date(dobStr + "T00:00:00");
+    if (isNaN(dob)) return null;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+    return age;
+  }
+
+  async function loadCustomers() {
+    const listEl = document.getElementById("customersList");
+    listEl.innerHTML = '<div class="aa-empty">Loading customers…</div>';
+    try {
+      const snapshot = await db.collection("customers").get();
+      allCustomers = snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+    } catch (err) {
+      console.error("Failed to load customers:", err);
+      listEl.innerHTML = '<div class="aa-empty">Couldn\'t load customers — check the Firestore rules allow staff to read the customers collection.</div>';
+      return;
+    }
+    renderCustomersAll();
+  }
+
+  // Builds ONE row per person, whether or not they ever registered an
+  // account — matched by email against every booking they've made. This
+  // is what makes a guest who's booked 3 times under the same email show
+  // up as one person with a real history, not three anonymous bookings.
+  //
+  // Caveat worth knowing: email is the only thing bookings and accounts
+  // share reliably, so this only works if the same email was used each
+  // time. Someone booking under two different email addresses will show
+  // as two separate people here — there's no way to know they're the
+  // same person from the data alone.
+  //
+  // When an activity filter is active, each customer's booking stats
+  // (count, revenue, activities list) are scoped to JUST that activity —
+  // so "Total Revenue" in the summary reflects that activity's actual
+  // earnings, not the customer's spend across everything they've booked.
+  // Customers with no bookings for the selected activity are left out
+  // entirely rather than shown with zeroed-out stats.
+  function buildCustomerRows() {
+    const byEmail = {};
+    allBookings.forEach(b => {
+      const email = (b.contactEmail || "").trim().toLowerCase();
+      if (!email) return; // staff bookings sometimes have no email — can't group these
+      if (!byEmail[email]) byEmail[email] = [];
+      byEmail[email].push(b);
+    });
+
+    const rows = [];
+    const coveredEmails = new Set();
+
+    function scopedBookings(all) {
+      return activityNameFilter === "all" ? all : all.filter(b => b.activityId === activityNameFilter);
+    }
+
+    // Registered accounts first, merged with any bookings under their email
+    // (including ones made as a guest before they registered, or while
+    // logged out).
+    allCustomers.forEach(c => {
+      const email = (c.email || "").trim().toLowerCase();
+      const allBookingsForEmail = byEmail[email] || [];
+      if (email) coveredEmails.add(email);
+
+      const scoped = scopedBookings(allBookingsForEmail);
+      if (activityNameFilter !== "all" && scoped.length === 0) return; // didn't book this activity — exclude
+
+      rows.push(buildRow({ uid: c.uid, name: c.name, email: c.email, phone: c.phone, postcode: c.postcode, dob: c.dob, familyMembers: c.familyMembers || [] }, scoped, true));
+    });
+
+    // Everyone else who's booked but never created an account — one row
+    // per distinct email, using their most recent booking for name/phone
+    // (allBookings is already ordered newest-first).
+    Object.keys(byEmail).forEach(email => {
+      if (coveredEmails.has(email)) return;
+      const allBookingsForEmail = byEmail[email];
+      const scoped = scopedBookings(allBookingsForEmail);
+      if (activityNameFilter !== "all" && scoped.length === 0) return;
+
+      const latest = allBookingsForEmail[0];
+      rows.push(buildRow({ uid: null, name: latest.contactName, email: latest.contactEmail, phone: latest.contactPhone, postcode: null, dob: null, familyMembers: [] }, scoped, false));
+    });
+
+    return rows;
+  }
+
+  function buildRow(profile, bookings, isRegistered) {
+    const paidBookings = bookings.filter(b => b.paymentStatus === "paid" || b.paymentStatus === "collected");
+    return {
+      ...profile,
+      isRegistered,
+      bookings,
+      bookingCount: bookings.length,
+      totalSpent: paidBookings.reduce((sum, b) => sum + (b.amount || 0), 0),
+      activities: [...new Set(bookings.map(b => b.activityName).filter(Boolean))]
+    };
+  }
+
+  function filteredCustomers() {
+    return buildCustomerRows().filter(c => {
+      const age = calcAge(c.dob);
+      const familyCount = (c.familyMembers || []).length;
+
+      if (postcodeFilter && !(c.postcode || "").toUpperCase().startsWith(postcodeFilter.toUpperCase())) return false;
+      if (ageMinFilter !== "" && (age === null || age < Number(ageMinFilter))) return false;
+      if (ageMaxFilter !== "" && (age === null || age > Number(ageMaxFilter))) return false;
+      if (familyFilter === "yes" && familyCount === 0) return false;
+      if (familyFilter === "no" && familyCount > 0) return false;
+      if (bookedFilter === "yes" && c.bookingCount === 0) return false;
+      if (bookedFilter === "no" && c.bookingCount > 0) return false;
+      if (accountFilter === "registered" && !c.isRegistered) return false;
+      if (accountFilter === "guest" && c.isRegistered) return false;
+      if (customerSearchTerm) {
+        const text = `${c.name || ""} ${c.email || ""}`.toLowerCase();
+        if (!text.includes(customerSearchTerm)) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderCustomersAll() {
+    renderCustomerSummary();
+    renderCustomersList();
+  }
+
+  function renderCustomerSummary() {
+    const rows = filteredCustomers();
+    const withFamily = rows.filter(c => (c.familyMembers || []).length > 0).length;
+    const haveBooked = rows.filter(c => c.bookingCount > 0).length;
+    const totalRevenue = rows.reduce((sum, c) => sum + c.totalSpent, 0);
+    const revenueLabel = activityNameFilter === "all"
+      ? "Total Revenue"
+      : `${(ACTIVITY_LOOKUP[activityNameFilter] && ACTIVITY_LOOKUP[activityNameFilter].name) || activityNameFilter} Revenue`;
+
+    document.getElementById("customerSummaryGrid").innerHTML = `
+      <div class="summary-box"><h2>${rows.length}</h2><p>Matching People</p></div>
+      <div class="summary-box"><h2>${withFamily}</h2><p>With Family Members</p></div>
+      <div class="summary-box"><h2>${haveBooked}</h2><p>Have Booked</p></div>
+      <div class="summary-box"><h2>£${totalRevenue.toFixed(2)}</h2><p>${revenueLabel}</p></div>
+    `;
+  }
+
+  function renderCustomersList() {
+    const rows = filteredCustomers();
+    const listEl = document.getElementById("customersList");
+
+    if (!rows.length) {
+      listEl.innerHTML = '<div class="aa-empty">No customers match this filter.</div>';
+      return;
+    }
+
+    listEl.innerHTML = rows.map(c => {
+      const age = calcAge(c.dob);
+      const family = c.familyMembers || [];
+      const familyNames = family.map(m => {
+        const fAge = calcAge(m.dob);
+        return `${[m.name, m.surname].filter(Boolean).join(" ")}${fAge !== null ? " (" + fAge + ")" : ""}`;
+      }).join(", ");
+      const activityLine = c.activities.length ? c.activities.join(", ") : "—";
+
+      return `
+        <div class="booking-row">
+          <div class="booking-row-main">
+            <strong>${c.name || "—"}</strong>${age !== null ? " · Age " + age : ""}${c.postcode ? " · " + c.postcode : ""}
+            <div class="booking-row-meta">${c.email || ""}${c.phone ? " · " + c.phone : ""}</div>
+            <div class="booking-row-meta">${c.bookingCount} booking${c.bookingCount === 1 ? "" : "s"} · £${c.totalSpent.toFixed(2)} spent · ${activityLine}</div>
+            ${family.length ? `<div class="booking-row-meta">Family: ${familyNames}</div>` : ""}
+          </div>
+          <div class="booking-row-actions">
+            <span class="booking-tag ${c.isRegistered ? "tag-collected" : "tag-unpaid"}">${c.isRegistered ? "Registered" : "Guest Only"}</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+
+  document.getElementById("postcodeFilterInput").addEventListener("input", (e) => { postcodeFilter = e.target.value.trim(); renderCustomersAll(); });
+  document.getElementById("ageMinInput").addEventListener("input", (e) => { ageMinFilter = e.target.value; renderCustomersAll(); });
+  document.getElementById("ageMaxInput").addEventListener("input", (e) => { ageMaxFilter = e.target.value; renderCustomersAll(); });
+  document.getElementById("familyFilterSelect").addEventListener("change", (e) => { familyFilter = e.target.value; renderCustomersAll(); });
+  document.getElementById("bookedFilterSelect").addEventListener("change", (e) => { bookedFilter = e.target.value; renderCustomersAll(); });
+  document.getElementById("accountFilterSelect").addEventListener("change", (e) => { accountFilter = e.target.value; renderCustomersAll(); });
+  document.getElementById("customerSearchInput").addEventListener("input", (e) => { customerSearchTerm = e.target.value.trim().toLowerCase(); renderCustomersAll(); });
+
+  document.getElementById("exportCustomersCsvBtn").addEventListener("click", () => {
+    const rows = filteredCustomers();
+    const header = ["Name","Email","Phone","Postcode","Age","Family Members","Account","Bookings","Total Spent","Activities Booked"];
+    const csvRows = [header.join(",")];
+
+    rows.forEach(c => {
+      const age = calcAge(c.dob);
+      const family = c.familyMembers || [];
+      const familyNames = family.map(m => [m.name, m.surname].filter(Boolean).join(" ")).join("; ");
+      const line = [
+        c.name || "", c.email || "", c.phone || "", c.postcode || "",
+        age !== null ? age : "", familyNames, c.isRegistered ? "Registered" : "Guest Only",
+        c.bookingCount, c.totalSpent.toFixed(2), c.activities.join("; ")
+      ].map(v => `"${String(v || "").replace(/"/g, '""')}"`);
+      csvRows.push(line.join(","));
+    });
+
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `northwood-customers-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   });
