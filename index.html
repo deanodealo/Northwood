@@ -71,7 +71,7 @@
 
       <div id="accountRegisterPane" style="display:none;">
         <div class="account-field"><label>Your Name</label><input type="text" id="regName" autocomplete="name"></div>
-        <div style="display:flex; gap:12px;">
+        <div class="two-col-row">
           <div class="account-field" style="flex:1;"><label>Date of Birth</label><input type="date" id="regDob"></div>
           <div class="account-field" style="flex:1;"><label>Postcode</label><input type="text" id="regPostcode" placeholder="e.g. ST1 6PA"></div>
         </div>
@@ -110,6 +110,14 @@
     }
     .account-modal-tab.active { background: var(--c-red); border-color: var(--c-red); color: white; }
     .account-field { margin-bottom: 14px; min-width: 0; }
+    .two-col-row { display: flex; gap: 12px; }
+    /* Native date inputs render inconsistently in a side-by-side layout on
+       mobile Safari (they can ignore width constraints entirely), so on
+       narrow screens these stack vertically instead — avoids fighting
+       the browser's own date-picker rendering. */
+    @media (max-width: 480px) {
+      .two-col-row { flex-direction: column; gap: 0; }
+    }
     .account-field label { display: block; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--c-black); margin-bottom: 5px; }
     .account-field input {
       width: 100%; min-width: 0; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 15px;
@@ -613,7 +621,7 @@
             <span>Family Member ${idx + 1}${currentAge !== null ? " · Age " + currentAge : ""}</span>
             <button type="button" class="family-remove-btn" data-remove-member="${m.id}">Remove</button>
           </div>
-          <div style="display:flex; gap:12px;">
+          <div class="two-col-row">
             <div class="account-field" style="flex:1;"><label>First Name</label><input type="text" data-field="name" data-member="${m.id}" value="${m.name}"></div>
             <div class="account-field" style="flex:1;"><label>Surname</label><input type="text" data-field="surname" data-member="${m.id}" value="${m.surname || ""}"></div>
           </div>
