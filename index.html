@@ -242,37 +242,18 @@
       </div>
     </section>
 
-    <!-- ============ ACTIVITIES (modular, add/remove per activity) ============ -->
+    <!-- ============ ACTIVITIES (loaded live from Firestore — see the
+         loadHomeActivities script near the bottom of this file. Nothing
+         to edit here: add, edit or disable an activity from
+         manage-activities.html and it appears/disappears here
+         automatically.) ============ -->
     <section class="section activities" id="activities">
       <div class="section-inner">
         <p class="section-eyebrow">— What's On</p>
         <h2 class="section-title">Activities For Everyone</h2>
 
-        <div class="activities-features">
-
-          <!-- Copy this whole block to add/remove a live activity. Swap the "blue" class for a different theme colour per activity. -->
-          <div class="activity-feature blue">
-            <div class="activity-feature-media">
-              <img src="images/WNF.jpg" alt="Wednesday Night Football">
-            </div>
-            <div class="activity-feature-content">
-              <h3 class="activity-feature-title">Wednesday Night Football</h3>
-              <p class="activity-feature-body">Wednesday Night Football is our elite indoor coaching programme focused on technical development, game intelligence, and confidence on the ball. Delivered in partnership with professional coaches, sessions are structured, high-energy, and suitable for players of all abilities. A great pathway for those looking to improve and enjoy the game.</p>
-              <a href="activitybooking.html" class="activity-feature-link">Click here to book your session →</a>
-            </div>
-          </div>
-
-          <div class="activity-feature purple">
-            <div class="activity-feature-media">
-              <img src="images/funectics.jpeg" alt="Funetics">
-            </div>
-            <div class="activity-feature-content">
-              <h3 class="activity-feature-title">Funetics</h3>
-              <p class="activity-feature-body">Funetics is a fun, engaging multi-skills session designed to build children's confidence, coordination, and love for physical activity. Through games and structured activities, kids develop fundamental movement skills in a positive, supportive environment. Perfect for younger children starting their sporting journey.</p>
-              <a href="activitybooking.html" class="activity-feature-link">Click here to view availability and secure your place →</a>
-            </div>
-          </div>
-
+        <div class="activities-features" id="activitiesFeatures">
+          <p style="color:var(--c-grey-mid); font-family:var(--f-body);">Loading activities…</p>
         </div>
       </div>
     </section>
@@ -800,6 +781,74 @@
       // nothing left for the nav link to do.
       accountNavLink.style.display = "none";
     });
+  })();
+  </script>
+
+  <script>
+  /* ═══════════════════════════════════════════════════════════
+     HOME PAGE ACTIVITIES — reads the same "activities" Firestore
+     collection as activitybooking.html and manage-activities.html
+     (uses the `db` already initialised above), filtered to active
+     ones only. Nothing here needs editing to add, change or hide
+     an activity — that all happens in manage-activities.html and
+     appears here automatically on next page load.
+     ═══════════════════════════════════════════════════════════ */
+  (function () {
+    const featuresEl = document.getElementById("activitiesFeatures");
+
+    function escAttr(str) {
+      return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    }
+
+    // Activities store a single accent hex (e.g. "#2563EB") rather than a
+    // light/dark pair, so the darker gradient stop these feature blocks
+    // use is computed here rather than needing a second colour field in
+    // the admin form.
+    function darkenHex(hex, factor) {
+      const h = (hex || "#0B0B0C").replace("#", "");
+      const r = Math.round(parseInt(h.substring(0, 2), 16) * factor);
+      const g = Math.round(parseInt(h.substring(2, 4), 16) * factor);
+      const b = Math.round(parseInt(h.substring(4, 6), 16) * factor);
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function renderHomeActivities(activities) {
+      if (!activities.length) {
+        featuresEl.innerHTML = '<p style="color:var(--c-grey-mid); font-family:var(--f-body);">No activities are currently open for booking — check back soon.</p>';
+        return;
+      }
+      featuresEl.innerHTML = activities.map(a => {
+        const dark = darkenHex(a.accentColor, 0.45);
+        const media = a.imageUrl ? `<img src="${a.imageUrl}" alt="${escAttr(a.name)}">` : "";
+        return `
+          <div class="activity-feature" style="background: linear-gradient(135deg, ${dark} 0%, ${a.accentColor} 60%, ${dark} 100%);">
+            <div class="activity-feature-media">${media}</div>
+            <div class="activity-feature-content">
+              <h3 class="activity-feature-title">${a.name}</h3>
+              <p class="activity-feature-body">${a.description || ""}</p>
+              <a href="activitybooking.html" class="activity-feature-link">Click here to book your session →</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Live listener rather than a one-time load — there's no form on this
+    // page to protect, so it's always safe to just redraw the moment staff
+    // add, edit, or disable an activity in Manage Activities. Anyone already
+    // on the homepage (including a "saved to home screen" visit) sees the
+    // change within moments, no refresh needed.
+    function startHomeActivitiesListener() {
+      db.collection("activities").orderBy("createdAt", "asc").onSnapshot(snap => {
+        const activities = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(a => a.status === "active");
+        renderHomeActivities(activities);
+      }, err => {
+        console.error("Activities listener error:", err);
+        featuresEl.innerHTML = '<p style="color:var(--c-grey-mid); font-family:var(--f-body);">Couldn\'t load activities right now — please refresh the page.</p>';
+      });
+    }
+
+    startHomeActivitiesListener();
   })();
   </script>
 

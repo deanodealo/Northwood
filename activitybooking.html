@@ -37,6 +37,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
 }
 .ab-topbar a.ab-logo-link { display: flex; align-items: center; }
 .ab-topbar img { height: 34px; }
@@ -159,8 +161,36 @@
   box-shadow: 0 2px 16px rgba(0,0,0,0.05);
   padding: 2.25rem;
   border-top: 4px solid var(--activity-accent, var(--c-red));
+  overflow: hidden;
 }
 @media (max-width: 600px) { .ab-card { padding: 1.5rem; } }
+
+/* Optional photo, uploaded by staff via Manage Activities — bleeds to the
+   card's edges and sits just below the accent stripe. Cards with no image
+   simply skip this element, so nothing changes for activities without one.
+   max-width: none overrides the site-wide `img { max-width: 100%; }` reset
+   in styles.css, which otherwise clips the deliberately-oversized `width`
+   below back down to 100% of the padded content area — the actual bug
+   behind the photo not reaching the card's edges. aspect-ratio (rather
+   than a fixed height) keeps the crop proportional at any card width
+   instead of jumping between two fixed heights at the mobile breakpoint.
+   16:9 is a deliberately gentle crop (a wider ratio like 12:5 cuts away
+   a lot more of the photo's height, which is what was clipping the
+   bottom off) and object-position stays centred so neither the top nor
+   the bottom of the photo systematically loses more than the other. */
+.ab-card-image {
+  display: block;
+  width: calc(100% + 4.5rem);
+  max-width: none;
+  margin: -2.25rem -2.25rem 1.5rem;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+  background: var(--c-grey-light);
+}
+@media (max-width: 600px) {
+  .ab-card-image { width: calc(100% + 3rem); margin: -1.5rem -1.5rem 1.25rem; }
+}
 
 .ab-activity-head { margin-bottom: 1.75rem; }
 .ab-activity-name {
@@ -438,7 +468,11 @@ input:focus, textarea:focus { outline: none; border-color: var(--activity-accent
 
   <div class="ab-staff-banner hidden" id="staffBanner">
     <span><strong>Staff Mode is ON</strong> — bookings made now will be recorded as taken at the venue.</span>
-    <button id="staffLogoutBtn">Log out</button>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <a href="manage-activities.html" class="ab-staff-link">Manage Activities</a>
+      <a href="activitiesadmin.html" class="ab-staff-link">Bookings Admin</a>
+      <button id="staffLogoutBtn">Log out</button>
+    </div>
   </div>
 
   <div class="ab-staff-banner hidden" id="customerBanner" style="background:var(--activity-accent, var(--c-blue));">
@@ -550,98 +584,24 @@ input:focus, textarea:focus { outline: none; border-color: var(--activity-accent
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   ACTIVITIES CONFIG
-   ───────────────────────────────────────────────────────────
-   Each entry in this array is ONE bookable activity. Unlike the
-   camp page (one config = one camp = whole page), activities all
-   run side by side, so this is a LIST — add, edit, or remove
-   entries freely and the tabs above update automatically.
+   ACTIVITIES — now loaded live from Firestore (collection:
+   "activities"), NOT hardcoded here. This means staff can add,
+   edit, hide, or delete an activity themselves from the Manage
+   Activities page (manage-activities.html) without anyone
+   touching this file.
 
-   TO ADD A NEW ACTIVITY:
-     Copy an existing block, give it a new unique `id`, and fill
-     in its own name/provider/price/sessions. That's it — nothing
-     else on the page needs to change.
+   Each activity document has: name, provider, accentColor (a
+   hex colour), description, venue, ageNote, price, priceLabel,
+   payAtVenue, status ("active"/"inactive"), imageUrl (optional),
+   and a `sessions` array (id, date, dow, time, capacity — NOT
+   booked; live booked counts are read separately from the
+   `activitySessionCounts` collection, same one the booking
+   transaction below already uses, so "Full"/"Available" is
+   always accurate for every visitor, not just whoever is
+   currently on the page).
 
-   TO REMOVE / PAUSE AN ACTIVITY:
-     Set `status: "inactive"` to hide it immediately without
-     deleting it (handy if it's coming back next term), or delete
-     the whole block if it's gone for good.
-
-   SESSIONS:
-     Each activity has its own `sessions` list — its own dates,
-     times, and capacity. A session with a past `date` is
-     automatically hidden from the picker (same auto-expiry logic
-     as the camp page), so you can add a term's worth of dates up
-     front and not think about it again until it needs topping up.
-
-   accentColor:
-     Reuses the "Activity theme colours" already defined in
-     styles.css (--c-blue, --c-purple, --c-charcoal, --c-fb-blue)
-     so each activity's tab/card looks distinct without needing
-     new CSS. Pick any of those, or add a new pair to styles.css
-     if you need another colour.
-
-   payAtVenue:
-     Set to false for an activity that must always be paid online
-     in advance (e.g. limited capacity, non-refundable). Leave
-     true (default) to let people choose either payment method.
+   See loadActivities() further down for the fetch itself.
    ═══════════════════════════════════════════════════════════ */
-
-const ACTIVITIES_CONFIG = [
-  {
-    id: "wnf",
-    name: "Wednesday Night Football",
-    provider: "Northwood Stadium",
-    accentColor: "var(--c-blue)",
-    description: "5-a-side, all abilities welcome. Turn up and play, or book ahead to guarantee your spot.",
-    venue: "3G Pitch, Northwood Stadium",
-    ageNote: "16+",
-    price: 6,
-    priceLabel: "£6 per session",
-    payAtVenue: true,
-    status: "active",
-    sessions: [
-      { id: "wnf-2026-08-12", date: "2026-08-12", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20, booked: 0 },
-      { id: "wnf-2026-08-19", date: "2026-08-19", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20, booked: 0 },
-      { id: "wnf-2026-08-26", date: "2026-08-26", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20, booked: 0 }
-    ]
-  },
-  {
-    id: "funetics",
-    name: "Funetics",
-    provider: "Funetics Coaching",
-    accentColor: "var(--c-purple)",
-    description: "Fun, multi-sport coaching sessions for kids — games-based, no pressure, lots of energy.",
-    venue: "Sports Hall, Northwood Stadium",
-    ageNote: "5 - 11 years",
-    price: 5,
-    priceLabel: "£5 per child / session",
-    payAtVenue: true,
-    status: "active",
-    sessions: [
-      { id: "funetics-2026-08-13", date: "2026-08-13", dow: "Thu", time: "4:30pm – 5:30pm", capacity: 16, booked: 0 },
-      { id: "funetics-2026-08-20", date: "2026-08-20", dow: "Thu", time: "4:30pm – 5:30pm", capacity: 16, booked: 0 }
-    ]
-  }
-
-  // ── Example of adding another provider's activity ──────────
-  // {
-  //   id: "yoga",
-  //   name: "Stadium Yoga",
-  //   provider: "FlexFit Studios",
-  //   accentColor: "var(--c-charcoal)",
-  //   description: "Relaxed evening yoga session, all levels.",
-  //   venue: "Function Room, Northwood Stadium",
-  //   ageNote: "16+",
-  //   price: 4,
-  //   priceLabel: "£4 per session",
-  //   payAtVenue: true,
-  //   status: "active",
-  //   sessions: [
-  //     { id: "yoga-2026-08-14", date: "2026-08-14", dow: "Fri", time: "6:00pm – 7:00pm", capacity: 12, booked: 0 }
-  //   ]
-  // }
-];
 
 /* ═══════════════════════════════════════════════════════════
    PAYMENT + FIREBASE CONFIG
@@ -689,6 +649,14 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
   function fmtDate(iso) {
     const d = new Date(iso + "T00:00:00");
     return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  }
+
+  // Activity name/description now comes from staff via Manage Activities
+  // rather than being hand-typed into this file, so it's escaped before
+  // landing in an HTML attribute (an unescaped quote in a name could
+  // otherwise break out of the attribute).
+  function escAttr(str) {
+    return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
   }
 
   // Ages are calculated live from a stored date of birth rather than saved
@@ -757,9 +725,12 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     return session.capacity != null && session.booked >= session.capacity;
   }
 
-  const activeActivities = ACTIVITIES_CONFIG.filter(a => a.status === "active");
+  // Populated by loadActivities() below — starts empty rather than the old
+  // hardcoded array, since activities now live in Firestore.
+  let ACTIVITIES = [];
+  let activeActivities = [];
 
-  let currentActivityId = activeActivities.length ? activeActivities[0].id : null;
+  let currentActivityId = null;
   let selectedSessionIds = new Set(); // multiple sessions can be booked in one go
   let isStaffMode = false;
   let currentCustomer = null; // { uid, name, email, phone, familyMembers: [...] } or null if not logged in as a customer
@@ -767,6 +738,97 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
   const tabsEl = document.getElementById("activityTabs");
   const panelEl = document.getElementById("activityPanel");
+
+  // Tracks whether the visitor has started filling in the booking form for
+  // whichever activity is currently displayed. A live catalogue update (see
+  // startActivitiesListener below) must never silently wipe out someone's
+  // half-typed form — so once this is true, a background update leaves the
+  // panel alone rather than re-rendering over them. Reset to false every
+  // time the panel is freshly rendered (see wireUpPanel). Delegated onto
+  // panelEl itself (rather than re-attached per render) since panelEl's
+  // reference never changes, only its innerHTML.
+  let formDirty = false;
+  panelEl.addEventListener("input", () => { formDirty = true; });
+  panelEl.addEventListener("change", () => { formDirty = true; });
+  panelEl.addEventListener("click", (e) => {
+    if (e.target.closest("#bookingForm")) formDirty = true;
+  });
+
+  // ── Load activities + live capacity from Firestore ───────────
+  // Firestore "in" queries cap at 10 values, so the booked-count lookup is
+  // chunked. Booked counts come from `activitySessionCounts` (the same
+  // per-session counter the booking transaction writes to) rather than
+  // anything stored on the activity document itself, so this always
+  // reflects every booking ever made for that session, not just ones made
+  // from this browser tab.
+  async function fetchBookedCounts(sessionIds) {
+    const counts = {};
+    if (!sessionIds.length) return counts;
+    const chunks = [];
+    for (let i = 0; i < sessionIds.length; i += 10) chunks.push(sessionIds.slice(i, i + 10));
+    await Promise.all(chunks.map(async chunk => {
+      const snap = await db.collection("activitySessionCounts")
+        .where(firebase.firestore.FieldPath.documentId(), "in", chunk)
+        .get();
+      snap.forEach(doc => { counts[doc.id] = doc.data().booked || 0; });
+    }));
+    return counts;
+  }
+
+  // Live catalogue listener — replaces what used to be a one-time load.
+  // Staff adding, editing, or disabling an activity in Manage Activities now
+  // reaches anyone with this page open within moments, no refresh required.
+  // (Booked counts on activitySessionCounts are NOT part of this listener —
+  // that stays a fetch-on-load + optimistic-local-update, same as before;
+  // exact fill status simply isn't the thing this change is solving for,
+  // and capacity is still enforced server-side by the booking transaction
+  // regardless of what the UI happens to be showing at that moment.)
+  function startActivitiesListener() {
+    db.collection("activities").orderBy("createdAt", "asc").onSnapshot(async (snap) => {
+      try {
+        const activities = snap.docs.map(doc => {
+          const data = doc.data();
+          return { id: doc.id, ...data, sessions: (data.sessions || []).map(s => ({ ...s, booked: 0 })) };
+        });
+
+        const allSessionIds = activities.flatMap(a => a.sessions.map(s => s.id));
+        const bookedCounts = await fetchBookedCounts(allSessionIds);
+        activities.forEach(a => a.sessions.forEach(s => { s.booked = bookedCounts[s.id] || 0; }));
+
+        ACTIVITIES = activities;
+        activeActivities = ACTIVITIES.filter(a => a.status === "active");
+
+        const stillActive = activeActivities.some(a => a.id === currentActivityId);
+        if (!currentActivityId || !stillActive) {
+          // Either the very first load, or the activity someone was looking
+          // at just got disabled/removed elsewhere — safe to fully re-render
+          // either way since there's nothing mid-typed for an activity that
+          // no longer exists in the list.
+          currentActivityId = activeActivities.length ? activeActivities[0].id : null;
+          selectedSessionIds = new Set();
+          renderTabs();
+          renderPanel();
+          return;
+        }
+
+        // The tab bar holds no user input, so it's always safe to refresh —
+        // this alone is what makes a newly-added or newly-disabled activity
+        // appear/disappear from the list live.
+        renderTabs();
+
+        // Only rebuild the open booking form if nothing's been typed into it
+        // yet. If someone's mid-form, leave it exactly as-is; it'll catch up
+        // next time they switch activities or reload.
+        if (!formDirty) renderPanel();
+      } catch (err) {
+        console.error("Failed to process activities update:", err);
+      }
+    }, err => {
+      console.error("Activities listener error:", err);
+      tabsEl.innerHTML = "";
+      panelEl.innerHTML = '<div class="ab-empty">Couldn\'t load activities right now — please refresh the page.</div>';
+    });
+  }
 
   // ── Staff auth ──────────────────────────────────────────────
   // Logging in successfully is not enough to mean "staff" — customer
@@ -1227,13 +1289,14 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     const sessionsHtml = openSessions.length
       ? openSessions.map(s => {
           const full = sessionIsFull(s);
+          const isSelected = selectedSessionIds.has(s.id);
           return `
-            <div class="session-option${full ? " full" : ""}${selectedSessionIds.has(s.id) ? " selected" : ""}" data-session="${s.id}">
+            <div class="session-option${full ? " full" : ""}${isSelected ? " selected" : ""}" data-session="${s.id}">
               <div class="session-option-info">
                 ${s.dow} ${fmtDate(s.date)}
                 <span>${s.time}</span>
               </div>
-              <div class="session-option-tag${full ? " full-tag" : ""}">${full ? "Full" : "Available"}</div>
+              <div class="session-option-tag${full ? " full-tag" : ""}">${full ? "Full" : (isSelected ? "✓ Selected" : "Available")}</div>
             </div>
           `;
         }).join("")
@@ -1259,6 +1322,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
     panelEl.innerHTML = `
       <div class="ab-card" style="--activity-accent:${activity.accentColor}">
+        ${activity.imageUrl ? `<img class="ab-card-image" src="${activity.imageUrl}" alt="${escAttr(activity.name)}">` : ""}
         <div class="ab-activity-head">
           <div class="ab-activity-name">${activity.name}</div>
           <div class="ab-activity-meta">${activity.provider} · ${activity.venue}${activity.ageNote ? " · " + activity.ageNote : ""}</div>
@@ -1330,16 +1394,20 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
   // ── Panel interactivity ─────────────────────────────────────
   function wireUpPanel(activity) {
+    formDirty = false; // freshly rendered — nothing typed into this copy yet
     panelEl.querySelectorAll(".session-option").forEach(el => {
       el.addEventListener("click", () => {
         if (el.classList.contains("full")) return;
         const sessionId = el.dataset.session;
+        const tag = el.querySelector(".session-option-tag");
         if (selectedSessionIds.has(sessionId)) {
           selectedSessionIds.delete(sessionId);
           el.classList.remove("selected");
+          if (tag) tag.textContent = "Available";
         } else {
           selectedSessionIds.add(sessionId);
           el.classList.add("selected");
+          if (tag) tag.textContent = "✓ Selected";
         }
         updateSummary();
       });
@@ -1671,6 +1739,14 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         const bookingGroupId = generateIdempotencyKey();
         const counterRefs = selectedSessions.map(s => db.collection("activitySessionCounts").doc(s.id));
 
+        // One activityBookingGroups doc is written per checkout (regardless of
+        // how many sessions were selected) purely so the confirmation email
+        // Cloud Function has a single, reliable trigger per checkout instead
+        // of firing once per session doc. It's a snapshot/summary record —
+        // the per-session activityBookings docs above remain the source of
+        // truth for capacity and the admin dashboard.
+        const groupRef = db.collection("activityBookingGroups").doc(bookingGroupId);
+
         await db.runTransaction(async (tx) => {
           const counterDocs = await Promise.all(counterRefs.map(ref => tx.get(ref)));
 
@@ -1711,6 +1787,27 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
               customerId: currentCustomer ? currentCustomer.uid : null,
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+          });
+
+          tx.set(groupRef, {
+            activityId: activity.id,
+            activityName: activity.name,
+            provider: activity.provider,
+            sessions: selectedSessions.map(s => ({ id: s.id, date: s.date, dow: s.dow, time: s.time })),
+            contactName,
+            contactEmail: contactEmail || null,
+            contactPhone,
+            attendees,
+            attendeeCount,
+            sessionCount: selectedSessions.length,
+            paymentMethod: effectivePaymentMethod,
+            paymentStatus: effectivePaymentStatus,
+            totalAmount,
+            squarePaymentId: squarePaymentId || null,
+            bookedBy: isStaffMode ? "staff" : "public",
+            staffEmail: isStaffMode ? auth.currentUser.email : null,
+            customerId: currentCustomer ? currentCustomer.uid : null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         });
 
@@ -1757,8 +1854,8 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     });
   }
 
-  renderTabs();
-  renderPanel();
+  panelEl.innerHTML = '<div class="ab-empty">Loading activities…</div>';
+  startActivitiesListener();
 
 })();
 </script>

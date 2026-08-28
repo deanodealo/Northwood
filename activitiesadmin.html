@@ -18,8 +18,39 @@
 .hidden { display: none !important; }
 .aa-page { background: var(--c-grey-light); min-height: 100vh; }
 
+/* — topbar — identical markup/classes to activitybooking.html and
+   manage-activities.html, so the staff nav looks and behaves the same
+   on all three pages. */
+.ab-topbar {
+  background: var(--c-black);
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
+}
+.ab-topbar a.ab-logo-link { display: flex; align-items: center; }
+.ab-topbar img { height: 34px; }
+.ab-topbar-nav { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.ab-staff-link {
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+.ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+
 /* — login gate — */
-.aa-login-wrap { max-width: 360px; margin: 8rem auto; padding: 2rem; background: white; border-radius: 14px; }
+.aa-login-wrap { max-width: 360px; margin: 4rem auto; padding: 2rem; background: white; border-radius: 14px; }
 .aa-login-wrap h1 { font-family: var(--f-display); font-size: 1.4rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.25rem; }
 
 .aa-wrap { max-width: 1150px; margin: 0 auto; padding: 2.5rem 1.5rem 6rem; }
@@ -116,6 +147,15 @@
 </head>
 <body class="aa-page">
 
+<div class="ab-topbar">
+  <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
+  <div class="ab-topbar-nav">
+    <a href="activitybooking.html" class="ab-staff-link">Booking Page</a>
+    <a href="manage-activities.html" class="ab-staff-link">Manage Activities</a>
+    <button class="ab-staff-link hidden" id="logoutBtn">Log out</button>
+  </div>
+</div>
+
 <!-- ── Login gate ─────────────────────────────────────────── -->
 <div class="aa-login-wrap" id="loginWrap">
   <h1>Staff Login</h1>
@@ -135,9 +175,6 @@
 <div class="aa-wrap hidden" id="dashboardWrap">
   <div class="aa-header">
     <div class="aa-title">Activities Admin</div>
-    <div style="display:flex; gap:0.6rem;">
-      <button id="logoutBtn">Log Out</button>
-    </div>
   </div>
 
   <div class="aa-filters" style="margin-bottom:2rem;">
@@ -246,17 +283,20 @@
 /* ═══════════════════════════════════════════════════════════
    ACTIVITY LOOKUP
    ───────────────────────────────────────────────────────────
-   Mirrors ACTIVITIES_CONFIG from activity-booking.html so this
-   dashboard can show activity names/providers/accent colours
-   without re-querying config every time. Keep these two files'
-   activity lists in sync when you add/remove an activity —
-   same manual-sync pattern as CAMP_LOOKUP on the camp admin page.
+   Loaded live from the "activities" Firestore collection (the
+   same one manage-activities.html writes to) rather than
+   hardcoded here — so a newly-added activity shows its real name
+   immediately, with no second file to remember to update.
+
+   Includes activities regardless of active/inactive status, on
+   purpose: a booking made for an activity that's since been
+   disabled (or renamed) should still show a proper name here
+   rather than falling back to a raw ID, since this dashboard is
+   about historical bookings as much as current ones. Populated by
+   loadActivityLookup() below, called once right after staff login.
    ═══════════════════════════════════════════════════════════ */
 
-const ACTIVITY_LOOKUP = {
-  wnf:      { name: "Wednesday Night Football", provider: "Northwood Stadium", price: 6 },
-  funetics: { name: "Funetics",                 provider: "Funetics Coaching", price: 5 }
-};
+let ACTIVITY_LOOKUP = {};
 
 const firebaseConfig = {
   apiKey: "AIzaSyDGSOa02_oHzRARoisN-gA3zzsTTC9U9QQ",
@@ -275,6 +315,7 @@ const auth = firebase.auth();
 
   const loginWrap = document.getElementById("loginWrap");
   const dashboardWrap = document.getElementById("dashboardWrap");
+  const logoutBtn = document.getElementById("logoutBtn");
 
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const email = document.getElementById("adminEmail").value.trim();
@@ -288,7 +329,7 @@ const auth = firebase.auth();
       msg.textContent = "Login failed — check your details.";
     }
   });
-  document.getElementById("logoutBtn").addEventListener("click", () => auth.signOut());
+  logoutBtn.addEventListener("click", () => auth.signOut());
 
   // Once customer accounts exist in the same Firebase project, "logged in"
   // is no longer enough to mean "staff" — a customer account signing in
@@ -301,6 +342,7 @@ const auth = firebase.auth();
     if (!user) {
       loginWrap.classList.remove("hidden");
       dashboardWrap.classList.add("hidden");
+      logoutBtn.classList.add("hidden");
       return;
     }
 
@@ -321,8 +363,28 @@ const auth = firebase.auth();
 
     loginWrap.classList.add("hidden");
     dashboardWrap.classList.remove("hidden");
+    logoutBtn.classList.remove("hidden");
+    // Activity names are needed to label both tabs, so this loads first —
+    // loadBookings() and the Customers tab's activity filter both read
+    // from ACTIVITY_LOOKUP once it's populated.
+    await loadActivityLookup();
     loadBookings();
   });
+
+  async function loadActivityLookup() {
+    try {
+      const snap = await db.collection("activities").get();
+      const lookup = {};
+      snap.docs.forEach(doc => {
+        const d = doc.data();
+        lookup[doc.id] = { name: d.name, provider: d.provider, price: d.price };
+      });
+      ACTIVITY_LOOKUP = lookup;
+    } catch (err) {
+      console.error("Failed to load activity lookup:", err);
+    }
+    renderActivityFilterSelectOptions();
+  }
 
   // ── Main tab switching (Live Bookings / Customers) ─────────
   const liveTabContent = document.getElementById("liveTabContent");
@@ -681,10 +743,21 @@ const auth = firebase.auth();
   // Uses the canonical ACTIVITY_LOOKUP list rather than whatever happens
   // to appear in allBookings, so an activity still shows as a filter
   // option even if none of its bookings fall inside the current load
-  // window (e.g. before "Load Full History" is clicked).
+  // window (e.g. before "Load Full History" is clicked). Populated once
+  // ACTIVITY_LOOKUP loads from Firestore (see loadActivityLookup, called
+  // right after login) rather than immediately here, since that data
+  // isn't available yet at page load.
   const activityFilterSelectEl = document.getElementById("activityFilterSelect");
-  activityFilterSelectEl.innerHTML = `<option value="all">All Activities</option>` +
-    Object.entries(ACTIVITY_LOOKUP).map(([id, a]) => `<option value="${id}">${a.name}</option>`).join("");
+  function renderActivityFilterSelectOptions() {
+    const previousValue = activityFilterSelectEl.value || "all";
+    activityFilterSelectEl.innerHTML = `<option value="all">All Activities</option>` +
+      Object.entries(ACTIVITY_LOOKUP).map(([id, a]) => `<option value="${id}">${a.name}</option>`).join("");
+    // Preserve whatever was selected across a refresh (e.g. Load Full
+    // History doesn't touch this, but a future re-fetch might).
+    if ([...activityFilterSelectEl.options].some(o => o.value === previousValue)) {
+      activityFilterSelectEl.value = previousValue;
+    }
+  }
   activityFilterSelectEl.addEventListener("change", (e) => { activityNameFilter = e.target.value; renderCustomersAll(); });
 
   // Same DOB → age calculation used on the booking page and homepage —

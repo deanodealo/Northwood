@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Activities | Northwood Stadium</title>
+<meta name="description" content="Staff tool for adding, editing and disabling Northwood Stadium activities.">
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<meta name="theme-color" content="#0B0B0C">
+
+<!-- Firebase (compat SDK — same version and project as activitybooking.html) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+<style>
+/* ══════════════════════════════════════════════════════════
+   MANAGE ACTIVITIES — staff-only tool, page-scoped styles built
+   on the site's own tokens (--c-black, --c-red, --c-grey-light,
+   --f-display, --f-body from styles.css), same as
+   activitybooking.html. This is where the "activities" Firestore
+   collection that activitybooking.html reads from actually gets
+   written.
+   ══════════════════════════════════════════════════════════ */
+
+.hidden { display: none !important; }
+
+.ma-page { background: var(--c-grey-light); min-height: 100vh; }
+
+/* — topbar, staff modal, form fields — copied to match
+   activitybooking.html exactly so both pages feel like one tool. — */
+.ab-topbar {
+  background: var(--c-black);
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
+}
+.ab-topbar a.ab-logo-link { display: flex; align-items: center; }
+.ab-topbar img { height: 34px; }
+.ab-topbar-nav { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.ab-staff-link {
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+.ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+
+.ma-wrap { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+@media (max-width: 600px) { .ma-wrap { padding: 2rem 1.1rem 4rem; } }
+
+.ma-heading { margin-bottom: 2rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.ma-eyebrow {
+  font-family: var(--f-body); font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--c-red); font-weight: 700; margin-bottom: 0.5rem;
+}
+.ma-title { font-family: var(--f-display); font-size: 2.1rem; font-weight: 800; color: var(--c-black); text-transform: uppercase; letter-spacing: 0.5px; }
+.ma-sub { font-family: var(--f-body); color: var(--c-grey-mid); margin-top: 0.4rem; font-size: 0.92rem; }
+
+.ma-add-btn {
+  font-family: var(--f-display); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 0.8rem 1.4rem; border: none; border-radius: 10px; background: var(--c-red); color: white; cursor: pointer;
+  transition: opacity 0.15s; white-space: nowrap;
+}
+.ma-add-btn:hover { opacity: 0.9; }
+
+.ma-empty {
+  text-align: center; font-family: var(--f-body); color: var(--c-grey-mid);
+  padding: 3rem 1.5rem; background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* — staff-gate panel — */
+.ma-gate {
+  max-width: 420px; margin: 4rem auto; background: white; border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  padding: 2.25rem; text-align: center;
+}
+.ma-gate h2 { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 0.6rem; }
+.ma-gate p { font-family: var(--f-body); font-size: 0.9rem; color: var(--c-grey-mid); margin-bottom: 1.5rem; line-height: 1.6; }
+
+/* — migration banner — */
+.ma-migrate-banner {
+  background: var(--c-black); color: white; border-radius: 12px; padding: 1.1rem 1.4rem;
+  margin-bottom: 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.ma-migrate-banner p { font-family: var(--f-body); font-size: 0.85rem; line-height: 1.5; }
+.ma-migrate-banner strong { color: var(--c-red); }
+.ma-migrate-banner button {
+  font-family: var(--f-body); font-size: 0.82rem; font-weight: 700; background: white; color: var(--c-black);
+  border: none; border-radius: 8px; padding: 0.6rem 1rem; cursor: pointer; white-space: nowrap;
+}
+.ma-migrate-banner button:hover { opacity: 0.9; }
+.ma-migrate-banner button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* — activity list — */
+.ma-activity-list { display: flex; flex-direction: column; gap: 0.9rem; }
+.ma-activity-card {
+  background: white; border-radius: 14px; border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 1.1rem 1.3rem;
+  display: flex; align-items: center; gap: 1.1rem; border-left: 5px solid var(--activity-accent, var(--c-red));
+}
+@media (max-width: 640px) { .ma-activity-card { flex-wrap: wrap; } }
+.ma-activity-thumb {
+  width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background: var(--c-grey-light);
+}
+.ma-activity-thumb-placeholder {
+  width: 64px; height: 64px; border-radius: 10px; flex-shrink: 0; background: var(--activity-accent, var(--c-grey-light));
+  display: flex; align-items: center; justify-content: center; color: white; font-family: var(--f-display); font-weight: 800; font-size: 1.3rem;
+}
+.ma-activity-info { flex: 1; min-width: 180px; }
+.ma-activity-info .name { font-family: var(--f-display); font-size: 1.15rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); }
+.ma-activity-info .meta { font-family: var(--f-body); font-size: 0.8rem; color: var(--c-grey-mid); margin-top: 0.2rem; }
+.ma-badge {
+  display: inline-block; font-family: var(--f-body); font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 0.2rem 0.55rem; border-radius: 6px; margin-left: 0.5rem; vertical-align: middle;
+}
+.ma-badge.active { background: #E8F5E9; color: #1B5E20; }
+.ma-badge.inactive { background: rgba(0,0,0,0.08); color: var(--c-grey-mid); }
+
+.ma-activity-actions { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.ma-icon-btn {
+  font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-black);
+  background: var(--c-grey-light); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px;
+  padding: 0.5rem 0.85rem; cursor: pointer; white-space: nowrap;
+}
+.ma-icon-btn:hover { border-color: rgba(0,0,0,0.2); }
+.ma-icon-btn.danger { color: #8C0000; }
+
+.ma-toggle {
+  position: relative; width: 42px; height: 24px; flex-shrink: 0; border-radius: 20px;
+  background: rgba(0,0,0,0.18); border: none; cursor: pointer; transition: background 0.15s;
+}
+.ma-toggle.on { background: #1B5E20; }
+.ma-toggle::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: white; transition: left 0.15s;
+}
+.ma-toggle.on::after { left: 21px; }
+
+/* — form view — */
+.ma-form-card {
+  background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05); padding: 2.25rem;
+}
+@media (max-width: 600px) { .ma-form-card { padding: 1.5rem; } }
+.ma-form-title { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.5rem; }
+
+.ma-section-label {
+  font-family: var(--f-body); font-size: 0.68rem; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--c-grey-mid); font-weight: 700; margin: 1.75rem 0 0.9rem;
+}
+.ma-section-label:first-of-type { margin-top: 0; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; min-width: 0; }
+.form-row > div { min-width: 0; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 600px) { .form-row, .form-row.three { grid-template-columns: 1fr; } }
+
+label {
+  display: block; font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-black); margin-bottom: 0.4rem;
+}
+.field-hint { font-family: var(--f-body); font-size: 0.74rem; color: var(--c-grey-mid); margin-top: 0.3rem; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"],
+input[type="date"], input[type="time"], textarea, select {
+  width: 100%; min-width: 0; padding: 0.7rem 0.85rem; font-family: var(--f-body); font-size: 0.92rem; color: var(--c-black);
+  background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1); border-radius: 8px; transition: border-color 0.15s, background 0.15s;
+}
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--c-red); background: white; }
+.required-mark { color: var(--c-red); }
+
+.checkbox-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem; }
+.checkbox-row input { width: 18px; height: 18px; accent-color: var(--c-red); cursor: pointer; }
+.checkbox-row label { margin: 0; cursor: pointer; }
+
+/* — colour swatches — */
+.ma-swatches { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.ma-swatch {
+  width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 3px solid transparent;
+  transition: transform 0.1s, border-color 0.15s; position: relative;
+}
+.ma-swatch:hover { transform: scale(1.08); }
+.ma-swatch.selected { border-color: var(--c-black); }
+.ma-swatch.selected::after {
+  content: "✓"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 0.95rem; font-weight: 700;
+}
+
+/* — image upload — */
+.ma-dropzone {
+  border: 1.5px dashed rgba(0,0,0,0.2); border-radius: 12px; padding: 1.5rem; text-align: center;
+  cursor: pointer; margin-bottom: 1.25rem; background: var(--c-grey-light); transition: border-color 0.15s;
+}
+.ma-dropzone:hover { border-color: var(--c-red); }
+.ma-dropzone.dragover { border-color: var(--c-red); background: rgba(178,0,0,0.04); }
+.ma-dropzone p { font-family: var(--f-body); font-size: 0.85rem; color: var(--c-grey-mid); }
+.ma-dropzone input { display: none; }
+.ma-image-preview-wrap { position: relative; display: inline-block; margin-bottom: 1.25rem; }
+.ma-image-preview { max-width: 100%; max-height: 220px; border-radius: 10px; display: block; }
+.ma-image-remove {
+  position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--c-black); color: white; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1;
+}
+.ma-upload-progress { font-family: var(--f-body); font-size: 0.78rem; color: var(--c-grey-mid); margin-top: 0.4rem; }
+
+/* — sessions editor — */
+.ma-session-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
+.ma-session-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap;
+  border: 1.5px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 0.7rem 1rem; font-family: var(--f-body); font-size: 0.86rem;
+}
+.ma-session-row .info { font-weight: 600; color: var(--c-black); }
+.ma-session-row .sub { font-size: 0.76rem; color: var(--c-grey-mid); margin-top: 0.1rem; }
+.ma-session-row .booked-note { font-size: 0.74rem; color: var(--c-red); font-weight: 600; }
+.ma-session-remove {
+  font-family: var(--f-body); font-size: 0.76rem; font-weight: 600; color: #8C0000; background: none; border: none; cursor: pointer;
+}
+.ma-session-remove:disabled { color: var(--c-grey-mid); cursor: not-allowed; }
+
+.ma-session-add-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.ma-session-add-tab {
+  font-family: var(--f-body); font-size: 0.82rem; font-weight: 600; padding: 0.55rem 1rem; border-radius: 8px;
+  border: 1.5px solid rgba(0,0,0,0.1); background: white; color: var(--c-black); cursor: pointer;
+}
+.ma-session-add-tab.active { background: var(--c-black); border-color: var(--c-black); color: white; }
+.ma-session-add-panel { background: var(--c-grey-light); border-radius: 10px; padding: 1.1rem; margin-bottom: 1.25rem; }
+.ma-mini-add-btn {
+  font-family: var(--f-body); font-size: 0.84rem; font-weight: 700; color: white; background: var(--c-black);
+  border: none; border-radius: 8px; padding: 0.65rem 1.1rem; cursor: pointer;
+}
+.ma-mini-add-btn:hover { opacity: 0.9; }
+
+.ma-form-actions { display: flex; gap: 0.7rem; margin-top: 2rem; }
+.ma-submit-btn {
+  flex: 1; padding: 1rem; font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; text-transform: uppercase;
+  letter-spacing: 0.5px; border: none; border-radius: 10px; background: var(--c-red); color: white; cursor: pointer; transition: opacity 0.15s;
+}
+.ma-submit-btn:hover { opacity: 0.9; }
+.ma-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ma-cancel-btn {
+  padding: 1rem 1.5rem; font-family: var(--f-body); font-weight: 600; font-size: 0.92rem; border-radius: 10px;
+  border: 1.5px solid rgba(0,0,0,0.15); background: none; color: var(--c-black); cursor: pointer;
+}
+
+.form-message { margin-top: 1rem; font-family: var(--f-body); font-size: 0.88rem; padding: 0.8rem 1rem; border-radius: 8px; display: none; }
+.form-message.error { display: block; background: #FBEAEA; color: #8C0000; }
+.form-message.success { display: block; background: #E8F5E9; color: #1B5E20; }
+
+/* — staff login modal (same look as activitybooking.html) — */
+.staff-modal-overlay {
+  position: fixed; inset: 0; background: rgba(11,11,12,0.6);
+  display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem; z-index: 100; overflow-y: auto;
+}
+.staff-modal { background: white; border-radius: 14px; padding: 2rem; max-width: 360px; width: 100%; margin: 2rem auto; }
+.staff-modal h3 { font-family: var(--f-display); font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.25rem; }
+.staff-modal .form-message { margin-top: 0.75rem; }
+.staff-modal-actions { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+.staff-modal-actions button { flex: 1; }
+.staff-modal-cancel {
+  background: none; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0.75rem;
+  font-family: var(--f-body); font-weight: 600; cursor: pointer;
+}
+</style>
+</head>
+<body class="ma-page">
+
+<div class="ab-topbar">
+  <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
+  <div class="ab-topbar-nav">
+    <a href="activitybooking.html" class="ab-staff-link">Booking Page</a>
+    <a href="activitiesadmin.html" class="ab-staff-link">Bookings Admin</a>
+    <button class="ab-staff-link hidden" id="staffLogoutBtn">Log out</button>
+  </div>
+</div>
+
+<div class="ma-wrap">
+
+  <!-- Staff gate: shown until a staff login is confirmed -->
+  <div class="ma-gate" id="staffGate">
+    <h2>Staff Access Required</h2>
+    <p>Manage Activities is only available to logged-in Northwood Stadium staff. Log in with your staff account to continue.</p>
+    <button class="ma-add-btn" id="staffGateLoginBtn">Staff Login</button>
+    <div class="form-message" id="gateMsg"></div>
+  </div>
+
+  <!-- Main dashboard: shown once staff is confirmed -->
+  <div id="dashboard" class="hidden">
+
+    <div class="ma-heading">
+      <div>
+        <div class="ma-eyebrow">Northwood Stadium · Staff</div>
+        <h1 class="ma-title">Manage Activities</h1>
+        <p class="ma-sub">Add, edit, or disable the activities customers can book — changes go live on the booking page immediately.</p>
+      </div>
+      <button class="ma-add-btn" id="addActivityBtn">+ Add New Activity</button>
+    </div>
+
+    <div class="ma-migrate-banner hidden" id="migrateBanner">
+      <p>No activities found in the database yet.<br><strong>One-time step:</strong> import Wednesday Night Football &amp; Funetics (the two currently hardcoded on the booking page) so nothing changes for customers.</p>
+      <button id="migrateBtn">Import Existing Activities</button>
+    </div>
+
+    <div id="listView">
+      <div class="ma-activity-list" id="activityList"></div>
+    </div>
+
+    <div id="formView" class="hidden">
+      <div class="ma-form-card">
+        <div class="ma-form-title" id="formTitle">Add New Activity</div>
+
+        <div class="ma-section-label">Basics</div>
+        <div class="form-row single">
+          <label>Activity Name <span class="required-mark">*</span></label>
+          <input type="text" id="fName" placeholder="e.g. Stadium Yoga">
+          <div class="field-hint" id="slugPreview"></div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Provider <span class="required-mark">*</span></label>
+            <input type="text" id="fProvider" placeholder="Who runs this activity?">
+          </div>
+          <div>
+            <label>Venue <span class="required-mark">*</span></label>
+            <input type="text" id="fVenue" placeholder="e.g. Sports Hall, Northwood Stadium">
+          </div>
+        </div>
+        <div class="form-row single">
+          <label>Description</label>
+          <textarea id="fDescription" rows="3" placeholder="A sentence or two describing the activity"></textarea>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Age Note (optional)</label>
+            <input type="text" id="fAgeNote" placeholder="e.g. 16+ or 5 - 11 years">
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="fStatus">
+              <option value="active">Active — visible to customers</option>
+              <option value="inactive">Inactive — hidden from customers</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ma-section-label">Pricing</div>
+        <div class="form-row">
+          <div>
+            <label>Price per person, per session (£) <span class="required-mark">*</span></label>
+            <input type="number" id="fPrice" min="0" step="0.01" placeholder="e.g. 6">
+          </div>
+          <div>
+            <label>Price Label <span class="required-mark">*</span></label>
+            <input type="text" id="fPriceLabel" placeholder="e.g. £6 per session">
+          </div>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="fPayAtVenue" checked>
+          <label for="fPayAtVenue">Allow customers to pay at the venue (not just online)</label>
+        </div>
+
+        <div class="ma-section-label">Colour Scheme</div>
+        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Used for this activity's tab and card accent. Picked from a curated set so it always looks right against the site's black/white/red branding.</p>
+        <div class="ma-swatches" id="colorSwatches"></div>
+
+        <div class="ma-section-label">Photo (optional)</div>
+        <div id="imageUploadArea"></div>
+
+        <div class="ma-section-label">Sessions</div>
+        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Every date customers can book onto. A session that's already past is automatically hidden from the booking page.</p>
+        <div class="ma-session-list" id="sessionList"></div>
+
+        <div class="ma-session-add-tabs">
+          <button type="button" class="ma-session-add-tab active" data-add-mode="recurring">Generate weekly sessions</button>
+          <button type="button" class="ma-session-add-tab" data-add-mode="single">Add one date</button>
+        </div>
+
+        <div class="ma-session-add-panel" id="recurringPanel">
+          <div class="form-row three">
+            <div>
+              <label>First Date</label>
+              <input type="date" id="genStartDate">
+            </div>
+            <div>
+              <label>Number of Weeks</label>
+              <input type="number" id="genWeeks" min="1" max="52" value="4">
+            </div>
+            <div>
+              <label>Capacity</label>
+              <input type="number" id="genCapacity" min="1" value="16">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Start Time</label>
+              <input type="time" id="genStartTime" value="18:00">
+            </div>
+            <div>
+              <label>End Time</label>
+              <input type="time" id="genEndTime" value="19:00">
+            </div>
+          </div>
+          <button type="button" class="ma-mini-add-btn" id="genAddBtn">Add Weekly Sessions</button>
+        </div>
+
+        <div class="ma-session-add-panel hidden" id="singlePanel">
+          <div class="form-row three">
+            <div>
+              <label>Date</label>
+              <input type="date" id="singleDate">
+            </div>
+            <div>
+              <label>Capacity</label>
+              <input type="number" id="singleCapacity" min="1" value="16">
+            </div>
+            <div></div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Start Time</label>
+              <input type="time" id="singleStartTime" value="18:00">
+            </div>
+            <div>
+              <label>End Time</label>
+              <input type="time" id="singleEndTime" value="19:00">
+            </div>
+          </div>
+          <button type="button" class="ma-mini-add-btn" id="singleAddBtn">Add This Date</button>
+        </div>
+
+        <div class="ma-form-actions">
+          <button type="button" class="ma-cancel-btn" id="formCancelBtn">Cancel</button>
+          <button type="button" class="ma-submit-btn" id="formSaveBtn">Save Activity</button>
+        </div>
+        <div class="form-message" id="formMsg"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Staff login modal -->
+<div class="staff-modal-overlay hidden" id="staffModalOverlay">
+  <div class="staff-modal">
+    <h3>Staff Login</h3>
+    <div class="form-row single">
+      <label>Email</label>
+      <input type="email" id="staffEmail" autocomplete="username">
+    </div>
+    <div class="form-row single">
+      <label>Password</label>
+      <input type="password" id="staffPassword" autocomplete="current-password">
+    </div>
+    <div class="form-message" id="staffLoginMsg"></div>
+    <div class="staff-modal-actions">
+      <button class="staff-modal-cancel" id="staffModalCancel">Cancel</button>
+      <button class="ma-submit-btn" id="staffModalSubmit">Log In</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FIREBASE CONFIG — same project as activitybooking.html, so
+   activities created here show up there immediately.
+   ═══════════════════════════════════════════════════════════ */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGSOa02_oHzRARoisN-gA3zzsTTC9U9QQ",
+  authDomain: "northwood-stadium.firebaseapp.com",
+  projectId: "northwood-stadium",
+  storageBucket: "northwood-stadium.firebasestorage.app",
+  messagingSenderId: "146149087447",
+  appId: "1:146149087447:web:f5882364c8a525fa8c3892",
+  measurementId: "G-JKT47Q28YV"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+const storage = firebase.storage();
+
+/* ═══════════════════════════════════════════════════════════
+   COLOUR PALETTE
+   ───────────────────────────────────────────────────────────
+   A small curated set rather than a free colour picker — every
+   one of these is dark enough for the white text used on tabs,
+   the submit button and selected-session tags (WCAG AA against
+   white), so staff can't accidentally pick something illegible
+   or off-brand. Add more here if needed; each just needs a hex
+   dark enough for white text to sit on comfortably.
+   ═══════════════════════════════════════════════════════════ */
+
+const ACCENT_PRESETS = [
+  { label: "Blue",         hex: "#2563EB" },
+  { label: "Purple",       hex: "#7C3AED" },
+  { label: "Teal",         hex: "#0D9488" },
+  { label: "Charcoal",     hex: "#374151" },
+  { label: "Burnt Orange", hex: "#C2410C" },
+  { label: "Rose",         hex: "#BE123C" },
+  { label: "Forest Green", hex: "#15803D" },
+  { label: "Navy",         hex: "#1E3A8A" }
+];
+
+/* ═══════════════════════════════════════════════════════════
+   SEED DATA — used ONLY by the one-time "Import Existing
+   Activities" button, which only appears while the `activities`
+   collection is empty. Mirrors exactly what used to be hardcoded
+   in activitybooking.html, including session ids, so existing
+   activitySessionCounts / activityBookings records stay linked
+   to the right sessions after the switch to Firestore.
+   ═══════════════════════════════════════════════════════════ */
+
+const SEED_ACTIVITIES = [
+  {
+    id: "wnf",
+    name: "Wednesday Night Football",
+    provider: "Northwood Stadium",
+    accentColor: "#2563EB",
+    description: "5-a-side, all abilities welcome. Turn up and play, or book ahead to guarantee your spot.",
+    venue: "3G Pitch, Northwood Stadium",
+    ageNote: "16+",
+    price: 6,
+    priceLabel: "£6 per session",
+    payAtVenue: true,
+    status: "active",
+    imageUrl: null,
+    sessions: [
+      { id: "wnf-2026-08-12", date: "2026-08-12", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20 },
+      { id: "wnf-2026-08-19", date: "2026-08-19", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20 },
+      { id: "wnf-2026-08-26", date: "2026-08-26", dow: "Wed", time: "7:00pm – 8:00pm", capacity: 20 }
+    ]
+  },
+  {
+    id: "funetics",
+    name: "Funetics",
+    provider: "Funetics Coaching",
+    accentColor: "#7C3AED",
+    description: "Fun, multi-sport coaching sessions for kids — games-based, no pressure, lots of energy.",
+    venue: "Sports Hall, Northwood Stadium",
+    ageNote: "5 - 11 years",
+    price: 5,
+    priceLabel: "£5 per child / session",
+    payAtVenue: true,
+    status: "active",
+    imageUrl: null,
+    sessions: [
+      { id: "funetics-2026-08-13", date: "2026-08-13", dow: "Thu", time: "4:30pm – 5:30pm", capacity: 16 },
+      { id: "funetics-2026-08-20", date: "2026-08-20", dow: "Thu", time: "4:30pm – 5:30pm", capacity: 16 }
+    ]
+  }
+];
+
+(function () {
+
+  function escAttr(str) {
+    return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
+  function fmtDate(iso) {
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function dowFor(iso) {
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString("en-GB", { weekday: "short" });
+  }
+
+  // "18:00" -> "6:00pm"
+  function formatTime12(t) {
+    if (!t) return "";
+    const [hStr, mStr] = t.split(":");
+    let h = parseInt(hStr, 10);
+    const period = h >= 12 ? "pm" : "am";
+    h = h % 12; if (h === 0) h = 12;
+    return `${h}:${mStr}${period}`;
+  }
+
+  function slugify(name) {
+    return (name || "").toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40);
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || "").trim());
+  }
+
+  // ── Staff auth ──────────────────────────────────────────────
+  const staffGate = document.getElementById("staffGate");
+  const dashboard = document.getElementById("dashboard");
+  const staffLogoutBtn = document.getElementById("staffLogoutBtn");
+  const staffGateLoginBtn = document.getElementById("staffGateLoginBtn");
+  const gateMsg = document.getElementById("gateMsg");
+  const staffModalOverlay = document.getElementById("staffModalOverlay");
+  const staffModalCancel = document.getElementById("staffModalCancel");
+  const staffModalSubmit = document.getElementById("staffModalSubmit");
+
+  let isStaff = false;
+  let staffEmailAddr = "";
+
+  function openStaffModal() { staffModalOverlay.classList.remove("hidden"); }
+  staffGateLoginBtn.addEventListener("click", openStaffModal);
+  staffModalCancel.addEventListener("click", () => staffModalOverlay.classList.add("hidden"));
+  staffModalOverlay.addEventListener("click", (e) => { if (e.target === staffModalOverlay) staffModalOverlay.classList.add("hidden"); });
+
+  staffModalSubmit.addEventListener("click", async () => {
+    const email = document.getElementById("staffEmail").value.trim();
+    const password = document.getElementById("staffPassword").value;
+    const msg = document.getElementById("staffLoginMsg");
+    msg.className = "form-message"; msg.textContent = "";
+    if (!email || !password) {
+      msg.textContent = "Enter your email and password.";
+      msg.className = "form-message error";
+      return;
+    }
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+      if (!staffDoc.exists) {
+        await auth.signOut();
+        msg.textContent = "This account isn't set up for staff access.";
+        msg.className = "form-message error";
+        return;
+      }
+      staffModalOverlay.classList.add("hidden");
+    } catch (err) {
+      msg.textContent = "Login failed — check your details and try again.";
+      msg.className = "form-message error";
+    }
+  });
+
+  staffLogoutBtn.addEventListener("click", () => auth.signOut());
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) {
+      isStaff = false;
+      staffGate.classList.remove("hidden");
+      dashboard.classList.add("hidden");
+      staffLogoutBtn.classList.add("hidden");
+      return;
+    }
+    const staffDoc = await db.collection("staff").doc(user.uid).get();
+    if (!staffDoc.exists) {
+      // A customer account, not staff — bounce back to the gate rather than
+      // silently granting access.
+      await auth.signOut();
+      gateMsg.textContent = "That account doesn't have staff access.";
+      gateMsg.className = "form-message error";
+      return;
+    }
+    isStaff = true;
+    staffEmailAddr = user.email;
+    staffGate.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    // Full email is available on hover rather than shown inline — keeps the
+    // topbar compact and consistent with the other staff pages, and avoids
+    // a long address wrapping awkwardly on small screens.
+    staffLogoutBtn.title = `Logged in as ${user.email}`;
+    staffLogoutBtn.classList.remove("hidden");
+    loadActivities();
+  });
+
+  // ── Activities list ───────────────────────────────────────────
+  const activityListEl = document.getElementById("activityList");
+  const migrateBanner = document.getElementById("migrateBanner");
+  const migrateBtn = document.getElementById("migrateBtn");
+  const listView = document.getElementById("listView");
+  const formView = document.getElementById("formView");
+  const addActivityBtn = document.getElementById("addActivityBtn");
+
+  let activitiesCache = [];
+
+  async function loadActivities() {
+    activityListEl.innerHTML = '<div class="ma-empty">Loading…</div>';
+    try {
+      const snap = await db.collection("activities").orderBy("createdAt", "asc").get();
+      activitiesCache = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      migrateBanner.classList.toggle("hidden", activitiesCache.length !== 0);
+      renderActivityList();
+    } catch (err) {
+      console.error("Failed to load activities:", err);
+      activityListEl.innerHTML = '<div class="ma-empty">Couldn\'t load activities — please refresh.</div>';
+    }
+  }
+
+  function renderActivityList() {
+    if (!activitiesCache.length) {
+      activityListEl.innerHTML = '<div class="ma-empty">No activities yet — click "+ Add New Activity" above to create the first one.</div>';
+      return;
+    }
+    activityListEl.innerHTML = activitiesCache.map(a => {
+      const sessionCount = (a.sessions || []).length;
+      const thumb = a.imageUrl
+        ? `<img class="ma-activity-thumb" src="${a.imageUrl}" alt="${escAttr(a.name)}">`
+        : `<div class="ma-activity-thumb-placeholder" style="--activity-accent:${a.accentColor}">${escAttr((a.name || "?").charAt(0).toUpperCase())}</div>`;
+      return `
+        <div class="ma-activity-card" style="--activity-accent:${a.accentColor}" data-id="${a.id}">
+          ${thumb}
+          <div class="ma-activity-info">
+            <div class="name">${a.name}<span class="ma-badge ${a.status === "active" ? "active" : "inactive"}">${a.status === "active" ? "Active" : "Inactive"}</span></div>
+            <div class="meta">${a.provider} · ${a.priceLabel} · ${sessionCount} session${sessionCount === 1 ? "" : "s"} on file</div>
+          </div>
+          <div class="ma-activity-actions">
+            <button type="button" class="ma-toggle ${a.status === "active" ? "on" : ""}" data-toggle-status="${a.id}" title="${a.status === "active" ? "Disable — hide from customers" : "Enable — show to customers"}"></button>
+            <button type="button" class="ma-icon-btn" data-edit="${a.id}">Edit</button>
+            <button type="button" class="ma-icon-btn danger" data-delete="${a.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    activityListEl.querySelectorAll("[data-toggle-status]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.toggleStatus;
+        const activity = activitiesCache.find(a => a.id === id);
+        if (!activity) return;
+        const newStatus = activity.status === "active" ? "inactive" : "active";
+        btn.disabled = true;
+        try {
+          await db.collection("activities").doc(id).update({ status: newStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+          activity.status = newStatus;
+          renderActivityList();
+        } catch (err) {
+          console.error("Failed to toggle status:", err);
+          alert("Couldn't update that activity's status — please try again.");
+          btn.disabled = false;
+        }
+      });
+    });
+
+    activityListEl.querySelectorAll("[data-edit]").forEach(btn => {
+      btn.addEventListener("click", () => openForm(btn.dataset.edit));
+    });
+
+    activityListEl.querySelectorAll("[data-delete]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.delete;
+        const activity = activitiesCache.find(a => a.id === id);
+        if (!activity) return;
+        const ok = confirm(`Permanently delete "${activity.name}"? This removes it from the booking page for good — past bookings and payment records for it are unaffected since they keep their own copy of the details, but this can't be undone.`);
+        if (!ok) return;
+        try {
+          await db.collection("activities").doc(id).delete();
+          activitiesCache = activitiesCache.filter(a => a.id !== id);
+          renderActivityList();
+        } catch (err) {
+          console.error("Failed to delete activity:", err);
+          alert("Couldn't delete that activity — please try again.");
+        }
+      });
+    });
+  }
+
+  // ── One-time migration ──────────────────────────────────────
+  migrateBtn.addEventListener("click", async () => {
+    migrateBtn.disabled = true;
+    migrateBtn.textContent = "Importing…";
+    try {
+      const batch = db.batch();
+      SEED_ACTIVITIES.forEach(a => {
+        const ref = db.collection("activities").doc(a.id);
+        const { id, ...data } = a;
+        batch.set(ref, { ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      });
+      await batch.commit();
+      await loadActivities();
+    } catch (err) {
+      console.error("Migration failed:", err);
+      alert("Import failed — please try again, or check the browser console for details.");
+      migrateBtn.disabled = false;
+      migrateBtn.textContent = "Import Existing Activities";
+    }
+  });
+
+  // ── Add / Edit form ──────────────────────────────────────────
+  const formTitle = document.getElementById("formTitle");
+  const fName = document.getElementById("fName");
+  const fProvider = document.getElementById("fProvider");
+  const fVenue = document.getElementById("fVenue");
+  const fDescription = document.getElementById("fDescription");
+  const fAgeNote = document.getElementById("fAgeNote");
+  const fStatus = document.getElementById("fStatus");
+  const fPrice = document.getElementById("fPrice");
+  const fPriceLabel = document.getElementById("fPriceLabel");
+  const fPayAtVenue = document.getElementById("fPayAtVenue");
+  const slugPreview = document.getElementById("slugPreview");
+  const colorSwatchesEl = document.getElementById("colorSwatches");
+  const imageUploadArea = document.getElementById("imageUploadArea");
+  const sessionListEl = document.getElementById("sessionList");
+  const formMsg = document.getElementById("formMsg");
+  const formCancelBtn = document.getElementById("formCancelBtn");
+  const formSaveBtn = document.getElementById("formSaveBtn");
+
+  let editingId = null; // null = creating a new activity
+  let currentSessions = []; // { id, date, dow, time, capacity }
+  let currentAccent = ACCENT_PRESETS[0].hex;
+  let currentImageUrl = null;
+  let pendingImageFile = null; // resized Blob waiting to be uploaded on Save
+  let bookedCountsForEdit = {}; // sessionId -> live booked count, only populated when editing
+
+  function renderColorSwatches() {
+    colorSwatchesEl.innerHTML = ACCENT_PRESETS.map(p => `
+      <div class="ma-swatch${p.hex === currentAccent ? " selected" : ""}" style="background:${p.hex}" data-hex="${p.hex}" title="${p.label}"></div>
+    `).join("");
+    colorSwatchesEl.querySelectorAll(".ma-swatch").forEach(el => {
+      el.addEventListener("click", () => {
+        currentAccent = el.dataset.hex;
+        renderColorSwatches();
+      });
+    });
+  }
+
+  function renderImageArea() {
+    if (currentImageUrl || pendingImageFile) {
+      const src = pendingImageFile ? URL.createObjectURL(pendingImageFile) : currentImageUrl;
+      imageUploadArea.innerHTML = `
+        <div class="ma-image-preview-wrap">
+          <img class="ma-image-preview" src="${src}">
+          <button type="button" class="ma-image-remove" id="removeImageBtn" title="Remove photo">✕</button>
+        </div>
+      `;
+      document.getElementById("removeImageBtn").addEventListener("click", () => {
+        currentImageUrl = null;
+        pendingImageFile = null;
+        renderImageArea();
+      });
+    } else {
+      imageUploadArea.innerHTML = `
+        <label class="ma-dropzone" id="dropzone" for="imageFileInput">
+          <p><strong>Click to upload a photo</strong>, or drag one here.<br>JPG or PNG, any size — it's automatically resized.</p>
+          <input type="file" id="imageFileInput" accept="image/png, image/jpeg, image/webp">
+        </label>
+      `;
+      const dropzone = document.getElementById("dropzone");
+      const input = document.getElementById("imageFileInput");
+      input.addEventListener("change", () => { if (input.files[0]) handleImageFile(input.files[0]); });
+      dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("dragover"); });
+      dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        if (e.dataTransfer.files[0]) handleImageFile(e.dataTransfer.files[0]);
+      });
+    }
+  }
+
+  // Downscales in the browser before upload (max width 1600px, JPEG @ 85%)
+  // so a phone photo doesn't land in Storage at its full multi-megabyte
+  // size — keeps the booking page fast and Storage usage low.
+  function handleImageFile(file) {
+    if (!file.type.startsWith("image/")) {
+      formMsg.textContent = "Please choose an image file.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = () => {
+        const maxW = 1600;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          pendingImageFile = blob;
+          currentImageUrl = null;
+          renderImageArea();
+        }, "image/jpeg", 0.85);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderSessionList() {
+    if (!currentSessions.length) {
+      sessionListEl.innerHTML = '<p class="field-hint">No sessions added yet — use the generator below.</p>';
+      return;
+    }
+    const sorted = [...currentSessions].sort((a, b) => a.date.localeCompare(b.date));
+    sessionListEl.innerHTML = sorted.map(s => {
+      const booked = bookedCountsForEdit[s.id] || 0;
+      const hasBookings = booked > 0;
+      return `
+        <div class="ma-session-row">
+          <div>
+            <div class="info">${s.dow} ${fmtDate(s.date)} · ${s.time}</div>
+            <div class="sub">Capacity ${s.capacity}${hasBookings ? ` · <span class="booked-note">${booked} already booked</span>` : ""}</div>
+          </div>
+          <button type="button" class="ma-session-remove" data-remove-session="${s.id}" ${hasBookings ? "disabled title=\"Can't remove — this session already has bookings\"" : ""}>Remove</button>
+        </div>
+      `;
+    }).join("");
+    sessionListEl.querySelectorAll("[data-remove-session]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentSessions = currentSessions.filter(s => s.id !== btn.dataset.removeSession);
+        renderSessionList();
+      });
+    });
+  }
+
+  // ── Session add: recurring generator + single date ──────────
+  document.querySelectorAll("[data-add-mode]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-add-mode]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("recurringPanel").classList.toggle("hidden", btn.dataset.addMode !== "recurring");
+      document.getElementById("singlePanel").classList.toggle("hidden", btn.dataset.addMode !== "single");
+    });
+  });
+
+  function addSession(date, startTime, endTime, capacity) {
+    const id = `${editingId || "new"}-${date}`;
+    if (currentSessions.some(s => s.date === date)) return false; // skip duplicates
+    currentSessions.push({
+      id, date, dow: dowFor(date),
+      time: `${formatTime12(startTime)} – ${formatTime12(endTime)}`,
+      capacity: Math.max(1, parseInt(capacity, 10) || 1)
+    });
+    return true;
+  }
+
+  document.getElementById("genAddBtn").addEventListener("click", () => {
+    const startDate = document.getElementById("genStartDate").value;
+    const weeks = Math.max(1, Math.min(52, parseInt(document.getElementById("genWeeks").value, 10) || 1));
+    const capacity = document.getElementById("genCapacity").value;
+    const startTime = document.getElementById("genStartTime").value;
+    const endTime = document.getElementById("genEndTime").value;
+    formMsg.textContent = ""; formMsg.className = "form-message";
+
+    if (!startDate || !startTime || !endTime) {
+      formMsg.textContent = "Fill in the first date, start time and end time before generating sessions.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    let added = 0, skipped = 0;
+    const base = new Date(startDate + "T00:00:00");
+    for (let i = 0; i < weeks; i++) {
+      const d = new Date(base);
+      d.setDate(d.getDate() + i * 7);
+      const iso = d.toISOString().slice(0, 10);
+      if (addSession(iso, startTime, endTime, capacity)) added++; else skipped++;
+    }
+    renderSessionList();
+    formMsg.textContent = skipped
+      ? `Added ${added} session${added === 1 ? "" : "s"} (${skipped} skipped — already on the date${skipped === 1 ? "" : "s"} list).`
+      : `Added ${added} weekly session${added === 1 ? "" : "s"}.`;
+    formMsg.className = "form-message success";
+  });
+
+  document.getElementById("singleAddBtn").addEventListener("click", () => {
+    const date = document.getElementById("singleDate").value;
+    const capacity = document.getElementById("singleCapacity").value;
+    const startTime = document.getElementById("singleStartTime").value;
+    const endTime = document.getElementById("singleEndTime").value;
+    formMsg.textContent = ""; formMsg.className = "form-message";
+
+    if (!date || !startTime || !endTime) {
+      formMsg.textContent = "Fill in the date, start time and end time.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    const ok = addSession(date, startTime, endTime, capacity);
+    renderSessionList();
+    if (!ok) {
+      formMsg.textContent = "That date is already on the sessions list.";
+      formMsg.className = "form-message error";
+    } else {
+      formMsg.textContent = "Session added.";
+      formMsg.className = "form-message success";
+    }
+  });
+
+  // ── Open / close the form ────────────────────────────────────
+  function resetForm() {
+    editingId = null;
+    currentSessions = [];
+    currentAccent = ACCENT_PRESETS[0].hex;
+    currentImageUrl = null;
+    pendingImageFile = null;
+    bookedCountsForEdit = {};
+    fName.value = ""; fProvider.value = ""; fVenue.value = ""; fDescription.value = "";
+    fAgeNote.value = ""; fStatus.value = "active"; fPrice.value = ""; fPriceLabel.value = "";
+    fPayAtVenue.checked = true;
+    slugPreview.textContent = "";
+    formMsg.textContent = ""; formMsg.className = "form-message";
+  }
+
+  // Price label is a separate field (not just "£{price}") because some
+  // activities price per child rather than per person (see Funetics) — but
+  // it's auto-suggested from the price as a starting point so staff aren't
+  // typing it from scratch every time, and can still override it.
+  fPrice.addEventListener("input", () => {
+    if (!fPriceLabel.dataset.touched) {
+      const p = parseFloat(fPrice.value);
+      fPriceLabel.value = isNaN(p) ? "" : `£${p} per session`;
+    }
+  });
+  fPriceLabel.addEventListener("input", () => { fPriceLabel.dataset.touched = "1"; });
+  fName.addEventListener("input", () => {
+    if (!editingId) slugPreview.textContent = fName.value.trim() ? `Page ID: ${slugify(fName.value)}` : "";
+  });
+
+  async function openForm(activityId) {
+    resetForm();
+    if (activityId) {
+      const activity = activitiesCache.find(a => a.id === activityId);
+      if (!activity) return;
+      editingId = activityId;
+      formTitle.textContent = `Edit "${activity.name}"`;
+      fName.value = activity.name; fProvider.value = activity.provider; fVenue.value = activity.venue;
+      fDescription.value = activity.description || ""; fAgeNote.value = activity.ageNote || "";
+      fStatus.value = activity.status; fPrice.value = activity.price; fPriceLabel.value = activity.priceLabel;
+      fPriceLabel.dataset.touched = "1";
+      fPayAtVenue.checked = !!activity.payAtVenue;
+      currentAccent = activity.accentColor || ACCENT_PRESETS[0].hex;
+      currentImageUrl = activity.imageUrl || null;
+      currentSessions = (activity.sessions || []).map(s => ({ ...s }));
+
+      // Fetch live booked counts for this activity's sessions so staff can
+      // see (and can't accidentally remove) sessions that already have
+      // bookings on them.
+      const ids = currentSessions.map(s => s.id);
+      if (ids.length) {
+        try {
+          const snap = await db.collection("activitySessionCounts")
+            .where(firebase.firestore.FieldPath.documentId(), "in", ids.slice(0, 10))
+            .get();
+          snap.forEach(doc => { bookedCountsForEdit[doc.id] = doc.data().booked || 0; });
+        } catch (err) { console.error("Couldn't fetch booked counts:", err); }
+      }
+    } else {
+      formTitle.textContent = "Add New Activity";
+    }
+    renderColorSwatches();
+    renderImageArea();
+    renderSessionList();
+    listView.classList.add("hidden");
+    formView.classList.remove("hidden");
+  }
+
+  function closeForm() {
+    formView.classList.add("hidden");
+    listView.classList.remove("hidden");
+  }
+
+  addActivityBtn.addEventListener("click", () => openForm(null));
+  formCancelBtn.addEventListener("click", closeForm);
+
+  formSaveBtn.addEventListener("click", async () => {
+    formMsg.textContent = ""; formMsg.className = "form-message";
+
+    const name = fName.value.trim();
+    const provider = fProvider.value.trim();
+    const venue = fVenue.value.trim();
+    const price = parseFloat(fPrice.value);
+    const priceLabel = fPriceLabel.value.trim();
+
+    if (!name || !provider || !venue) {
+      formMsg.textContent = "Please fill in the activity name, provider and venue.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    if (isNaN(price) || price < 0) {
+      formMsg.textContent = "Please enter a valid price.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    if (!priceLabel) {
+      formMsg.textContent = "Please enter a price label (shown to customers).";
+      formMsg.className = "form-message error";
+      return;
+    }
+    if (!currentSessions.length) {
+      formMsg.textContent = "Add at least one session before saving.";
+      formMsg.className = "form-message error";
+      return;
+    }
+
+    let activityId = editingId;
+    if (!activityId) {
+      const slug = slugify(name);
+      if (!slug) {
+        formMsg.textContent = "Please enter a valid activity name.";
+        formMsg.className = "form-message error";
+        return;
+      }
+      const existing = await db.collection("activities").doc(slug).get();
+      if (existing.exists) {
+        formMsg.textContent = "An activity with a very similar name already exists — please tweak the name slightly.";
+        formMsg.className = "form-message error";
+        return;
+      }
+      activityId = slug;
+      // Session ids were generated against a placeholder "new-..." prefix
+      // before an activityId existed — fix them up now that we have one.
+      currentSessions = currentSessions.map(s => ({ ...s, id: `${activityId}-${s.date}` }));
+    }
+
+    formSaveBtn.disabled = true;
+    formSaveBtn.textContent = "Saving…";
+
+    try {
+      let imageUrl = currentImageUrl;
+      if (pendingImageFile) {
+        formSaveBtn.textContent = "Uploading photo…";
+        const path = `activity-images/${activityId}/${Date.now()}.jpg`;
+        const ref = storage.ref(path);
+        await ref.put(pendingImageFile, { contentType: "image/jpeg" });
+        imageUrl = await ref.getDownloadURL();
+      }
+
+      const payload = {
+        name, provider, venue,
+        description: fDescription.value.trim(),
+        ageNote: fAgeNote.value.trim() || null,
+        status: fStatus.value,
+        price, priceLabel,
+        payAtVenue: fPayAtVenue.checked,
+        accentColor: currentAccent,
+        imageUrl: imageUrl || null,
+        sessions: currentSessions,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      if (!editingId) payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+
+      await db.collection("activities").doc(activityId).set(payload, { merge: true });
+
+      formMsg.textContent = "🎉 Saved — this is now live on the booking page.";
+      formMsg.className = "form-message success";
+      await loadActivities();
+      setTimeout(closeForm, 900);
+    } catch (err) {
+      console.error("Failed to save activity:", err);
+      formMsg.textContent = "Couldn't save — please try again.";
+      formMsg.className = "form-message error";
+    } finally {
+      formSaveBtn.disabled = false;
+      formSaveBtn.textContent = "Save Activity";
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
