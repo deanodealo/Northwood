@@ -495,25 +495,25 @@ input:focus, textarea:focus { outline: none; border-color: var(--activity-accent
 
     <div id="accountRegisterPane" class="hidden">
       <div class="form-row single">
-        <label>Your Name</label>
+        <label>Your Name <span class="required-mark">*</span></label>
         <input type="text" id="regName" autocomplete="name">
       </div>
       <div class="form-row">
         <div>
-          <label>Date of Birth</label>
+          <label>Date of Birth <span class="required-mark">*</span></label>
           <input type="date" id="regDob" autocomplete="off">
         </div>
         <div>
-          <label>Postcode</label>
+          <label>Postcode <span class="required-mark">*</span></label>
           <input type="text" id="regPostcode" autocomplete="postal-code" placeholder="e.g. ST1 6PA">
         </div>
       </div>
       <div class="form-row single">
-        <label>Email</label>
+        <label>Email <span class="required-mark">*</span></label>
         <input type="email" id="regEmail" autocomplete="email">
       </div>
       <div class="form-row single">
-        <label>Phone</label>
+        <label>Phone <span class="required-mark">*</span></label>
         <input type="tel" id="regPhone" autocomplete="tel">
       </div>
       <div class="form-row single">
@@ -706,6 +706,48 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     return age;
   }
 
+  // Basic format check only — this can't tell whether an address actually
+  // exists or receives mail, just that it's shaped like one (something@
+  // something.something, no spaces). Good enough to catch typos and
+  // obviously-wrong entries before they reach Firebase/Square.
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || "").trim());
+  }
+
+  // Digits plus common separators (+, spaces, hyphens, brackets) only —
+  // rejects letters. Length is a loose sanity check (7–20 chars), not a
+  // strict UK-specific rule, so it won't wrongly block a valid mobile
+  // written with a country code or brackets around the area code.
+  function isValidPhone(phone) {
+    return /^[0-9+\-\s()]{7,20}$/.test((phone || "").trim());
+  }
+
+  // Standard UK postcode pattern (e.g. "ST1 6PA", "SW1A 1AA"). The space
+  // is optional so "ST16PA" still passes.
+  function isValidPostcode(postcode) {
+    return /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i.test((postcode || "").trim());
+  }
+
+  // Turns Firebase's error codes into a specific, readable reason rather
+  // than one generic "something went wrong" message for every possible
+  // failure.
+  function authErrorMessage(err, context) {
+    const code = err && err.code;
+    const map = {
+      "auth/email-already-in-use": "An account already exists with that email — try logging in instead.",
+      "auth/invalid-email": "That email address doesn't look valid.",
+      "auth/weak-password": "Password must be at least 6 characters.",
+      "auth/wrong-password": "Incorrect password — please try again.",
+      "auth/user-not-found": "No account found with that email address.",
+      "auth/too-many-requests": "Too many attempts — please wait a moment and try again.",
+      "auth/network-request-failed": "Network error — check your connection and try again.",
+      "auth/user-disabled": "This account has been disabled."
+    };
+    if (code && map[code]) return map[code];
+    if (code) return `${context} failed (${code}). Please try again.`;
+    return `${context} failed. Please try again.`;
+  }
+
   function isSessionPast(session) {
     const today = new Date(); today.setHours(0,0,0,0);
     return new Date(session.date + "T00:00:00") < today;
@@ -718,7 +760,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
   const activeActivities = ACTIVITIES_CONFIG.filter(a => a.status === "active");
 
   let currentActivityId = activeActivities.length ? activeActivities[0].id : null;
-  let selectedSessionId = null;
+  let selectedSessionIds = new Set(); // multiple sessions can be booked in one go
   let isStaffMode = false;
   let currentCustomer = null; // { uid, name, email, phone, familyMembers: [...] } or null if not logged in as a customer
   let card; // Square card instance, (re)initialised per activity view
@@ -757,12 +799,17 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       msg.className = "form-message error";
       return;
     }
+    if (!isValidEmail(email)) {
+      msg.textContent = "Please enter a valid email address.";
+      msg.className = "form-message error";
+      return;
+    }
     try {
       await auth.sendPasswordResetEmail(email);
       msg.textContent = "Password reset email sent — check your inbox.";
       msg.className = "form-message success";
     } catch (err) {
-      msg.textContent = "Couldn't send reset email — check the address and try again.";
+      msg.textContent = authErrorMessage(err, "Password reset");
       msg.className = "form-message error";
     }
   });
@@ -778,6 +825,11 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       msg.className = "form-message error";
       return;
     }
+    if (!isValidEmail(email)) {
+      msg.textContent = "Please enter a valid email address.";
+      msg.className = "form-message error";
+      return;
+    }
     try {
       const cred = await auth.signInWithEmailAndPassword(email, password);
       const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
@@ -789,7 +841,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       }
       staffModalOverlay.classList.add("hidden");
     } catch (err) {
-      msg.textContent = "Login failed — check your details and try again.";
+      msg.textContent = authErrorMessage(err, "Login");
       msg.className = "form-message error";
     }
   });
@@ -842,12 +894,17 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       accountModalMsg.className = "form-message error";
       return;
     }
+    if (!isValidEmail(email)) {
+      accountModalMsg.textContent = "Please enter a valid email address.";
+      accountModalMsg.className = "form-message error";
+      return;
+    }
     try {
       await auth.sendPasswordResetEmail(email);
       accountModalMsg.textContent = "Password reset email sent — check your inbox.";
       accountModalMsg.className = "form-message success";
     } catch (err) {
-      accountModalMsg.textContent = "Couldn't send reset email — check the address and try again.";
+      accountModalMsg.textContent = authErrorMessage(err, "Password reset");
       accountModalMsg.className = "form-message error";
     }
   });
@@ -861,6 +918,11 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       const password = document.getElementById("loginPassword").value;
       if (!email || !password) {
         accountModalMsg.textContent = "Enter your email and password.";
+        accountModalMsg.className = "form-message error";
+        return;
+      }
+      if (!isValidEmail(email)) {
+        accountModalMsg.textContent = "Please enter a valid email address.";
         accountModalMsg.className = "form-message error";
         return;
       }
@@ -878,7 +940,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         }
         accountModalOverlay.classList.add("hidden");
       } catch (err) {
-        accountModalMsg.textContent = "Login failed — check your details and try again.";
+        accountModalMsg.textContent = authErrorMessage(err, "Login");
         accountModalMsg.className = "form-message error";
       }
     } else {
@@ -890,8 +952,23 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       const password = document.getElementById("regPassword").value;
       const passwordConfirm = document.getElementById("regPasswordConfirm").value;
 
-      if (!name || !email || !phone || !password) {
+      if (!name || !email || !phone || !password || !dob || !postcode) {
         accountModalMsg.textContent = "Please fill in all required fields.";
+        accountModalMsg.className = "form-message error";
+        return;
+      }
+      if (!isValidEmail(email)) {
+        accountModalMsg.textContent = "Please enter a valid email address.";
+        accountModalMsg.className = "form-message error";
+        return;
+      }
+      if (!isValidPhone(phone)) {
+        accountModalMsg.textContent = "Please enter a valid phone number.";
+        accountModalMsg.className = "form-message error";
+        return;
+      }
+      if (!isValidPostcode(postcode)) {
+        accountModalMsg.textContent = "Please enter a valid UK postcode.";
         accountModalMsg.className = "form-message error";
         return;
       }
@@ -909,16 +986,14 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         await db.collection("customers").doc(cred.user.uid).set({
           name, email, phone,
-          dob: dob || null,
-          postcode: postcode || null,
+          dob,
+          postcode,
           familyMembers: [],
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         accountModalOverlay.classList.add("hidden");
       } catch (err) {
-        accountModalMsg.textContent = err.code === "auth/email-already-in-use"
-          ? "An account already exists with that email — try logging in instead."
-          : "Registration failed. Please check your details and try again.";
+        accountModalMsg.textContent = authErrorMessage(err, "Registration");
         accountModalMsg.className = "form-message error";
       }
     }
@@ -1074,6 +1149,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       staffLoginBtn.classList.remove("is-active");
       staffLoginBtn.textContent = "Staff Login";
       accountBtn.textContent = "My Account";
+      accountBtn.style.display = "";
       renderPanel();
       return;
     }
@@ -1086,6 +1162,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       customerBanner.classList.add("hidden");
       staffLoginBtn.classList.add("is-active");
       staffLoginBtn.textContent = "Staff: Logged In";
+      accountBtn.style.display = "";
       renderPanel();
       return;
     }
@@ -1107,7 +1184,10 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     staffBanner.classList.add("hidden");
     customerBanner.classList.remove("hidden");
     customerBannerName.textContent = currentCustomer.name;
-    accountBtn.textContent = "My Account";
+    // "My Account" would be a dead click once logged in — the banner
+    // above already covers Manage Family and Log Out, so there's
+    // nothing left for the button to do.
+    accountBtn.style.display = "none";
     renderPanel();
   });
 
@@ -1130,7 +1210,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     tabsEl.querySelectorAll(".ab-tab").forEach(btn => {
       btn.addEventListener("click", () => {
         currentActivityId = btn.dataset.activity;
-        selectedSessionId = null;
+        selectedSessionIds = new Set();
         renderTabs();
         renderPanel();
       });
@@ -1148,7 +1228,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       ? openSessions.map(s => {
           const full = sessionIsFull(s);
           return `
-            <div class="session-option${full ? " full" : ""}${s.id === selectedSessionId ? " selected" : ""}" data-session="${s.id}">
+            <div class="session-option${full ? " full" : ""}${selectedSessionIds.has(s.id) ? " selected" : ""}" data-session="${s.id}">
               <div class="session-option-info">
                 ${s.dow} ${fmtDate(s.date)}
                 <span>${s.time}</span>
@@ -1186,7 +1266,8 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           <div class="ab-price-tag">${activity.priceLabel}</div>
         </div>
 
-        <div class="ab-section-label">Choose a Session</div>
+        <div class="ab-section-label">Choose Session(s)</div>
+        <p style="font-family:var(--f-body); font-size:0.82rem; color:var(--c-grey-mid); margin:-0.6rem 0 0.9rem;">Select one or more sessions — you'll be booked (and charged) for each one you pick.</p>
         <div class="session-grid">${sessionsHtml}</div>
 
         <form id="bookingForm">
@@ -1252,9 +1333,15 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     panelEl.querySelectorAll(".session-option").forEach(el => {
       el.addEventListener("click", () => {
         if (el.classList.contains("full")) return;
-        selectedSessionId = el.dataset.session;
-        panelEl.querySelectorAll(".session-option").forEach(o => o.classList.remove("selected"));
-        el.classList.add("selected");
+        const sessionId = el.dataset.session;
+        if (selectedSessionIds.has(sessionId)) {
+          selectedSessionIds.delete(sessionId);
+          el.classList.remove("selected");
+        } else {
+          selectedSessionIds.add(sessionId);
+          el.classList.add("selected");
+        }
+        updateSummary();
       });
     });
 
@@ -1368,15 +1455,19 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       const adults = bookSelf ? 1 : 0;
       const kids = children.length + selectedFamilyMemberIds.size;
       const totalPeople = adults + kids;
-      const total = totalPeople * activity.price;
+      const sessionCount = selectedSessionIds.size;
+      const total = totalPeople * activity.price * sessionCount;
 
       if (totalPeople === 0) {
         summaryLine.innerHTML = "Select who's booking on above";
+      } else if (sessionCount === 0) {
+        summaryLine.innerHTML = "Select at least one session above";
       } else {
         const parts = [];
         if (adults) parts.push(`${adults} adult`);
         if (kids) parts.push(`${kids} ${kids === 1 ? "child" : "children"}`);
-        summaryLine.innerHTML = `${parts.join(", ")} — Total: <span>£${total.toFixed(2)}</span>`;
+        const sessionsLabel = `${sessionCount} ${sessionCount === 1 ? "session" : "sessions"}`;
+        summaryLine.innerHTML = `${parts.join(", ")} × ${sessionsLabel} — Total: <span>£${total.toFixed(2)}</span>`;
       }
     }
 
@@ -1458,8 +1549,18 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         msg.className = "form-message error";
         return;
       }
-      if (!selectedSessionId) {
-        msg.textContent = "Please choose a session.";
+      if (contactEmail && !isValidEmail(contactEmail)) {
+        msg.textContent = "Please enter a valid email address.";
+        msg.className = "form-message error";
+        return;
+      }
+      if (!isValidPhone(contactPhone)) {
+        msg.textContent = "Please enter a valid phone number.";
+        msg.className = "form-message error";
+        return;
+      }
+      if (selectedSessionIds.size === 0) {
+        msg.textContent = "Please choose at least one session.";
         msg.className = "form-message error";
         return;
       }
@@ -1491,9 +1592,9 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       children.forEach(c => attendees.push({ type: "child", name: [c.name.trim(), c.surname.trim()].filter(Boolean).join(" "), age: calcAge(c.dob), dob: c.dob, notes: c.notes.trim() || null }));
 
       const attendeeCount = attendees.length;
-      const totalAmount = attendeeCount * activity.price;
+      const selectedSessions = activity.sessions.filter(s => selectedSessionIds.has(s.id));
+      const totalAmount = attendeeCount * activity.price * selectedSessions.length;
 
-      const session = activity.sessions.find(s => s.id === selectedSessionId);
       const effectivePaymentMethod = isStaffMode ? "venue" : paymentMethod;
       const effectivePaymentStatus = isStaffMode
         ? (staffCollectState === "collected" ? "collected" : "unpaid")
@@ -1545,7 +1646,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
               idempotencyKey,
               amountMoney: { amount: amountPence, currency: "GBP" },
               bookingType: "activity",
-              description: `Northwood ${activity.name} - ${contactName} (${attendeeCount}) - ${session.dow} ${session.date}`,
+              description: `Northwood ${activity.name} - ${contactName} (${attendeeCount}) - ${selectedSessions.map(s => `${s.dow} ${s.date}`).join(", ")}`,
               buyerEmail: contactEmail
             })
           });
@@ -1558,44 +1659,58 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           squarePaymentId = chargeResult.paymentId;
         }
 
-        // Capacity-safe write: a transaction reads the live booked count
-        // for this session (kept in a small counter doc, since sessions
-        // themselves live in this file's config, not Firestore), checks
-        // it can fit the WHOLE group (attendeeCount, not just 1), then
-        // writes the booking. This protects against a staff desk booking
-        // and an online booking landing on the last spot(s) at once.
-        const counterRef = db.collection("activitySessionCounts").doc(selectedSessionId);
-        const bookingRef = db.collection("activityBookings").doc();
+        // Capacity-safe write: a transaction reads the live booked count for
+        // EVERY selected session (kept in small counter docs, since sessions
+        // themselves live in this file's config, not Firestore), checks each
+        // one can fit the WHOLE group (attendeeCount, not just 1), then
+        // writes one booking doc per session — all sessions succeed or none
+        // do. This protects against a staff desk booking and an online
+        // booking landing on the last spot(s) of any selected session at once.
+        // A shared bookingGroupId ties the per-session docs together when
+        // more than one session was booked in a single go.
+        const bookingGroupId = generateIdempotencyKey();
+        const counterRefs = selectedSessions.map(s => db.collection("activitySessionCounts").doc(s.id));
 
         await db.runTransaction(async (tx) => {
-          const counterDoc = await tx.get(counterRef);
-          const currentBooked = counterDoc.exists ? (counterDoc.data().booked || 0) : 0;
+          const counterDocs = await Promise.all(counterRefs.map(ref => tx.get(ref)));
 
-          if (session.capacity != null && (currentBooked + attendeeCount) > session.capacity) {
-            throw new Error("FULL");
+          const currentBookedById = {};
+          selectedSessions.forEach((s, i) => {
+            currentBookedById[s.id] = counterDocs[i].exists ? (counterDocs[i].data().booked || 0) : 0;
+          });
+
+          const fullSession = selectedSessions.find(s =>
+            s.capacity != null && (currentBookedById[s.id] + attendeeCount) > s.capacity
+          );
+          if (fullSession) {
+            throw new Error("FULL:" + fullSession.id);
           }
 
-          tx.set(counterRef, { booked: currentBooked + attendeeCount }, { merge: true });
-          tx.set(bookingRef, {
-            activityId: activity.id,
-            activityName: activity.name,
-            provider: activity.provider,
-            sessionId: session.id,
-            sessionDate: session.date,
-            sessionTime: session.time,
-            contactName,
-            contactEmail: contactEmail || null,
-            contactPhone,
-            attendees,
-            attendeeCount,
-            paymentMethod: effectivePaymentMethod,
-            paymentStatus: effectivePaymentStatus,
-            amount: totalAmount,
-            squarePaymentId: squarePaymentId || null,
-            bookedBy: isStaffMode ? "staff" : "public",
-            staffEmail: isStaffMode ? auth.currentUser.email : null,
-            customerId: currentCustomer ? currentCustomer.uid : null,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          selectedSessions.forEach((s, i) => {
+            tx.set(counterRefs[i], { booked: currentBookedById[s.id] + attendeeCount }, { merge: true });
+            const bookingRef = db.collection("activityBookings").doc();
+            tx.set(bookingRef, {
+              activityId: activity.id,
+              activityName: activity.name,
+              provider: activity.provider,
+              sessionId: s.id,
+              sessionDate: s.date,
+              sessionTime: s.time,
+              bookingGroupId: selectedSessions.length > 1 ? bookingGroupId : null,
+              contactName,
+              contactEmail: contactEmail || null,
+              contactPhone,
+              attendees,
+              attendeeCount,
+              paymentMethod: effectivePaymentMethod,
+              paymentStatus: effectivePaymentStatus,
+              amount: attendeeCount * activity.price,
+              squarePaymentId: squarePaymentId || null,
+              bookedBy: isStaffMode ? "staff" : "public",
+              staffEmail: isStaffMode ? auth.currentUser.email : null,
+              customerId: currentCustomer ? currentCustomer.uid : null,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
           });
         });
 
@@ -1613,19 +1728,24 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           }
         }
 
+        const sessionWord = selectedSessions.length === 1 ? "session" : `${selectedSessions.length} sessions`;
         msg.textContent = effectivePaymentMethod === "online"
-          ? "🎉 Booking confirmed — payment received!"
-          : "🎉 Booking confirmed — pay at the venue.";
+          ? `🎉 Booking confirmed for ${sessionWord} — payment received!`
+          : `🎉 Booking confirmed for ${sessionWord} — pay at the venue.`;
         msg.className = "form-message success";
         document.getElementById("bookingForm").reset();
-        selectedSessionId = null;
-        session.booked += attendeeCount; // reflect immediately in this session's list
+        selectedSessionIds = new Set();
+        selectedSessions.forEach(s => { s.booked += attendeeCount; }); // reflect immediately in the session list
         setTimeout(() => renderPanel(), 1200);
 
       } catch (err) {
         console.error("Booking error:", err);
-        if (err.message === "FULL") {
-          msg.textContent = "Sorry, that session just filled up — please pick another.";
+        if (err.message && err.message.startsWith("FULL")) {
+          const fullId = err.message.split(":")[1];
+          const fullSession = activity.sessions.find(s => s.id === fullId);
+          msg.textContent = fullSession
+            ? `Sorry, the ${fullSession.dow} ${fmtDate(fullSession.date)} session just filled up — please adjust your selection.`
+            : "Sorry, one of your selected sessions just filled up — please adjust your selection.";
         } else {
           msg.textContent = "An unexpected error occurred. Please try again or contact Northwood Stadium.";
         }

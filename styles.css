@@ -74,7 +74,14 @@ a { color: inherit; text-decoration: none; }
   position: fixed;
   top: 0; left: 0; right: 0;
   height: var(--header-h);
-  z-index: 100;
+  /* Higher than #customerStatusBar's z-index (150) in index.html — the
+     header is a fixed, positioned element, so it creates its own
+     stacking context. That means a z-index set on something INSIDE the
+     header (like .main-nav.is-open) can never rise above elements
+     outside the header no matter how high it's set; only raising the
+     header's own z-index actually lifts everything nested inside it,
+     including the open mobile menu, above the status bar. */
+  z-index: 200;
   background: rgba(11,11,12,0.72);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -328,6 +335,17 @@ a { color: inherit; text-decoration: none; }
 .btn-ghost:hover {
   border-color: var(--c-white);
   background: rgba(255,255,255,0.08);
+}
+
+.btn-black {
+  background: var(--c-black);
+  color: var(--c-white);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.btn-black:hover {
+  background: var(--c-black-soft);
+  transform: translateY(-1px);
 }
 
 .hero-scroll {
@@ -1033,6 +1051,10 @@ a { color: inherit; text-decoration: none; }
     padding: 24px var(--pad) 32px;
     gap: 22px;
     border-bottom: 1px solid var(--c-grey-line);
+    /* Sits above the "Signed in as..." status bar (z-index: 150 in
+       index.html) so the open menu isn't hidden behind it — the bar
+       simply reappears once the menu is closed. */
+    z-index: 160;
   }
 
   .hero-content { padding-bottom: 70px; }

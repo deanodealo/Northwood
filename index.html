@@ -70,13 +70,13 @@
       </div>
 
       <div id="accountRegisterPane" style="display:none;">
-        <div class="account-field"><label>Your Name</label><input type="text" id="regName" autocomplete="name"></div>
+        <div class="account-field"><label>Your Name <span style="color:var(--c-red);">*</span></label><input type="text" id="regName" autocomplete="name"></div>
         <div class="two-col-row">
-          <div class="account-field" style="flex:1;"><label>Date of Birth</label><input type="date" id="regDob"></div>
-          <div class="account-field" style="flex:1;"><label>Postcode</label><input type="text" id="regPostcode" placeholder="e.g. ST1 6PA"></div>
+          <div class="account-field" style="flex:1;"><label>Date of Birth <span style="color:var(--c-red);">*</span></label><input type="date" id="regDob"></div>
+          <div class="account-field" style="flex:1;"><label>Postcode <span style="color:var(--c-red);">*</span></label><input type="text" id="regPostcode" placeholder="e.g. ST1 6PA"></div>
         </div>
-        <div class="account-field"><label>Email</label><input type="email" id="regEmail" autocomplete="email"></div>
-        <div class="account-field"><label>Phone</label><input type="tel" id="regPhone" autocomplete="tel"></div>
+        <div class="account-field"><label>Email <span style="color:var(--c-red);">*</span></label><input type="email" id="regEmail" autocomplete="email"></div>
+        <div class="account-field"><label>Phone <span style="color:var(--c-red);">*</span></label><input type="tel" id="regPhone" autocomplete="tel"></div>
         <div class="account-field"><label>Password</label><input type="password" id="regPassword" autocomplete="new-password"></div>
         <div class="account-field"><label>Confirm Password</label><input type="password" id="regPasswordConfirm" autocomplete="new-password"></div>
       </div>
@@ -159,6 +159,7 @@
         <div class="hero-actions">
           <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" class="btn btn-primary">Book a Facility</a>
           <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn btn-ghost">View Memberships</a>
+          <a href="#activities" class="btn btn-black">Book an Activity</a>
         </div>
       </div>
 
@@ -333,7 +334,7 @@
               </div>
             </div>
             <p>Follow us for Updates, Latest News, and behind-the-scenes from the stadium, straight from Facebook.</p>
-            <a href="https://www.facebook.com/profile.php?id=100090664912680" class="btn-social-link" target="_blank" rel="noopener">Follw us on Facebook →</a>
+            <a href="https://www.facebook.com/profile.php?id=100090664912680" class="btn-social-link" target="_blank" rel="noopener">Follow us on Facebook →</a>
           </div>
 
           <div class="social-embed-card social-link-card instagram-card">
@@ -489,6 +490,48 @@
       return age;
     }
 
+    // Basic format check only — this can't tell whether an address
+    // actually exists or receives mail, just that it's shaped like one
+    // (something@something.something, no spaces). Good enough to catch
+    // typos and obviously-wrong entries before they reach Firebase.
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((email || "").trim());
+    }
+
+    // Digits plus common separators (+, spaces, hyphens, brackets) only —
+    // rejects letters. Length is a loose sanity check (7–20 chars), not a
+    // strict UK-specific rule, so it won't wrongly block a valid mobile
+    // written with a country code or brackets around the area code.
+    function isValidPhone(phone) {
+      return /^[0-9+\-\s()]{7,20}$/.test((phone || "").trim());
+    }
+
+    // Standard UK postcode pattern (e.g. "ST1 6PA", "SW1A 1AA"). The
+    // space is optional so "ST16PA" still passes.
+    function isValidPostcode(postcode) {
+      return /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i.test((postcode || "").trim());
+    }
+
+    // Turns Firebase's error codes into a specific, readable reason
+    // rather than one generic "something went wrong" message for every
+    // possible failure.
+    function authErrorMessage(err, context) {
+      const code = err && err.code;
+      const map = {
+        "auth/email-already-in-use": "An account already exists with that email — try logging in instead.",
+        "auth/invalid-email": "That email address doesn't look valid.",
+        "auth/weak-password": "Password must be at least 6 characters.",
+        "auth/wrong-password": "Incorrect password — please try again.",
+        "auth/user-not-found": "No account found with that email address.",
+        "auth/too-many-requests": "Too many attempts — please wait a moment and try again.",
+        "auth/network-request-failed": "Network error — check your connection and try again.",
+        "auth/user-disabled": "This account has been disabled."
+      };
+      if (code && map[code]) return map[code];
+      if (code) return `${context} failed (${code}). Please try again.`;
+      return `${context} failed. Please try again.`;
+    }
+
     const accountNavLink = document.getElementById("accountNavLink");
     const customerStatusBar = document.getElementById("customerStatusBar");
     const customerStatusName = document.getElementById("customerStatusName");
@@ -539,11 +582,12 @@
       e.preventDefault();
       const email = document.getElementById("loginEmail").value.trim();
       if (!email) { showAccountMsg("Enter your email above first, then click Forgot password.", "error"); return; }
+      if (!isValidEmail(email)) { showAccountMsg("Please enter a valid email address.", "error"); return; }
       try {
         await auth.sendPasswordResetEmail(email);
         showAccountMsg("Password reset email sent — check your inbox.", "success");
       } catch (err) {
-        showAccountMsg("Couldn't send reset email — check the address and try again.", "error");
+        showAccountMsg(authErrorMessage(err, "Password reset"), "error");
       }
     });
 
@@ -554,6 +598,7 @@
         const email = document.getElementById("loginEmail").value.trim();
         const password = document.getElementById("loginPassword").value;
         if (!email || !password) { showAccountMsg("Enter your email and password.", "error"); return; }
+        if (!isValidEmail(email)) { showAccountMsg("Please enter a valid email address.", "error"); return; }
         try {
           const cred = await auth.signInWithEmailAndPassword(email, password);
           const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
@@ -564,7 +609,7 @@
           }
           accountModalOverlay.style.display = "none";
         } catch (err) {
-          showAccountMsg("Login failed — check your details and try again.", "error");
+          showAccountMsg(authErrorMessage(err, "Login"), "error");
         }
       } else {
         const name = document.getElementById("regName").value.trim();
@@ -575,25 +620,23 @@
         const password = document.getElementById("regPassword").value;
         const passwordConfirm = document.getElementById("regPasswordConfirm").value;
 
-        if (!name || !email || !phone || !password) { showAccountMsg("Please fill in all required fields.", "error"); return; }
+        if (!name || !email || !phone || !password || !dob || !postcode) { showAccountMsg("Please fill in all required fields.", "error"); return; }
+        if (!isValidEmail(email)) { showAccountMsg("Please enter a valid email address.", "error"); return; }
+        if (!isValidPhone(phone)) { showAccountMsg("Please enter a valid phone number.", "error"); return; }
+        if (!isValidPostcode(postcode)) { showAccountMsg("Please enter a valid UK postcode.", "error"); return; }
         if (password.length < 6) { showAccountMsg("Password must be at least 6 characters.", "error"); return; }
         if (password !== passwordConfirm) { showAccountMsg("Passwords don't match.", "error"); return; }
 
         try {
           const cred = await auth.createUserWithEmailAndPassword(email, password);
           await db.collection("customers").doc(cred.user.uid).set({
-            name, email, phone, dob: dob || null, postcode: postcode || null,
+            name, email, phone, dob, postcode,
             familyMembers: [],
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
           accountModalOverlay.style.display = "none";
         } catch (err) {
-          showAccountMsg(
-            err.code === "auth/email-already-in-use"
-              ? "An account already exists with that email — try logging in instead."
-              : "Registration failed. Please check your details and try again.",
-            "error"
-          );
+          showAccountMsg(authErrorMessage(err, "Registration"), "error");
         }
       }
     });
@@ -727,6 +770,7 @@
       if (!user) {
         currentCustomer = null;
         customerStatusBar.style.display = "none";
+        accountNavLink.style.display = "";
         return;
       }
 
@@ -734,6 +778,7 @@
       if (staffDoc.exists) {
         currentCustomer = null;
         customerStatusBar.style.display = "none";
+        accountNavLink.style.display = "";
         return;
       }
 
@@ -750,6 +795,10 @@
 
       customerStatusName.textContent = currentCustomer.name;
       customerStatusBar.style.display = "block";
+      // "My Account" would be a dead click once logged in — the status
+      // bar above already covers Manage Family and Log Out, so there's
+      // nothing left for the nav link to do.
+      accountNavLink.style.display = "none";
     });
   })();
   </script>
