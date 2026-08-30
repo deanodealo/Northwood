@@ -32,11 +32,18 @@ if (navToggle && mainNav) {
 const header = document.getElementById('siteHeader');
 
 if (header) {
+  // Previously this used the same translucent black (rgba(11,11,12,0.72))
+  // at rest on every page — that reads as grey over a light page background
+  // (facilities.html) but reads as black over the index.html hero photo,
+  // since the same translucency picks up whatever's behind the fixed
+  // header. Using solid-ish colours here instead of "black at 72% opacity"
+  // makes the at-rest/scrolled look consistent across every page,
+  // regardless of what's behind the header.
   const onScroll = () => {
     if (window.scrollY > 40) {
-      header.style.background = 'rgba(11,11,12,0.92)';
+      header.style.background = 'rgba(11,11,12,0.95)';
     } else {
-      header.style.background = 'rgba(11,11,12,0.72)';
+      header.style.background = 'rgba(58,58,60,0.95)';
     }
   };
   window.addEventListener('scroll', onScroll, { passive: true });
