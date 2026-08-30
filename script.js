@@ -15,6 +15,17 @@ if (navToggle && mainNav) {
       navToggle.setAttribute('aria-expanded', 'false');
     });
   });
+
+  // Close menu when clicking/tapping anywhere outside it (and outside the
+  // toggle button itself, since that already has its own open/close click
+  // handler above — without this check the same click would close it and
+  // then immediately reopen it).
+  document.addEventListener('click', (e) => {
+    if (!mainNav.classList.contains('is-open')) return;
+    if (mainNav.contains(e.target) || navToggle.contains(e.target)) return;
+    mainNav.classList.remove('is-open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  });
 }
 
 // ============ HEADER STATE ON SCROLL ============
