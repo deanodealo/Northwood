@@ -82,6 +82,30 @@
        rather than a plain rectangular image crop. Percentage radius so it
        scales correctly whatever pixel size the image ends up rendered at. */
     .footer-credit img { border-radius: 22%; }
+
+    /* HERO "PLAY. TRAIN. WIN." — each word punches in one after another
+       on page load rather than appearing all at once with the rest of
+       the headline. Punch-zoom-in + quick overshoot settle reads as a
+       forceful "hit" landing rather than a plain fade. */
+    .hero-title .ptw-word {
+      display: inline-block;
+      opacity: 0;
+      transform: scale(2.2);
+      will-change: transform, opacity;
+    }
+    @keyframes ptwHit {
+      0%   { opacity: 0; transform: scale(2.2); }
+      50%  { opacity: 1; transform: scale(0.88); }
+      75%  { transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .hero-title .ptw-1 { animation: ptwHit 0.45s cubic-bezier(.2,.8,.2,1) 0.1s forwards; }
+    .hero-title .ptw-2 { animation: ptwHit 0.45s cubic-bezier(.2,.8,.2,1) 0.45s forwards; }
+    .hero-title .ptw-3 { animation: ptwHit 0.45s cubic-bezier(.2,.8,.2,1) 0.8s forwards; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-title .ptw-word { opacity: 1 !important; animation: none !important; transform: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -220,7 +244,7 @@
 
       <div class="hero-content">
         <p class="hero-eyebrow">Stoke-on-Trent</p>
-        <h1 class="hero-title">Northwood Community Sports<br>Play. Train. Win.</h1>
+        <h1 class="hero-title">Northwood Community Sports<br><span class="ptw-word ptw-1">Play.</span> <span class="ptw-word ptw-2">Train.</span> <span class="ptw-word ptw-3">Win.</span></h1>
         <p class="hero-sub">Gym, Track, Football, &amp; Indoor.  Staffordshire's home for All Sports</p>
         <div class="hero-actions">
           <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" class="btn btn-primary">Book a Facility</a>
