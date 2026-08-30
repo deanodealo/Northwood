@@ -180,10 +180,20 @@ label {
 .field-hint { font-family: var(--f-body); font-size: 0.74rem; color: var(--c-grey-mid); margin-top: 0.3rem; }
 input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"],
 input[type="date"], input[type="time"], textarea, select {
-  width: 100%; min-width: 0; padding: 0.7rem 0.85rem; font-family: var(--f-body); font-size: 0.92rem; color: var(--c-black);
+  width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 0.7rem 0.85rem; font-family: var(--f-body); font-size: 0.92rem; color: var(--c-black);
   background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1); border-radius: 8px; transition: border-color 0.15s, background 0.15s;
 }
 input:focus, textarea:focus, select:focus { outline: none; border-color: var(--c-red); background: white; }
+
+/* iOS Safari renders the native date/time picker control with its own
+   internal sizing that ignores width:100% inside narrow grid columns,
+   causing it to overhang past its container on mobile. Stripping the
+   native appearance forces it to respect the box model like a normal
+   input; it still opens the standard date/time picker on tap. */
+input[type="date"], input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
 .required-mark { color: var(--c-red); }
 
 .checkbox-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem; }
