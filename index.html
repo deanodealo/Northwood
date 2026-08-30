@@ -77,6 +77,11 @@
     @media (prefers-reduced-motion: reduce) {
       .logo-anim image { opacity: 1 !important; animation: none !important; transform: none !important; }
     }
+
+    /* Footer "Site by Dealo" credit logo — rounded to read as an app tile
+       rather than a plain rectangular image crop. Percentage radius so it
+       scales correctly whatever pixel size the image ends up rendered at. */
+    .footer-credit img { border-radius: 22%; }
   </style>
 </head>
 <body>
