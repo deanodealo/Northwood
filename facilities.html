@@ -456,7 +456,18 @@
         if (!isValidEmail(email)) { showAccountMsg("Please enter a valid email address.", "error"); return; }
         try {
           const cred = await auth.signInWithEmailAndPassword(email, password);
-          const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+          // Firestore rules correctly restrict the `staff` collection to
+          // staff members, so this read throws (permission-denied) for
+          // every genuine customer logging in here — that's expected, not
+          // a real error, so it must not be allowed to fall through to the
+          // generic catch below (which would leave the modal open showing
+          // an error, even though the login itself succeeded).
+          let staffDoc;
+          try {
+            staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+          } catch (err) {
+            staffDoc = { exists: false };
+          }
           if (staffDoc.exists) {
             await auth.signOut();
             showAccountMsg("This is a staff account — staff should log in via the booking page's Staff Login.", "error");
@@ -629,7 +640,17 @@
         return;
       }
 
-      const staffDoc = await db.collection("staff").doc(user.uid).get();
+      // Same rules-throw-for-non-staff situation as the login handler above:
+      // wrap this in a try/catch so a permission-denied read for a genuine
+      // customer doesn't reject silently and skip the customer-doc lookup
+      // below (which is what was leaving the status bar/"My Account" link
+      // stuck in the logged-out state after a successful login).
+      let staffDoc;
+      try {
+        staffDoc = await db.collection("staff").doc(user.uid).get();
+      } catch (err) {
+        staffDoc = { exists: false };
+      }
       if (staffDoc.exists) {
         currentCustomer = null;
         customerStatusBar.style.display = "none";

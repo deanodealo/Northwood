@@ -287,7 +287,7 @@ label {
   color: var(--c-black);
   margin-bottom: 0.4rem;
 }
-input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], input[type="date"], textarea {
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], input[type="date"], textarea, select {
   width: 100%;
   min-width: 0;
   padding: 0.7rem 0.85rem;
@@ -299,7 +299,7 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="number"]
   border-radius: 8px;
   transition: border-color 0.15s, background 0.15s;
 }
-input:focus, textarea:focus { outline: none; border-color: var(--activity-accent, var(--c-red)); background: white; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--activity-accent, var(--c-red)); background: white; }
 .required-mark { color: var(--c-red); }
 
 /* — payment method choice — */
@@ -696,6 +696,88 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     return /^[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}$/i.test((postcode || "").trim());
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     CUSTOM QUESTIONS (per-activity extra fields)
+     ───────────────────────────────────────────────────────────
+     Set up per-activity in Manage Activities (activity.extraFields).
+     `appliesTo` decides where a field shows up here:
+       "contact"  → asked once, in Contact Details, for the parent/
+                    guardian booking.
+       "attendee" → asked once per young person being booked on
+                    (the self block, each new child block, and each
+                    ticked saved family member).
+       "both"     → asked in Contact Details (and, since the contact
+                    IS the "self" attendee when they book a place for
+                    themselves, that same answer is reused for self
+                    rather than asking twice) AND separately per
+                    child, since a child is a different person.
+     Answers are saved onto the relevant profile (customer account /
+     saved family member) so the same question is never re-asked for
+     that person, on this activity or any other that reuses the
+     field's id — see where contactExtraFields / attendee extraFields
+     get persisted after a successful booking, further down.
+     ═══════════════════════════════════════════════════════════ */
+
+  function contactExtraFieldDefs(activity) {
+    return (activity.extraFields || []).filter(f => f.appliesTo === "contact" || f.appliesTo === "both");
+  }
+  // Fields that need their own answer PER PERSON being booked on.
+  function attendeeExtraFieldDefs(activity) {
+    return (activity.extraFields || []).filter(f => f.appliesTo === "attendee" || f.appliesTo === "both");
+  }
+  // Subset of attendee fields that must be asked separately for "self"
+  // (i.e. NOT already covered by the contact section — a "both" field is
+  // answered once, in Contact Details, and that answer is reused for self).
+  function selfOnlyExtraFieldDefs(activity) {
+    return (activity.extraFields || []).filter(f => f.appliesTo === "attendee");
+  }
+
+  function escHtml(str) {
+    return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
+  // Renders one field as a form-row single block: a <select> (with
+  // <optgroup>s if the field defines grouped options) for type "select",
+  // otherwise a plain text input. `idAttr` is the DOM id to read the value
+  // back from on submit; `value` pre-fills a previously-saved answer.
+  function renderExtraFieldHtml(field, idAttr, value) {
+    const requiredMark = field.required ? ' <span class="required-mark">*</span>' : "";
+    if (field.type === "select") {
+      const optionsHtml = field.groups
+        ? field.groups.map(g => `<optgroup label="${escHtml(g.group)}">${g.options.map(o => `<option value="${escHtml(o)}"${o === value ? " selected" : ""}>${escHtml(o)}</option>`).join("")}</optgroup>`).join("")
+        : (field.options || []).map(o => `<option value="${escHtml(o)}"${o === value ? " selected" : ""}>${escHtml(o)}</option>`).join("");
+      return `
+        <div class="form-row single">
+          <label>${escHtml(field.label)}${requiredMark}</label>
+          <select id="${idAttr}">
+            <option value="">Select…</option>
+            ${optionsHtml}
+          </select>
+        </div>
+      `;
+    }
+    return `
+      <div class="form-row single">
+        <label>${escHtml(field.label)}${requiredMark}</label>
+        <input type="text" id="${idAttr}" value="${escHtml(value || "")}">
+      </div>
+    `;
+  }
+
+  function readExtraFieldValues(fields, idPrefix) {
+    const values = {};
+    fields.forEach(f => {
+      const el = document.getElementById(`${idPrefix}${f.id}`);
+      if (el) values[f.id] = el.value.trim();
+    });
+    return values;
+  }
+
+  // true if every required field in `fields` has a non-empty answer in `values`.
+  function extraFieldsSatisfied(fields, values) {
+    return fields.every(f => !f.required || (values[f.id] || "").trim());
+  }
+
   // Turns Firebase's error codes into a specific, readable reason rather
   // than one generic "something went wrong" message for every possible
   // failure.
@@ -1051,6 +1133,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           dob,
           postcode,
           familyMembers: [],
+          extraFieldAnswers: {},
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         accountModalOverlay.classList.add("hidden");
@@ -1235,13 +1318,13 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     let customerDoc = await db.collection("customers").doc(user.uid).get();
     if (!customerDoc.exists) {
       await db.collection("customers").doc(user.uid).set({
-        name: user.email, email: user.email, phone: "", dob: null, postcode: null, familyMembers: [],
+        name: user.email, email: user.email, phone: "", dob: null, postcode: null, familyMembers: [], extraFieldAnswers: {},
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       customerDoc = await db.collection("customers").doc(user.uid).get();
     }
     const data = customerDoc.data();
-    currentCustomer = { uid: user.uid, name: data.name, email: data.email, phone: data.phone, dob: data.dob || "", postcode: data.postcode || "", familyMembers: data.familyMembers || [] };
+    currentCustomer = { uid: user.uid, name: data.name, email: data.email, phone: data.phone, dob: data.dob || "", postcode: data.postcode || "", familyMembers: data.familyMembers || [], extraFieldAnswers: data.extraFieldAnswers || {} };
 
     staffBanner.classList.add("hidden");
     customerBanner.classList.remove("hidden");
@@ -1302,8 +1385,15 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         }).join("")
       : '<div class="ab-empty" style="padding:2rem 0;">No upcoming sessions scheduled yet.</div>';
 
-    // Staff mode always uses "at venue" — no online/venue choice needed.
-    const paymentSectionHtml = isStaffMode ? `
+    // A £0 activity (e.g. Youth Club) skips payment entirely — no online/
+    // venue choice, no Square card, nothing to collect or mark collected.
+    // Staff mode otherwise always uses "at venue" — no online/venue choice
+    // needed there either.
+    const isFreeActivity = activity.price === 0;
+    const paymentSectionHtml = isFreeActivity ? `
+      <div class="ab-section-label">Payment</div>
+      <p style="font-family:var(--f-body); font-size:0.85rem; color:var(--c-grey-mid); margin:-0.5rem 0 1rem;">This activity is free — no payment is needed.</p>
+    ` : isStaffMode ? `
       <div class="ab-section-label">Payment (Staff)</div>
       <div class="staff-collect-toggle">
         <button type="button" class="staff-collect-btn active" data-collect="unpaid">Leave unpaid — collect later</button>
@@ -1347,10 +1437,18 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
               <input type="tel" id="contactPhone" required value="${currentCustomer ? currentCustomer.phone : ""}">
             </div>
           </div>
-          <div class="form-row single">
-            <label>Email ${isStaffMode ? "" : '<span class="required-mark">*</span>'}</label>
-            <input type="email" id="contactEmail" ${isStaffMode ? "" : "required"} value="${currentCustomer ? currentCustomer.email : ""}">
+          <div class="form-row">
+            <div>
+              <label>Email ${isStaffMode ? "" : '<span class="required-mark">*</span>'}</label>
+              <input type="email" id="contactEmail" ${isStaffMode ? "" : "required"} value="${currentCustomer ? currentCustomer.email : ""}">
+            </div>
+            <div>
+              <label>Postcode ${isStaffMode ? "" : '<span class="required-mark">*</span>'}</label>
+              <input type="text" id="contactPostcode" ${isStaffMode ? "" : "required"} placeholder="e.g. ST1 6PA" value="${currentCustomer && currentCustomer.postcode ? currentCustomer.postcode : ""}">
+            </div>
           </div>
+
+          ${contactExtraFieldDefs(activity).map(f => renderExtraFieldHtml(f, `contactExtra_${f.id}`, currentCustomer && currentCustomer.extraFieldAnswers ? currentCustomer.extraFieldAnswers[f.id] : "")).join("")}
 
           <div class="ab-section-label">Who's Booking On?</div>
           <div class="who-toggle">
@@ -1367,6 +1465,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           <div id="selfNotesBlock" class="hidden">
             <label>Any notes for your own place (optional)</label>
             <textarea id="selfNotes" rows="2"></textarea>
+            ${selfOnlyExtraFieldDefs(activity).map(f => renderExtraFieldHtml(f, `selfExtra_${f.id}`, currentCustomer && currentCustomer.extraFieldAnswers ? currentCustomer.extraFieldAnswers[f.id] : "")).join("")}
           </div>
 
           <div id="childrenBlock" class="hidden">
@@ -1382,7 +1481,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           <div class="ab-summary-line" id="summaryLine">Select who's booking on above</div>
 
           <button type="button" class="ab-submit-btn" id="submitBtn">
-            ${isStaffMode ? "Confirm Booking" : "Book & Pay"}
+            ${(isStaffMode || isFreeActivity) ? "Confirm Booking" : "Book & Pay"}
           </button>
           <div class="form-message" id="formMessage"></div>
         </form>
@@ -1395,6 +1494,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
   // ── Panel interactivity ─────────────────────────────────────
   function wireUpPanel(activity) {
     formDirty = false; // freshly rendered — nothing typed into this copy yet
+    const isFreeActivity = activity.price === 0; // recomputed here — renderPanel()'s copy is out of scope in this function
     panelEl.querySelectorAll(".session-option").forEach(el => {
       el.addEventListener("click", () => {
         if (el.classList.contains("full")) return;
@@ -1423,6 +1523,14 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     let children = []; // { id, name, age, notes, saveToAccount }
     let nextChildId = 1;
     let selectedFamilyMemberIds = new Set(); // saved family member IDs ticked for this booking
+    // Working copy of each saved family member's custom-question answers for
+    // THIS booking — starts from whatever's already saved on their profile
+    // (so a returning family member isn't re-asked), but edits here only
+    // persist back to their profile once the booking is actually submitted.
+    const familyExtraAnswers = {};
+    if (currentCustomer) {
+      currentCustomer.familyMembers.forEach(m => { familyExtraAnswers[m.id] = { ...(m.extraFieldAnswers || {}) }; });
+    }
 
     const selfCheckbox = document.getElementById("bookSelf");
     const childCheckbox = document.getElementById("bookChild");
@@ -1437,13 +1545,19 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
     function renderSavedFamily() {
       if (!savedFamilyListEl) return;
+      const extraFields = attendeeExtraFieldDefs(activity);
       savedFamilyListEl.innerHTML = currentCustomer.familyMembers.map(m => {
         const age = calcAge(m.dob);
+        const checked = selectedFamilyMemberIds.has(m.id);
+        const extraHtml = (checked && extraFields.length)
+          ? `<div style="padding:0 0 0.6rem 0.5rem;">${extraFields.map(f => renderExtraFieldHtml(f, `famExtra_${m.id}_${f.id}`, familyExtraAnswers[m.id][f.id])).join("")}</div>`
+          : "";
         return `
-        <div class="who-option${selectedFamilyMemberIds.has(m.id) ? " checked" : ""}" data-saved-member="${m.id}">
-          <input type="checkbox" ${selectedFamilyMemberIds.has(m.id) ? "checked" : ""} data-saved-checkbox="${m.id}">
+        <div class="who-option${checked ? " checked" : ""}" data-saved-member="${m.id}">
+          <input type="checkbox" ${checked ? "checked" : ""} data-saved-checkbox="${m.id}">
           <label>${fullFamilyName(m)}${age !== null ? " (" + age + ")" : ""}</label>
         </div>
+        ${extraHtml}
       `;
       }).join("");
 
@@ -1451,8 +1565,18 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         cb.addEventListener("change", () => {
           const id = cb.dataset.savedCheckbox;
           if (cb.checked) selectedFamilyMemberIds.add(id); else selectedFamilyMemberIds.delete(id);
-          cb.closest(".who-option").classList.toggle("checked", cb.checked);
+          renderSavedFamily(); // re-render to show/hide that member's custom-question inputs
           updateSummary();
+        });
+      });
+
+      extraFields.forEach(f => {
+        currentCustomer.familyMembers.forEach(m => {
+          const el = document.getElementById(`famExtra_${m.id}_${f.id}`);
+          if (!el) return;
+          el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
+            familyExtraAnswers[m.id][f.id] = el.value;
+          });
         });
       });
     }
@@ -1482,6 +1606,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
             <label>Notes (dietary, medical, or other instructions)</label>
             <textarea class="child-notes" data-field="notes" data-child="${c.id}" rows="2">${c.notes}</textarea>
           </div>
+          ${attendeeExtraFieldDefs(activity).map(f => renderExtraFieldHtml(f, `childExtra_${c.id}_${f.id}`, c.extraFields ? c.extraFields[f.id] : "")).join("")}
           ${currentCustomer ? `
             <div class="who-option${c.saveToAccount ? " checked" : ""}" style="margin-top:0.6rem;">
               <input type="checkbox" id="save-${c.id}" data-save-account="${c.id}" ${c.saveToAccount ? "checked" : ""}>
@@ -1495,6 +1620,16 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         el.addEventListener("input", () => {
           const child = children.find(c => c.id === Number(el.dataset.child));
           if (child) child[el.dataset.field] = el.value;
+        });
+      });
+      attendeeExtraFieldDefs(activity).forEach(f => {
+        children.forEach(c => {
+          const el = document.getElementById(`childExtra_${c.id}_${f.id}`);
+          if (!el) return;
+          el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
+            if (!c.extraFields) c.extraFields = {};
+            c.extraFields[f.id] = el.value;
+          });
         });
       });
       childrenListEl.querySelectorAll("[data-save-account]").forEach(cb => {
@@ -1514,7 +1649,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     }
 
     function addChild() {
-      children.push({ id: nextChildId++, name: "", surname: "", dob: "", notes: "", saveToAccount: false });
+      children.push({ id: nextChildId++, name: "", surname: "", dob: "", notes: "", saveToAccount: false, extraFields: {} });
       renderChildren();
       updateSummary();
     }
@@ -1535,7 +1670,8 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         if (adults) parts.push(`${adults} adult`);
         if (kids) parts.push(`${kids} ${kids === 1 ? "child" : "children"}`);
         const sessionsLabel = `${sessionCount} ${sessionCount === 1 ? "session" : "sessions"}`;
-        summaryLine.innerHTML = `${parts.join(", ")} × ${sessionsLabel} — Total: <span>£${total.toFixed(2)}</span>`;
+        const totalLabel = isFreeActivity ? "Free" : `£${total.toFixed(2)}`;
+        summaryLine.innerHTML = `${parts.join(", ")} × ${sessionsLabel} — Total: <span>${totalLabel}</span>`;
       }
     }
 
@@ -1565,7 +1701,9 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     addChildBtn.addEventListener("click", addChild);
     updateSummary();
 
-    if (isStaffMode) {
+    if (isFreeActivity) {
+      // Nothing to wire up — no payment method choice, no Square card.
+    } else if (isStaffMode) {
       panelEl.querySelectorAll(".staff-collect-btn").forEach(btn => {
         btn.addEventListener("click", () => {
           staffCollectState = btn.dataset.collect;
@@ -1610,9 +1748,10 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
       const contactName = document.getElementById("contactName").value.trim();
       const contactPhone = document.getElementById("contactPhone").value.trim();
       const contactEmail = document.getElementById("contactEmail").value.trim();
+      const contactPostcode = document.getElementById("contactPostcode").value.trim();
       const selfNotes = document.getElementById("selfNotes").value.trim();
 
-      if (!contactName || !contactPhone || (!isStaffMode && !contactEmail)) {
+      if (!contactName || !contactPhone || (!isStaffMode && (!contactEmail || !contactPostcode))) {
         msg.textContent = "Please fill in the required contact details.";
         msg.className = "form-message error";
         return;
@@ -1627,6 +1766,23 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         msg.className = "form-message error";
         return;
       }
+      if (contactPostcode && !isValidPostcode(contactPostcode)) {
+        msg.textContent = "Please enter a valid UK postcode.";
+        msg.className = "form-message error";
+        return;
+      }
+
+      // Custom questions this activity defines (see manage-activities.html) —
+      // read/validate here, at the "contact" and "self" level; per-child and
+      // per-family-member answers are validated further down, once we know
+      // who's actually being booked on.
+      const contactExtraFields = readExtraFieldValues(contactExtraFieldDefs(activity), "contactExtra_");
+      if (!isStaffMode && !extraFieldsSatisfied(contactExtraFieldDefs(activity), contactExtraFields)) {
+        msg.textContent = "Please answer the required question(s) above before continuing.";
+        msg.className = "form-message error";
+        return;
+      }
+
       if (selectedSessionIds.size === 0) {
         msg.textContent = "Please choose at least one session.";
         msg.className = "form-message error";
@@ -1643,28 +1799,67 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         return;
       }
 
+      const selfExtraOnlyDefs = selfOnlyExtraFieldDefs(activity);
+      const selfExtraValues = bookSelf ? readExtraFieldValues(selfExtraOnlyDefs, "selfExtra_") : {};
+      if (bookSelf && !extraFieldsSatisfied(selfExtraOnlyDefs, selfExtraValues)) {
+        msg.textContent = "Please answer the required question(s) for your own place.";
+        msg.className = "form-message error";
+        return;
+      }
+      const attendeeExtraDefs = attendeeExtraFieldDefs(activity);
+      if (children.some(c => !extraFieldsSatisfied(attendeeExtraDefs, c.extraFields || {}))) {
+        msg.textContent = "Please answer the required question(s) for each child.";
+        msg.className = "form-message error";
+        return;
+      }
+      if (currentCustomer && [...selectedFamilyMemberIds].some(id => !extraFieldsSatisfied(attendeeExtraDefs, familyExtraAnswers[id] || {}))) {
+        msg.textContent = "Please answer the required question(s) for each family member ticked above.";
+        msg.className = "form-message error";
+        return;
+      }
+
       // Build the attendee list: the contact themself (if booking a place),
       // any ticked saved family members, plus any newly typed-in children.
       // This drives both the headcount (for pricing and capacity) and what
       // shows on the admin dashboard. Age is calculated live from DOB at
       // the moment of booking, so the admin always sees the child's actual
       // current age rather than a number that was accurate whenever it was
-      // first saved.
+      // first saved. Each attendee's `extraFields` carries answers to this
+      // activity's custom questions (see CUSTOM QUESTIONS above) — for self,
+      // that's the "both"-scoped answers just given under Contact Details
+      // (the contact and "self" are the same person, so it's not asked
+      // twice) plus anything asked only of self; for a child, it's their own
+      // separately-asked answers.
       const attendees = [];
-      if (bookSelf) attendees.push({ type: "adult", name: contactName, notes: selfNotes || null });
+      if (bookSelf) {
+        const selfExtra = {};
+        contactExtraFieldDefs(activity).forEach(f => { if (f.appliesTo === "both" && contactExtraFields[f.id]) selfExtra[f.id] = contactExtraFields[f.id]; });
+        Object.entries(selfExtraValues).forEach(([k, v]) => { if (v) selfExtra[k] = v; });
+        attendees.push({ type: "adult", name: contactName, notes: selfNotes || null, extraFields: selfExtra });
+      }
       if (currentCustomer) {
         currentCustomer.familyMembers
           .filter(m => selectedFamilyMemberIds.has(m.id))
-          .forEach(m => attendees.push({ type: "child", name: fullFamilyName(m), age: calcAge(m.dob), dob: m.dob || null, notes: m.notes || null }));
+          .forEach(m => {
+            const memberExtra = {};
+            attendeeExtraDefs.forEach(f => { const v = (familyExtraAnswers[m.id] || {})[f.id]; if (v) memberExtra[f.id] = v; });
+            attendees.push({ type: "child", name: fullFamilyName(m), age: calcAge(m.dob), dob: m.dob || null, notes: m.notes || null, extraFields: memberExtra });
+          });
       }
-      children.forEach(c => attendees.push({ type: "child", name: [c.name.trim(), c.surname.trim()].filter(Boolean).join(" "), age: calcAge(c.dob), dob: c.dob, notes: c.notes.trim() || null }));
+      children.forEach(c => {
+        const childExtra = {};
+        attendeeExtraDefs.forEach(f => { const v = (c.extraFields || {})[f.id]; if (v) childExtra[f.id] = v; });
+        attendees.push({ type: "child", name: [c.name.trim(), c.surname.trim()].filter(Boolean).join(" "), age: calcAge(c.dob), dob: c.dob, notes: c.notes.trim() || null, extraFields: childExtra });
+      });
 
       const attendeeCount = attendees.length;
       const selectedSessions = activity.sessions.filter(s => selectedSessionIds.has(s.id));
       const totalAmount = attendeeCount * activity.price * selectedSessions.length;
 
-      const effectivePaymentMethod = isStaffMode ? "venue" : paymentMethod;
-      const effectivePaymentStatus = isStaffMode
+      const effectivePaymentMethod = isFreeActivity ? "free" : (isStaffMode ? "venue" : paymentMethod);
+      const effectivePaymentStatus = isFreeActivity
+        ? "free"
+        : isStaffMode
         ? (staffCollectState === "collected" ? "collected" : "unpaid")
         : (effectivePaymentMethod === "online" ? "paid" : "unpaid");
 
@@ -1776,6 +1971,8 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
               contactName,
               contactEmail: contactEmail || null,
               contactPhone,
+              contactPostcode: contactPostcode || null,
+              contactExtraFields,
               attendees,
               attendeeCount,
               paymentMethod: effectivePaymentMethod,
@@ -1797,6 +1994,8 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
             contactName,
             contactEmail: contactEmail || null,
             contactPhone,
+            contactPostcode: contactPostcode || null,
+            contactExtraFields,
             attendees,
             attendeeCount,
             sessionCount: selectedSessions.length,
@@ -1813,20 +2012,57 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
         // Persist any newly typed-in children that were ticked "save to my
         // account" — so next visit they show up in the saved-family picker
-        // instead of needing retyping.
+        // instead of needing retyping — and roll up any custom-question
+        // answers just given (for those new children, for ticked saved
+        // family members, and for the contact/self themself) onto the
+        // relevant profile, so nobody's asked the same question again next
+        // time, whether that's for this activity or a different one that
+        // happens to use the same question id.
         if (currentCustomer) {
+          let profileChanged = false;
+
           const toSave = children.filter(c => c.saveToAccount);
-          if (toSave.length) {
-            toSave.forEach(c => currentCustomer.familyMembers.push({
+          toSave.forEach(c => {
+            const memberExtra = {};
+            Object.entries(c.extraFields || {}).forEach(([k, v]) => { if (v) memberExtra[k] = v; });
+            currentCustomer.familyMembers.push({
               id: "fam_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
-              name: c.name.trim(), surname: c.surname.trim(), dob: c.dob, notes: c.notes.trim() || null
-            }));
-            await db.collection("customers").doc(currentCustomer.uid).update({ familyMembers: currentCustomer.familyMembers.filter(m => !m.isNew) });
+              name: c.name.trim(), surname: c.surname.trim(), dob: c.dob, notes: c.notes.trim() || null,
+              extraFieldAnswers: memberExtra
+            });
+            profileChanged = true;
+          });
+
+          currentCustomer.familyMembers
+            .filter(m => selectedFamilyMemberIds.has(m.id))
+            .forEach(m => {
+              const nonEmpty = {};
+              Object.entries(familyExtraAnswers[m.id] || {}).forEach(([k, v]) => { if (v) nonEmpty[k] = v; });
+              if (Object.keys(nonEmpty).length) {
+                m.extraFieldAnswers = { ...(m.extraFieldAnswers || {}), ...nonEmpty };
+                profileChanged = true;
+              }
+            });
+
+          const contactExtraToSave = {};
+          Object.entries(contactExtraFields).forEach(([k, v]) => { if (v) contactExtraToSave[k] = v; });
+
+          const profileUpdate = { familyMembers: currentCustomer.familyMembers.filter(m => !m.isNew) };
+          if (Object.keys(contactExtraToSave).length) {
+            currentCustomer.extraFieldAnswers = { ...(currentCustomer.extraFieldAnswers || {}), ...contactExtraToSave };
+            profileUpdate.extraFieldAnswers = currentCustomer.extraFieldAnswers;
+            profileChanged = true;
+          }
+
+          if (profileChanged) {
+            await db.collection("customers").doc(currentCustomer.uid).update(profileUpdate);
           }
         }
 
         const sessionWord = selectedSessions.length === 1 ? "session" : `${selectedSessions.length} sessions`;
-        msg.textContent = effectivePaymentMethod === "online"
+        msg.textContent = effectivePaymentMethod === "free"
+          ? `🎉 Booking confirmed for ${sessionWord} — this activity is free, no payment needed.`
+          : effectivePaymentMethod === "online"
           ? `🎉 Booking confirmed for ${sessionWord} — payment received!`
           : `🎉 Booking confirmed for ${sessionWord} — pay at the venue.`;
         msg.className = "form-message success";
@@ -1849,7 +2085,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         msg.className = "form-message error";
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = isStaffMode ? "Confirm Booking" : "Book & Pay";
+        submitBtn.textContent = (isStaffMode || isFreeActivity) ? "Confirm Booking" : "Book & Pay";
       }
     });
   }

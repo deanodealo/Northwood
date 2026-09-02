@@ -368,6 +368,11 @@ input[type="date"], input[type="time"] {
             </select>
           </div>
         </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="fAttendanceRegister">
+          <label for="fAttendanceRegister">Enable an attendance register for this activity</label>
+        </div>
+        <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">Lets staff tick off who actually showed up, per session, on the Bookings Admin page — separate from payment, so it works for paid or free activities. Off by default; typically wanted for supervised/safeguarding sessions like Youth Club.</p>
 
         <div class="ma-section-label">Pricing</div>
         <div class="form-row">
@@ -454,6 +459,69 @@ input[type="date"], input[type="time"] {
           <button type="button" class="ma-mini-add-btn" id="singleAddBtn">Add This Date</button>
         </div>
 
+        <div class="ma-section-label">Custom Questions</div>
+        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Extra questions shown on the booking page for this activity only — e.g. ethnicity monitoring for Youth Club. Answers save onto each person's profile, so returning customers (and their saved family members) aren't asked again next time — including for any other activity that uses the same question.</p>
+        <div class="ma-session-list" id="questionList"></div>
+
+        <div class="ma-session-add-tabs">
+          <button type="button" class="ma-session-add-tab active" data-question-mode="preset">Ethnicity (standard list)</button>
+          <button type="button" class="ma-session-add-tab" data-question-mode="custom">Custom question</button>
+        </div>
+
+        <div class="ma-session-add-panel" id="presetQuestionPanel">
+          <div class="form-row">
+            <div>
+              <label>Applies to</label>
+              <select id="presetQuestionAppliesTo">
+                <option value="both">Parent/guardian + each young person</option>
+                <option value="contact">Parent/guardian only</option>
+                <option value="attendee">Each young person only</option>
+              </select>
+            </div>
+            <div>
+              <label>Required?</label>
+              <select id="presetQuestionRequired">
+                <option value="no">Optional (recommended — includes "Prefer not to say")</option>
+                <option value="yes">Required</option>
+              </select>
+            </div>
+          </div>
+          <button type="button" class="ma-mini-add-btn" id="addPresetQuestionBtn">Add Ethnicity Question</button>
+        </div>
+
+        <div class="ma-session-add-panel hidden" id="customQuestionPanel">
+          <div class="form-row single">
+            <label>Question label</label>
+            <input type="text" id="customQuestionLabel" placeholder="e.g. Emergency contact name">
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Answer type</label>
+              <select id="customQuestionType">
+                <option value="text">Free text</option>
+                <option value="select">Dropdown (choose one)</option>
+              </select>
+            </div>
+            <div>
+              <label>Applies to</label>
+              <select id="customQuestionAppliesTo">
+                <option value="both">Parent/guardian + each young person</option>
+                <option value="contact">Parent/guardian only</option>
+                <option value="attendee">Each young person only</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row single hidden" id="customQuestionOptionsRow">
+            <label>Dropdown options (one per line)</label>
+            <textarea id="customQuestionOptions" rows="3" placeholder="Option one&#10;Option two"></textarea>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="customQuestionRequired">
+            <label for="customQuestionRequired">Required</label>
+          </div>
+          <button type="button" class="ma-mini-add-btn" id="addCustomQuestionBtn">Add Question</button>
+        </div>
+
         <div class="ma-form-actions">
           <button type="button" class="ma-cancel-btn" id="formCancelBtn">Cancel</button>
           <button type="button" class="ma-submit-btn" id="formSaveBtn">Save Activity</button>
@@ -527,6 +595,46 @@ const ACCENT_PRESETS = [
   { label: "Forest Green", hex: "#15803D" },
   { label: "Navy",         hex: "#1E3A8A" }
 ];
+
+/* ═══════════════════════════════════════════════════════════
+   CUSTOM QUESTIONS — per-activity extra questions shown on the
+   booking page (activitybooking.html) for that activity only.
+   Each activity document gets an `extraFields` array of:
+     { id, label, type: "select"|"text", appliesTo: "contact"|"attendee"|"both",
+       required, groups?: [{group, options:[...]}], options?: [...] }
+   `appliesTo` controls where it's asked on the booking form —
+   "contact" = the parent/guardian booking; "attendee" = each
+   young person being booked on (self + each child); "both" = both
+   (asked once for the parent, and again per child — never twice
+   for the same person). Answers are saved onto the customer's
+   account / saved family member profile, not just the booking, so
+   the same question is only ever asked once per person, even
+   across different activities that both use it.
+
+   ETHNICITY_FIELD_PRESET is offered as a one-click "Ethnicity"
+   question using Northwood's standard category list, so staff
+   don't have to retype it for every activity that wants it (e.g.
+   Youth Club today, possibly others later).
+   ═══════════════════════════════════════════════════════════ */
+
+const ETHNICITY_FIELD_PRESET = {
+  id: "ethnicity",
+  label: "Ethnicity",
+  type: "select",
+  groups: [
+    { group: "White", options: ["White English", "White Northern Irish", "White Scottish", "White Welsh", "White British", "White Irish", "White Eastern European", "Other White background"] },
+    { group: "Mixed", options: ["White and Black Caribbean", "White and Black African", "White and Asian", "Other Mixed background"] },
+    { group: "Asian or Asian British", options: ["Indian", "Pakistani", "Bangladeshi", "Chinese", "Other Asian background"] },
+    { group: "Black or Black British", options: ["Black Caribbean", "Black African", "Black British", "Other Black background"] },
+    { group: "Other", options: ["Arab", "Gypsy/Romany/Irish Traveller", "Other ethnic group", "Prefer not to say", "Not provided"] }
+  ]
+};
+
+function appliesToLabel(appliesTo) {
+  return appliesTo === "contact" ? "Parent/guardian only"
+    : appliesTo === "attendee" ? "Each young person only"
+    : "Parent/guardian + each young person";
+}
 
 /* ═══════════════════════════════════════════════════════════
    SEED DATA — used ONLY by the one-time "Import Existing
@@ -668,11 +776,29 @@ const SEED_ACTIVITIES = [
       staffLogoutBtn.classList.add("hidden");
       return;
     }
-    const staffDoc = await db.collection("staff").doc(user.uid).get();
+    // Wrapped in try/catch because Firestore rules correctly restrict the
+    // `staff` collection to staff members, so this read throws for every
+    // non-staff session, not just returns "not found".
+    let staffDoc;
+    try {
+      staffDoc = await db.collection("staff").doc(user.uid).get();
+    } catch (err) {
+      staffDoc = { exists: false };
+    }
     if (!staffDoc.exists) {
-      // A customer account, not staff — bounce back to the gate rather than
-      // silently granting access.
-      await auth.signOut();
+      // A customer account, not staff (or the read above was denied because
+      // they're not staff) — bounce back to the gate, but do NOT sign this
+      // session out. Firebase Auth's session is shared across every open
+      // tab on this site, so this listener also fires for a CUSTOMER who's
+      // just logged in on activitybooking.html in another tab — signing out
+      // here used to kill their session there too, the moment this page's
+      // listener (running quietly in the background) noticed them. This
+      // page just declines to show the dashboard; it doesn't get to decide
+      // someone isn't allowed to be logged in elsewhere.
+      isStaff = false;
+      staffGate.classList.remove("hidden");
+      dashboard.classList.add("hidden");
+      staffLogoutBtn.classList.add("hidden");
       gateMsg.textContent = "That account doesn't have staff access.";
       gateMsg.className = "form-message error";
       return;
@@ -810,6 +936,7 @@ const SEED_ACTIVITIES = [
   const fDescription = document.getElementById("fDescription");
   const fAgeNote = document.getElementById("fAgeNote");
   const fStatus = document.getElementById("fStatus");
+  const fAttendanceRegister = document.getElementById("fAttendanceRegister");
   const fPrice = document.getElementById("fPrice");
   const fPriceLabel = document.getElementById("fPriceLabel");
   const fPayAtVenue = document.getElementById("fPayAtVenue");
@@ -827,6 +954,92 @@ const SEED_ACTIVITIES = [
   let currentImageUrl = null;
   let pendingImageFile = null; // resized Blob waiting to be uploaded on Save
   let bookedCountsForEdit = {}; // sessionId -> live booked count, only populated when editing
+  let currentExtraFields = []; // custom questions for this activity — see CUSTOM QUESTIONS block above
+
+  const questionListEl = document.getElementById("questionList");
+
+  function renderQuestionList() {
+    if (!currentExtraFields.length) {
+      questionListEl.innerHTML = '<p class="field-hint">No custom questions on this activity yet.</p>';
+      return;
+    }
+    questionListEl.innerHTML = currentExtraFields.map(f => `
+      <div class="ma-session-row">
+        <div>
+          <div class="info">${escAttr(f.label)}${f.required ? ' <span class="required-mark">*</span>' : ""}</div>
+          <div class="sub">${f.type === "select" ? "Dropdown" : "Free text"} · ${appliesToLabel(f.appliesTo)}${f.required ? " · Required" : " · Optional"}</div>
+        </div>
+        <button type="button" class="ma-session-remove" data-remove-question="${f.id}">Remove</button>
+      </div>
+    `).join("");
+    questionListEl.querySelectorAll("[data-remove-question]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentExtraFields = currentExtraFields.filter(f => f.id !== btn.dataset.removeQuestion);
+        renderQuestionList();
+      });
+    });
+  }
+
+  document.querySelectorAll("[data-question-mode]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-question-mode]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("presetQuestionPanel").classList.toggle("hidden", btn.dataset.questionMode !== "preset");
+      document.getElementById("customQuestionPanel").classList.toggle("hidden", btn.dataset.questionMode !== "custom");
+    });
+  });
+
+  document.getElementById("addPresetQuestionBtn").addEventListener("click", () => {
+    if (currentExtraFields.some(f => f.id === ETHNICITY_FIELD_PRESET.id)) {
+      formMsg.textContent = "An Ethnicity question is already on this activity — remove it first if you want to change its settings.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    const appliesTo = document.getElementById("presetQuestionAppliesTo").value;
+    const required = document.getElementById("presetQuestionRequired").value === "yes";
+    currentExtraFields.push({ ...ETHNICITY_FIELD_PRESET, appliesTo, required });
+    renderQuestionList();
+    formMsg.textContent = "Ethnicity question added.";
+    formMsg.className = "form-message success";
+  });
+
+  document.getElementById("customQuestionType").addEventListener("change", (e) => {
+    document.getElementById("customQuestionOptionsRow").classList.toggle("hidden", e.target.value !== "select");
+  });
+
+  document.getElementById("addCustomQuestionBtn").addEventListener("click", () => {
+    const label = document.getElementById("customQuestionLabel").value.trim();
+    const type = document.getElementById("customQuestionType").value;
+    const appliesTo = document.getElementById("customQuestionAppliesTo").value;
+    const required = document.getElementById("customQuestionRequired").checked;
+    const optionsRaw = document.getElementById("customQuestionOptions").value;
+
+    if (!label) {
+      formMsg.textContent = "Please enter a question label.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    const options = optionsRaw.split("\n").map(o => o.trim()).filter(Boolean);
+    if (type === "select" && options.length < 2) {
+      formMsg.textContent = "Add at least two dropdown options, one per line.";
+      formMsg.className = "form-message error";
+      return;
+    }
+
+    let id = slugify(label) || ("question-" + Date.now());
+    if (currentExtraFields.some(f => f.id === id)) id = `${id}-${Date.now()}`;
+
+    const field = { id, label, type, appliesTo, required };
+    if (type === "select") field.options = options;
+    currentExtraFields.push(field);
+    renderQuestionList();
+
+    document.getElementById("customQuestionLabel").value = "";
+    document.getElementById("customQuestionOptions").value = "";
+    document.getElementById("customQuestionRequired").checked = false;
+    formMsg.textContent = "Question added.";
+    formMsg.className = "form-message success";
+  });
 
   function renderColorSwatches() {
     colorSwatchesEl.innerHTML = ACCENT_PRESETS.map(p => `
@@ -1011,9 +1224,11 @@ const SEED_ACTIVITIES = [
     currentImageUrl = null;
     pendingImageFile = null;
     bookedCountsForEdit = {};
+    currentExtraFields = [];
     fName.value = ""; fProvider.value = ""; fVenue.value = ""; fDescription.value = "";
     fAgeNote.value = ""; fStatus.value = "active"; fPrice.value = ""; fPriceLabel.value = "";
     fPayAtVenue.checked = true;
+    fAttendanceRegister.checked = false;
     slugPreview.textContent = "";
     formMsg.textContent = ""; formMsg.className = "form-message";
   }
@@ -1021,11 +1236,14 @@ const SEED_ACTIVITIES = [
   // Price label is a separate field (not just "£{price}") because some
   // activities price per child rather than per person (see Funetics) — but
   // it's auto-suggested from the price as a starting point so staff aren't
-  // typing it from scratch every time, and can still override it.
+  // typing it from scratch every time, and can still override it. A price
+  // of 0 (e.g. Youth Club) suggests "Free" — the booking page also detects
+  // a £0 price itself and skips payment entirely regardless of this label,
+  // but "Free" reads better here than "£0 per session".
   fPrice.addEventListener("input", () => {
     if (!fPriceLabel.dataset.touched) {
       const p = parseFloat(fPrice.value);
-      fPriceLabel.value = isNaN(p) ? "" : `£${p} per session`;
+      fPriceLabel.value = isNaN(p) ? "" : (p === 0 ? "Free" : `£${p} per session`);
     }
   });
   fPriceLabel.addEventListener("input", () => { fPriceLabel.dataset.touched = "1"; });
@@ -1045,9 +1263,11 @@ const SEED_ACTIVITIES = [
       fStatus.value = activity.status; fPrice.value = activity.price; fPriceLabel.value = activity.priceLabel;
       fPriceLabel.dataset.touched = "1";
       fPayAtVenue.checked = !!activity.payAtVenue;
+      fAttendanceRegister.checked = !!activity.attendanceRegister;
       currentAccent = activity.accentColor || ACCENT_PRESETS[0].hex;
       currentImageUrl = activity.imageUrl || null;
       currentSessions = (activity.sessions || []).map(s => ({ ...s }));
+      currentExtraFields = (activity.extraFields || []).map(f => ({ ...f }));
 
       // Fetch live booked counts for this activity's sessions so staff can
       // see (and can't accidentally remove) sessions that already have
@@ -1067,6 +1287,7 @@ const SEED_ACTIVITIES = [
     renderColorSwatches();
     renderImageArea();
     renderSessionList();
+    renderQuestionList();
     listView.classList.add("hidden");
     formView.classList.remove("hidden");
   }
@@ -1147,11 +1368,13 @@ const SEED_ACTIVITIES = [
         description: fDescription.value.trim(),
         ageNote: fAgeNote.value.trim() || null,
         status: fStatus.value,
+        attendanceRegister: fAttendanceRegister.checked,
         price, priceLabel,
         payAtVenue: fPayAtVenue.checked,
         accentColor: currentAccent,
         imageUrl: imageUrl || null,
         sessions: currentSessions,
+        extraFields: currentExtraFields,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
       if (!editingId) payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
