@@ -663,7 +663,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   <div class="staff-modal mybk-modal">
     <h3 id="myBookingsTitle">My Bookings</h3>
     <div id="myBookingsList"></div>
-    <p class="confirm-note" style="margin-top:0.9rem; text-align:left;">Only bookings made while signed in to this account appear here. For any changes, contact Northwood Stadium quoting your booking reference.</p>
+    <p class="confirm-note" style="margin-top:0.9rem; text-align:left;">Shows your upcoming sessions only — once a session has finished it drops off this list. Only bookings made while signed in to this account appear here. For any changes, contact Northwood Stadium quoting your booking reference.</p>
     <div class="staff-modal-actions">
       <button class="staff-modal-cancel" id="myBookingsClose" style="flex:1;">Close</button>
     </div>
@@ -1383,7 +1383,6 @@ const CONFIRMATION_EMAILS_ENABLED = false;
   const myBookingsOverlay = document.getElementById("myBookingsOverlay");
   const myBookingsList = document.getElementById("myBookingsList");
   const myBookingsLink = document.getElementById("myBookingsLink");
-  const PAST_SHOWN_INITIALLY = 5;
   // Captured once at page load (before Firebase or anything else can
   // touch the address) — true when arriving via the "My Bookings" link
   // on the home/facilities pages' red account bar.
@@ -1435,50 +1434,60 @@ const CONFIRMATION_EMAILS_ENABLED = false;
     );
   }
 
-  function renderMyBookings(bookings, showAllPast) {
+  // A booking stays "active" until its session has finished: any future
+  // date, or today with an end time that hasn't passed yet. (If today's
+  // time can't be read, it stays listed until the end of the day.)
+  function isActiveBooking(b, today) {
+    if (!b.sessionDate) return false;
+    if (b.sessionDate > today) return true;
+    if (b.sessionDate < today) return false;
+    const t = parseSessionTimes(b.sessionTime);
+    if (!t) return true;
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes() < t.end.h * 60 + t.end.min;
+  }
+
+  function renderMyBookings(bookings) {
     const today = todayIso();
     const upcoming = bookings
-      .filter(b => (b.sessionDate || "") >= today)
+      .filter(b => isActiveBooking(b, today))
       .sort((a, b) => (a.sessionDate + (a.sessionTime || "")).localeCompare(b.sessionDate + (b.sessionTime || "")));
-    const past = bookings
-      .filter(b => (b.sessionDate || "") < today)
-      .sort((a, b) => (b.sessionDate + (b.sessionTime || "")).localeCompare(a.sessionDate + (a.sessionTime || "")));
 
-    let html = `<div class="mybk-section">Upcoming</div>`;
-    html += upcoming.length
+    myBookingsList.innerHTML = upcoming.length
       ? upcoming.map(b => myBookingCardHtml(b, false)).join("")
-      : `<div class="mybk-empty">No upcoming bookings.</div>`;
-
-    if (past.length) {
-      const shown = showAllPast ? past : past.slice(0, PAST_SHOWN_INITIALLY);
-      html += `<div class="mybk-section">Past</div>`;
-      html += shown.map(b => myBookingCardHtml(b, true)).join("");
-      if (!showAllPast && past.length > PAST_SHOWN_INITIALLY) {
-        html += `<button type="button" class="mybk-more" id="myBookingsShowAll">Show all ${past.length} past bookings</button>`;
-      }
-    }
-    myBookingsList.innerHTML = html;
+      : `<div class="mybk-empty">You've no upcoming bookings.</div>`;
 
     myBookingsList.querySelectorAll("[data-cal-id]").forEach(btn => {
       btn.addEventListener("click", () => {
-        const b = bookings.find(x => x.id === btn.dataset.calId);
+        const b = upcoming.find(x => x.id === btn.dataset.calId);
         if (b) downloadIcs(myBookingCalEvents(b), `northwood-${b.bookingRef || b.sessionDate}`);
       });
     });
-
-    const showAllBtn = document.getElementById("myBookingsShowAll");
-    if (showAllBtn) showAllBtn.addEventListener("click", () => renderMyBookings(bookings, true));
   }
 
   async function openMyBookings() {
     if (!currentCustomer) return;
     myBookingsList.innerHTML = `<div class="mybk-empty">Loading your bookings…</div>`;
     myBookingsOverlay.classList.remove("hidden");
+    const bookingsRef = db.collection("activityBookings").where("customerId", "==", currentCustomer.uid);
     try {
-      const snap = await db.collection("activityBookings")
-        .where("customerId", "==", currentCustomer.uid)
-        .get();
-      renderMyBookings(snap.docs.map(d => ({ id: d.id, ...d.data() })), false);
+      let snap;
+      try {
+        // Only fetch today-onwards, so this stays quick however many past
+        // bookings build up. Needs a Firestore composite index
+        // (customerId + sessionDate) — until that exists this throws
+        // "failed-precondition" (with a link in the console to create
+        // it), and we fall back to fetching everything and filtering here.
+        snap = await bookingsRef.where("sessionDate", ">=", todayIso()).get();
+      } catch (err) {
+        if (err && err.code === "failed-precondition") {
+          console.warn("My Bookings: add the Firestore index from this link to speed this up:", err.message);
+          snap = await bookingsRef.get();
+        } else {
+          throw err;
+        }
+      }
+      renderMyBookings(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch (err) {
       console.error("My bookings load error:", err);
       myBookingsList.innerHTML = `<div class="mybk-empty">Sorry, we couldn't load your bookings just now. Please try again.</div>`;
