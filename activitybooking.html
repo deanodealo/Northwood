@@ -904,6 +904,11 @@ const CONFIRMATION_EMAILS_ENABLED = false;
   let isStaffMode = false;
   let currentCustomer = null; // { uid, name, email, phone, familyMembers: [...] } or null if not logged in as a customer
   let card; // Square card instance, (re)initialised per activity view
+  // Bumped on every initSquare() call. The panel can re-render twice in
+  // quick succession on first load (activities arriving + login state
+  // resolving), and Square's card setup is async — without this, both
+  // setups finished and attached TWO card forms to the new panel.
+  let squareInitGen = 0;
 
   const tabsEl = document.getElementById("activityTabs");
   const panelEl = document.getElementById("activityPanel");
@@ -1379,6 +1384,11 @@ const CONFIRMATION_EMAILS_ENABLED = false;
   const myBookingsList = document.getElementById("myBookingsList");
   const myBookingsLink = document.getElementById("myBookingsLink");
   const PAST_SHOWN_INITIALLY = 5;
+  // Captured once at page load (before Firebase or anything else can
+  // touch the address) — true when arriving via the "My Bookings" link
+  // on the home/facilities pages' red account bar.
+  let openMyBookingsOnLoad = location.hash === "#my-bookings";
+  if (openMyBookingsOnLoad) history.replaceState(null, "", location.pathname + location.search);
 
   function todayIso() {
     const d = new Date();
@@ -1501,7 +1511,18 @@ const CONFIRMATION_EMAILS_ENABLED = false;
       return;
     }
 
-    const staffDoc = await db.collection("staff").doc(user.uid).get();
+    // A failed read here (permissions/network) must not abort the whole
+    // handler — that silently skipped the customer set-up below, leaving
+    // a signed-in customer looking logged out (and My Bookings never
+    // opening). Treat a failed check as "not staff", same as the home
+    // and facilities pages already do.
+    let staffDoc;
+    try {
+      staffDoc = await db.collection("staff").doc(user.uid).get();
+    } catch (err) {
+      console.warn("Staff check failed — treating as customer:", err);
+      staffDoc = { exists: false };
+    }
     if (staffDoc.exists) {
       isStaffMode = true;
       currentCustomer = null;
@@ -1534,8 +1555,8 @@ const CONFIRMATION_EMAILS_ENABLED = false;
     // Arrived from the "My Bookings" link on the home/facilities pages'
     // red account bar — open the list straight away, then clear the hash
     // so a refresh or later login doesn't keep reopening it.
-    if (location.hash === "#my-bookings") {
-      history.replaceState(null, "", location.pathname + location.search);
+    if (openMyBookingsOnLoad) {
+      openMyBookingsOnLoad = false;
       openMyBookings();
     }
     // "My Account" would be a dead click once logged in — the banner
@@ -2149,11 +2170,27 @@ const CONFIRMATION_EMAILS_ENABLED = false;
     async function initSquare() {
       const container = document.getElementById("card-container");
       if (!container || !window.Square) return;
+      const myGen = ++squareInitGen;
+      // Tear down the card from the previous render (its container has
+      // already been replaced) so old instances don't pile up.
+      if (card) {
+        const oldCard = card;
+        card = null;
+        try { await oldCard.destroy(); } catch (e) { /* already gone */ }
+      }
+      const isStale = () => myGen !== squareInitGen || !container.isConnected;
+      let newCard = null;
       try {
         const payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
-        card = await payments.card();
-        await card.attach("#card-container");
+        newCard = await payments.card();
+        if (isStale()) { try { await newCard.destroy(); } catch (e) {} return; }
+        // Attach to THIS render's container element, not "#card-container"
+        // by id, which could by now point at a newer render's container.
+        await newCard.attach(container);
+        if (isStale()) { try { await newCard.destroy(); } catch (e) {} return; }
+        card = newCard;
       } catch (err) {
+        if (isStale()) return; // a newer render has taken over — not a real failure
         console.error("Square init error:", err);
         msg.textContent = "Payment system could not be initialised. Please refresh.";
         msg.className = "form-message error";
