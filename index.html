@@ -112,16 +112,24 @@
     .sponsors { background: var(--c-white); padding: 88px 0; }
     .sponsors .section-inner { padding: 0 var(--pad); }
     .sponsors-lede { color: var(--c-grey-mid); font-size: 17px; line-height: 1.6; max-width: 640px; margin-top: 8px; }
-    .sponsor-marquee {
-      overflow: hidden; margin-top: 44px;
-      /* soft fade at both edges so logos glide in and out */
-      -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
-              mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+    .sponsor-marquee { position: relative; overflow: hidden; margin-top: 44px; }
+    /* Soft fade at both edges, done with white gradient overlays rather
+       than a CSS mask — iPhone Safari has a bug where a mask over a
+       moving strip makes the logos flicker or vanish. */
+    .sponsor-marquee::before, .sponsor-marquee::after {
+      content: ""; position: absolute; top: 0; bottom: 0; width: 7%; min-width: 32px;
+      z-index: 1; pointer-events: none;
     }
+    .sponsor-marquee::before { left: 0;  background: linear-gradient(to right, var(--c-white), rgba(255,255,255,0)); }
+    .sponsor-marquee::after  { right: 0; background: linear-gradient(to left,  var(--c-white), rgba(255,255,255,0)); }
     .sponsor-track {
       display: flex; align-items: center; width: max-content;
       list-style: none; margin: 0; padding: 8px 0;
       animation: sponsor-scroll var(--sponsor-duration, 40s) linear infinite;
+      /* Keep the moving strip on its own GPU layer — smoother, and stops
+         Safari dropping parts of it mid-animation. */
+      will-change: transform;
+      -webkit-backface-visibility: hidden; backface-visibility: hidden;
     }
     /* Pause while someone hovers or tabs onto a logo, so it's clickable/readable. */
     .sponsor-marquee:hover .sponsor-track,
@@ -134,7 +142,7 @@
       transition: transform 0.2s ease;
     }
     .sponsor-item a:hover img { transform: scale(1.05); }
-    @keyframes sponsor-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @keyframes sponsor-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
 
     @media (max-width: 600px) {
       .sponsors { padding: 64px 0; }
@@ -144,7 +152,7 @@
     /* Visitors who've asked their device to reduce motion get a still,
        centred grid of logos instead of the scrolling strip. */
     @media (prefers-reduced-motion: reduce) {
-      .sponsor-marquee { -webkit-mask-image: none; mask-image: none; }
+      .sponsor-marquee::before, .sponsor-marquee::after { display: none; }
       .sponsor-track { animation: none; width: auto; flex-wrap: wrap; justify-content: center; row-gap: 32px; padding: 0 var(--pad); }
       .sponsor-item { margin: 0 24px; }
     }
@@ -527,7 +535,10 @@
       const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       function itemHtml(sp, hidden) {
-        const img = `<img src="${sp.logo}" alt="${hidden ? "" : sp.name.replace(/"/g, "&quot;")}" loading="lazy">`;
+        // No loading="lazy": logos are small, and Safari never loads lazy
+        // images that slide into view (only ones reached by scrolling),
+        // which left the strip blank on iPhone.
+        const img = `<img src="${sp.logo}" alt="${hidden ? "" : sp.name.replace(/"/g, "&quot;")}" decoding="async">`;
         const inner = sp.url
           ? `<a href="${sp.url}" target="_blank" rel="noopener"${hidden ? ' tabindex="-1"' : ""}>${img}</a>`
           : `<span>${img}</span>`;
