@@ -127,6 +127,12 @@
 .booking-row-main { font-family: var(--f-body); font-size: 0.88rem; color: var(--c-black); }
 .booking-row-main strong { font-weight: 700; }
 .booking-row-meta { font-size: 0.76rem; color: var(--c-grey-mid); margin-top: 0.2rem; }
+.booking-ref {
+  display: inline-block; font-family: var(--f-body); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--c-black); background: var(--c-grey-light, #F2F2F2);
+  border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; padding: 0.05rem 0.4rem;
+  margin-left: 0.35rem; vertical-align: 1px; user-select: all;
+}
 .booking-tag {
   font-family: var(--f-body); font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
   padding: 0.25rem 0.6rem; border-radius: 6px;
@@ -244,7 +250,7 @@
       <input type="date" id="dateFromInput" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
       <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">To:</label>
       <input type="date" id="dateToInput" style="font-family:var(--f-body);font-size:0.85rem;padding:0.45rem 0.7rem;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;">
-      <div class="aa-search"><input type="text" id="searchInput" placeholder="Search name..."></div>
+      <div class="aa-search"><input type="text" id="searchInput" placeholder="Search name, email or ref..."></div>
     </div>
 
     <div id="bookingsList"></div>
@@ -677,7 +683,7 @@ const auth = firebase.auth();
   }
 
   function bookingSearchText(b) {
-    const names = [bookingContactName(b), bookingContactEmail(b)];
+    const names = [bookingContactName(b), bookingContactEmail(b), b.bookingRef || ""];
     if (b.attendees) b.attendees.forEach(a => names.push(a.name));
     return names.join(" ").toLowerCase();
   }
@@ -878,7 +884,7 @@ const auth = firebase.auth();
       return `
         <div class="booking-row">
           <div class="booking-row-main">
-            <strong>${bookingContactName(b)}</strong> · ${b.activityName || b.activityId} — ${dateLabel} ${b.sessionTime || ""}
+            <strong>${bookingContactName(b)}</strong>${b.bookingRef ? `<span class="booking-ref" title="Booking reference">${b.bookingRef}</span>` : ""} · ${b.activityName || b.activityId} — ${dateLabel} ${b.sessionTime || ""}
             ${attendeeLine ? `<div class="booking-row-meta">${attendeeLine}</div>` : ""}
             <div class="booking-row-meta">${bookingContactPhone(b)}${bookingContactEmail(b) ? " · " + bookingContactEmail(b) : ""}${bookingContactPostcode(b) ? " · " + bookingContactPostcode(b) : ""} · £${(b.amount || 0).toFixed(2)} · booked by ${b.bookedBy || "public"}${b.staffEmail ? " (" + b.staffEmail + ")" : ""}</div>
             ${bookingContactExtraSummary(b) ? `<div class="booking-row-meta">${bookingContactExtraSummary(b)}</div>` : ""}
@@ -908,7 +914,7 @@ const auth = firebase.auth();
     // answer, "Attendees" listing each child's answer against their name,
     // since a booking can cover several children with different answers.
     const extraHeaderPairs = ALL_EXTRA_FIELDS.flatMap(f => [`${f.label} (Contact)`, `${f.label} (Attendees)`]);
-    const header = ["Contact Name","Email","Phone","Postcode","Activity","Provider","Session Date","Session Time","Attendees","Adults","Children","Amount","Payment Method","Payment Status","Attended","Booked By","Staff Email", ...extraHeaderPairs];
+    const header = ["Booking Ref","Contact Name","Email","Phone","Postcode","Activity","Provider","Session Date","Session Time","Attendees","Adults","Children","Amount","Payment Method","Payment Status","Attended","Booked By","Staff Email", ...extraHeaderPairs];
     const csvRows = [header.join(",")];
 
     rows.forEach(b => {
@@ -931,7 +937,7 @@ const auth = firebase.auth();
         return [contactVal, attendeeVal];
       });
       const line = [
-        bookingContactName(b), bookingContactEmail(b), bookingContactPhone(b), bookingContactPostcode(b), b.activityName, b.provider, b.sessionDate, b.sessionTime,
+        b.bookingRef || "", bookingContactName(b), bookingContactEmail(b), bookingContactPhone(b), bookingContactPostcode(b), b.activityName, b.provider, b.sessionDate, b.sessionTime,
         attendeeCountOf(b), adults, kidNames,
         (b.amount || 0).toFixed(2), b.paymentMethod, b.paymentStatus, attendedSummary, b.bookedBy, b.staffEmail || "", ...extraValues
       ].map(v => `"${String(v || "").replace(/"/g, '""')}"`);

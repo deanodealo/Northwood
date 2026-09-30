@@ -446,6 +446,58 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   background: none; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px;
   padding: 0.75rem; font-family: var(--f-body); font-weight: 600; cursor: pointer;
 }
+
+/* — booking confirmation modal — */
+.confirm-modal { max-width: 440px; text-align: center; }
+.confirm-tick {
+  width: 64px; height: 64px; border-radius: 50%; background: #E8F5E9; color: #1B5E20;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;
+}
+.confirm-tick svg { width: 34px; height: 34px; }
+.confirm-modal h3 { margin-bottom: 0.4rem; }
+.confirm-lead { font-family: var(--f-body); font-size: 0.95rem; color: var(--c-black); margin-bottom: 1.25rem; }
+.confirm-ref {
+  display: inline-block; font-family: var(--f-display); font-weight: 800; font-size: 1.35rem;
+  letter-spacing: 0.06em; color: var(--c-black); background: var(--c-grey-light);
+  border-radius: 8px; padding: 0.45rem 0.9rem; margin-bottom: 1.25rem;
+}
+.confirm-ref small { display: block; font-family: var(--f-body); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--c-grey-mid); }
+.confirm-details { text-align: left; border-top: 1px solid rgba(0,0,0,0.08); margin-bottom: 1rem; }
+.confirm-row { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid rgba(0,0,0,0.08); font-family: var(--f-body); font-size: 0.88rem; }
+.confirm-row span:first-child { color: var(--c-grey-mid); flex-shrink: 0; }
+.confirm-row span:last-child { text-align: right; font-weight: 600; color: var(--c-black); }
+.confirm-note { font-family: var(--f-body); font-size: 0.82rem; color: var(--c-grey-mid); line-height: 1.5; }
+
+/* — My Bookings modal — */
+.mybk-modal { max-width: 520px; }
+.mybk-section { font-family: var(--f-display); font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--c-black); margin: 1.1rem 0 0.6rem; }
+.mybk-section:first-child { margin-top: 0; }
+.mybk-card {
+  border: 1px solid rgba(0,0,0,0.1); border-left: 4px solid var(--mybk-accent, var(--c-red));
+  border-radius: 8px; padding: 0.75rem 0.9rem; margin-bottom: 0.6rem;
+  font-family: var(--f-body); font-size: 0.85rem; color: var(--c-black);
+}
+.mybk-card.is-past { opacity: 0.65; }
+.mybk-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+.mybk-name { font-weight: 700; }
+.mybk-when { margin-top: 0.15rem; font-weight: 600; }
+.mybk-meta { margin-top: 0.3rem; font-size: 0.78rem; color: var(--c-grey-mid); line-height: 1.45; }
+.mybk-tag { flex-shrink: 0; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 0.2rem 0.5rem; border-radius: 4px; white-space: nowrap; }
+.mybk-tag.paid, .mybk-tag.collected { background: #E8F5E9; color: #1B5E20; }
+.mybk-tag.unpaid { background: #FFF4E5; color: #8A4B00; }
+.mybk-tag.free { background: #EEF2FF; color: #2E3A8C; }
+.mybk-empty { font-family: var(--f-body); font-size: 0.88rem; color: var(--c-grey-mid); padding: 0.5rem 0; }
+.cal-block { margin: 0.25rem 0 0.5rem; }
+.cal-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; width: 100%;
+  background: white; color: var(--c-black); border: 1.5px solid var(--c-black); border-radius: 8px;
+  padding: 0.7rem; font-family: var(--f-body); font-weight: 700; font-size: 0.9rem; cursor: pointer;
+}
+.cal-btn svg { width: 18px; height: 18px; }
+.cal-google { margin-top: 0.5rem; font-family: var(--f-body); font-size: 0.78rem; color: var(--c-grey-mid); }
+.cal-google a { color: var(--c-red); font-weight: 600; }
+.mybk-cal { margin-top: 0.45rem; background: none; border: none; padding: 0; font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-red); text-decoration: underline; cursor: pointer; }
+.mybk-more { background: none; border: none; padding: 0.25rem 0; font-family: var(--f-body); font-size: 0.82rem; font-weight: 600; color: var(--c-red); text-decoration: underline; cursor: pointer; }
 </style>
 </head>
 <body class="ab-page">
@@ -476,7 +528,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   </div>
 
   <div class="ab-staff-banner hidden" id="customerBanner" style="background:var(--activity-accent, var(--c-blue));">
-    <span>Signed in as <strong id="customerBannerName"></strong> — <a href="#" id="manageFamilyLink" style="color:white; text-decoration:underline;">Manage family</a></span>
+    <span>Signed in as <strong id="customerBannerName"></strong> — <a href="#" id="myBookingsLink" style="color:white; text-decoration:underline;">My bookings</a> · <a href="#" id="manageFamilyLink" style="color:white; text-decoration:underline;">Manage family</a></span>
     <button id="customerLogoutBtn">Log out</button>
   </div>
 
@@ -582,6 +634,42 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   </div>
 </div>
 
+<!-- Booking confirmation modal — shown after a successful booking -->
+<div class="staff-modal-overlay hidden" id="confirmModalOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="staff-modal confirm-modal">
+    <div class="confirm-tick" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <h3 id="confirmTitle">You're booked!</h3>
+    <p class="confirm-lead" id="confirmLead"></p>
+    <div class="confirm-ref"><small>Booking reference</small><span id="confirmRef"></span></div>
+    <div class="confirm-details" id="confirmDetails"></div>
+    <div class="cal-block hidden" id="confirmCalendar">
+      <button type="button" class="cal-btn" id="confirmCalBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        Add to calendar
+      </button>
+      <div class="cal-google" id="confirmCalGoogle"></div>
+    </div>
+    <p class="confirm-note" id="confirmNote"></p>
+    <div class="staff-modal-actions">
+      <button class="ab-submit-btn" id="confirmDoneBtn" style="flex:1;">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- My Bookings modal — a signed-in customer's own bookings -->
+<div class="staff-modal-overlay hidden" id="myBookingsOverlay" role="dialog" aria-modal="true" aria-labelledby="myBookingsTitle">
+  <div class="staff-modal mybk-modal">
+    <h3 id="myBookingsTitle">My Bookings</h3>
+    <div id="myBookingsList"></div>
+    <p class="confirm-note" style="margin-top:0.9rem; text-align:left;">Only bookings made while signed in to this account appear here. For any changes, contact Northwood Stadium quoting your booking reference.</p>
+    <div class="staff-modal-actions">
+      <button class="staff-modal-cancel" id="myBookingsClose" style="flex:1;">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════════════════════
    ACTIVITIES — now loaded live from Firestore (collection:
@@ -632,6 +720,11 @@ const auth = firebase.auth();
 const SQUARE_APP_ID      = "sq0idp-Eu6Tqih9lr9FWSjmWNJoeg";
 const SQUARE_LOCATION_ID = "LTXW0H1YBMZNY";
 const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctions.net/createSquarePayment";
+
+// Flip to true once the booking confirmation email Cloud Function is live.
+// Until then the confirmation popup tells customers to note their booking
+// reference instead of promising an email that won't arrive.
+const CONFIRMATION_EMAILS_ENABLED = false;
 
 /* ───────────────────────────────────────────────────────────
    Page logic below. Shouldn't need touching to add/edit
@@ -1275,6 +1368,120 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     }
   });
 
+  // ── My Bookings modal ───────────────────────────────────────
+  // Lists the signed-in customer's own bookings (one row per session,
+  // since each session is its own activityBookings doc). The query MUST
+  // filter on customerId == their uid — Firestore rules only allow a
+  // customer to read bookings carrying their own customerId, and a
+  // query that could return anyone else's is rejected outright.
+  // Sorted client-side so no composite index is needed.
+  const myBookingsOverlay = document.getElementById("myBookingsOverlay");
+  const myBookingsList = document.getElementById("myBookingsList");
+  const myBookingsLink = document.getElementById("myBookingsLink");
+  const PAST_SHOWN_INITIALLY = 5;
+
+  function todayIso() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function myBookingCardHtml(b, isPast) {
+    const esc = escAttr;
+    const when = b.sessionDate
+      ? new Date(b.sessionDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
+      : "";
+    const status = b.paymentStatus || "unpaid";
+    const tagLabel = status === "paid" ? "Paid online"
+                   : status === "collected" ? "Paid at venue"
+                   : status === "free" ? "Free"
+                   : "Pay at venue";
+    const names = (b.attendees || []).map(a => esc(a.name)).filter(Boolean).join(", ");
+    const act = activeActivities.find(a => a.id === b.activityId);
+    const accent = act && act.accentColor ? `style="--mybk-accent:${esc(act.accentColor)}"` : "";
+    const metaParts = [];
+    if (names) metaParts.push(`For: ${names}`);
+    if (b.amount) metaParts.push(`£${Number(b.amount).toFixed(2)}`);
+    if (b.bookingRef) metaParts.push(`<span style="white-space:nowrap;">Ref: <strong>${esc(b.bookingRef)}</strong></span>`);
+    if (b.squareReceiptUrl && /^https:\/\//.test(b.squareReceiptUrl)) metaParts.push(`<a href="${esc(b.squareReceiptUrl)}" target="_blank" rel="noopener" style="color:var(--c-red); font-weight:600;">Receipt</a>`);
+    return `
+      <div class="mybk-card${isPast ? " is-past" : ""}" ${accent}>
+        <div class="mybk-top">
+          <div>
+            <div class="mybk-name">${esc(b.activityName || "Activity")}</div>
+            <div class="mybk-when">${esc(when)}${b.sessionTime ? " · " + esc(b.sessionTime) : ""}</div>
+          </div>
+          <span class="mybk-tag ${esc(status)}">${tagLabel}</span>
+        </div>
+        ${metaParts.length ? `<div class="mybk-meta">${metaParts.join(" · ")}</div>` : ""}
+        ${!isPast ? `<button type="button" class="mybk-cal" data-cal-id="${esc(b.id)}">Add to calendar</button>` : ""}
+      </div>`;
+  }
+
+  function myBookingCalEvents(b) {
+    const act = activeActivities.find(a => a.id === b.activityId);
+    return calEventsFrom(
+      [{ id: b.sessionId || b.id, date: b.sessionDate, time: b.sessionTime }],
+      { title: b.activityName || "Northwood Stadium activity", location: (act && act.venue) || "Northwood Stadium", ref: b.bookingRef, attendees: (b.attendees || []).map(a => a.name) }
+    );
+  }
+
+  function renderMyBookings(bookings, showAllPast) {
+    const today = todayIso();
+    const upcoming = bookings
+      .filter(b => (b.sessionDate || "") >= today)
+      .sort((a, b) => (a.sessionDate + (a.sessionTime || "")).localeCompare(b.sessionDate + (b.sessionTime || "")));
+    const past = bookings
+      .filter(b => (b.sessionDate || "") < today)
+      .sort((a, b) => (b.sessionDate + (b.sessionTime || "")).localeCompare(a.sessionDate + (a.sessionTime || "")));
+
+    let html = `<div class="mybk-section">Upcoming</div>`;
+    html += upcoming.length
+      ? upcoming.map(b => myBookingCardHtml(b, false)).join("")
+      : `<div class="mybk-empty">No upcoming bookings.</div>`;
+
+    if (past.length) {
+      const shown = showAllPast ? past : past.slice(0, PAST_SHOWN_INITIALLY);
+      html += `<div class="mybk-section">Past</div>`;
+      html += shown.map(b => myBookingCardHtml(b, true)).join("");
+      if (!showAllPast && past.length > PAST_SHOWN_INITIALLY) {
+        html += `<button type="button" class="mybk-more" id="myBookingsShowAll">Show all ${past.length} past bookings</button>`;
+      }
+    }
+    myBookingsList.innerHTML = html;
+
+    myBookingsList.querySelectorAll("[data-cal-id]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const b = bookings.find(x => x.id === btn.dataset.calId);
+        if (b) downloadIcs(myBookingCalEvents(b), `northwood-${b.bookingRef || b.sessionDate}`);
+      });
+    });
+
+    const showAllBtn = document.getElementById("myBookingsShowAll");
+    if (showAllBtn) showAllBtn.addEventListener("click", () => renderMyBookings(bookings, true));
+  }
+
+  async function openMyBookings() {
+    if (!currentCustomer) return;
+    myBookingsList.innerHTML = `<div class="mybk-empty">Loading your bookings…</div>`;
+    myBookingsOverlay.classList.remove("hidden");
+    try {
+      const snap = await db.collection("activityBookings")
+        .where("customerId", "==", currentCustomer.uid)
+        .get();
+      renderMyBookings(snap.docs.map(d => ({ id: d.id, ...d.data() })), false);
+    } catch (err) {
+      console.error("My bookings load error:", err);
+      myBookingsList.innerHTML = `<div class="mybk-empty">Sorry, we couldn't load your bookings just now. Please try again.</div>`;
+    }
+  }
+
+  myBookingsLink.addEventListener("click", (e) => { e.preventDefault(); openMyBookings(); });
+  document.getElementById("myBookingsClose").addEventListener("click", () => myBookingsOverlay.classList.add("hidden"));
+  myBookingsOverlay.addEventListener("click", (e) => { if (e.target === myBookingsOverlay) myBookingsOverlay.classList.add("hidden"); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !myBookingsOverlay.classList.contains("hidden")) myBookingsOverlay.classList.add("hidden");
+  });
+
   // ── Single auth-state handler decides the visitor's role ────
   // Firebase Auth has one session at a time for this page, shared by
   // staff and customer logins. On any change, work out which (if
@@ -1283,6 +1490,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
     if (!user) {
       isStaffMode = false;
       currentCustomer = null;
+      myBookingsOverlay.classList.add("hidden");
       staffBanner.classList.add("hidden");
       customerBanner.classList.add("hidden");
       staffLoginBtn.classList.remove("is-active");
@@ -1357,6 +1565,219 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
   }
 
   // ── Activity panel ──────────────────────────────────────────
+  // ── Add to calendar ─────────────────────────────────────────
+  // Builds a standard .ics file (opens in Apple Calendar, Outlook,
+  // Samsung Calendar etc.) plus Google Calendar links, from a session's
+  // date and its "7:00pm – 8:00pm" style time. Times are pinned to UK
+  // time (Europe/London) so they're right whatever device/timezone the
+  // customer adds them from. If a time can't be read, the event is
+  // added as an all-day event on that date instead of failing.
+  function parseSessionTimes(timeStr) {
+    const re = /(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)?/gi;
+    const found = [];
+    let m;
+    while ((m = re.exec(timeStr || "")) && found.length < 2) {
+      let h = parseInt(m[1], 10);
+      const min = m[2] ? parseInt(m[2], 10) : 0;
+      const ap = (m[3] || "").toLowerCase();
+      if (!m[2] && !ap) continue; // a bare number isn't a time
+      if (ap === "pm" && h < 12) h += 12;
+      if (ap === "am" && h === 12) h = 0;
+      if (h > 23 || min > 59) continue;
+      found.push({ h, min, ap });
+    }
+    if (!found.length) return null;
+    // "7 – 8pm": borrow the am/pm from the end time for the start time.
+    if (found.length === 2 && !found[0].ap && found[1].ap === "pm" && found[0].h < 12 && found[0].h + 12 <= found[1].h) found[0].h += 12;
+    const start = found[0];
+    const end = found[1] || { h: Math.min(start.h + 1, 23), min: start.min };
+    return { start, end };
+  }
+
+  function calEventsFrom(sessions, info) {
+    // sessions: [{ id, date: "2026-10-08", time: "7:00pm – 8:00pm" }]
+    // info: { title, location, ref, attendees: ["Name", ...] }
+    return sessions.filter(s => s.date).map(s => ({
+      uid: `${info.ref || "booking"}-${s.id || s.date}@northwoodstadium.co.uk`,
+      date: s.date,
+      times: parseSessionTimes(s.time),
+      title: info.title,
+      location: info.location || "Northwood Stadium",
+      description: [
+        info.attendees && info.attendees.length ? `Booked for: ${info.attendees.join(", ")}` : "",
+        info.ref ? `Booking reference: ${info.ref}` : "",
+        "Northwood Stadium"
+      ].filter(Boolean).join("\n")
+    }));
+  }
+
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const icsDate = (iso) => iso.replace(/-/g, "");
+  const icsLocal = (iso, t) => `${icsDate(iso)}T${pad2(t.h)}${pad2(t.min)}00`;
+  function nextDayIso(iso) {
+    const d = new Date(iso + "T12:00:00");
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  }
+  function icsEscape(str) {
+    return String(str || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  }
+  // iCalendar lines should be max 75 characters; longer ones continue on
+  // the next line starting with a space.
+  function icsFold(line) {
+    const out = [];
+    while (line.length > 74) { out.push(line.slice(0, 74)); line = " " + line.slice(74); }
+    out.push(line);
+    return out.join("\r\n");
+  }
+
+  function buildIcs(events) {
+    const now = new Date();
+    const stamp = `${now.getUTCFullYear()}${pad2(now.getUTCMonth() + 1)}${pad2(now.getUTCDate())}T${pad2(now.getUTCHours())}${pad2(now.getUTCMinutes())}${pad2(now.getUTCSeconds())}Z`;
+    const lines = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Northwood Stadium//Activity Bookings//EN",
+      "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+      "BEGIN:VTIMEZONE", "TZID:Europe/London",
+      "BEGIN:DAYLIGHT", "TZOFFSETFROM:+0000", "TZOFFSETTO:+0100", "TZNAME:BST",
+      "DTSTART:19700329T010000", "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU", "END:DAYLIGHT",
+      "BEGIN:STANDARD", "TZOFFSETFROM:+0100", "TZOFFSETTO:+0000", "TZNAME:GMT",
+      "DTSTART:19701025T020000", "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU", "END:STANDARD",
+      "END:VTIMEZONE"
+    ];
+    events.forEach(ev => {
+      lines.push("BEGIN:VEVENT", `UID:${ev.uid}`, `DTSTAMP:${stamp}`);
+      if (ev.times) {
+        lines.push(`DTSTART;TZID=Europe/London:${icsLocal(ev.date, ev.times.start)}`);
+        lines.push(`DTEND;TZID=Europe/London:${icsLocal(ev.date, ev.times.end)}`);
+      } else {
+        lines.push(`DTSTART;VALUE=DATE:${icsDate(ev.date)}`, `DTEND;VALUE=DATE:${icsDate(nextDayIso(ev.date))}`);
+      }
+      lines.push(
+        `SUMMARY:${icsEscape(ev.title)}`,
+        `LOCATION:${icsEscape(ev.location)}`,
+        `DESCRIPTION:${icsEscape(ev.description)}`
+      );
+      if (ev.times) {
+        // Reminder 1 hour before.
+        lines.push("BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${icsEscape(ev.title)}`, "TRIGGER:-PT1H", "END:VALARM");
+      }
+      lines.push("END:VEVENT");
+    });
+    lines.push("END:VCALENDAR");
+    return lines.map(icsFold).join("\r\n") + "\r\n";
+  }
+
+  function downloadIcs(events, fileBase) {
+    if (!events.length) return;
+    const blob = new Blob([buildIcs(events)], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${fileBase || "northwood-booking"}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  function googleCalUrl(ev) {
+    const dates = ev.times
+      ? `${icsLocal(ev.date, ev.times.start)}/${icsLocal(ev.date, ev.times.end)}`
+      : `${icsDate(ev.date)}/${icsDate(nextDayIso(ev.date))}`;
+    const params = new URLSearchParams({
+      action: "TEMPLATE", text: ev.title, dates, ctz: "Europe/London",
+      location: ev.location, details: ev.description
+    });
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  }
+
+  function googleLinksHtml(events) {
+    if (!events.length) return "";
+    if (events.length === 1) {
+      return `Using Google Calendar? <a href="${escAttr(googleCalUrl(events[0]))}" target="_blank" rel="noopener">Add it there instead</a>`;
+    }
+    const links = events.map(ev => {
+      const label = new Date(ev.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+      return `<a href="${escAttr(googleCalUrl(ev))}" target="_blank" rel="noopener">${escAttr(label)}</a>`;
+    }).join(" · ");
+    return `Using Google Calendar? Add each session: ${links}`;
+  }
+
+  // ── Booking confirmation popup ───────────────────────────────
+  // Replaces the old inline message that vanished after ~1 second when
+  // the panel re-rendered. Stays up until the customer closes it, so
+  // there's no doubt the booking (and payment) went through.
+  const confirmOverlay = document.getElementById("confirmModalOverlay");
+  const confirmDoneBtn = document.getElementById("confirmDoneBtn");
+
+  function closeBookingConfirmation() {
+    confirmOverlay.classList.add("hidden");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  confirmDoneBtn.addEventListener("click", closeBookingConfirmation);
+  confirmOverlay.addEventListener("click", (e) => { if (e.target === confirmOverlay) closeBookingConfirmation(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !confirmOverlay.classList.contains("hidden")) closeBookingConfirmation();
+  });
+
+  function showBookingConfirmation(b) {
+    const esc = escAttr;
+    const money = (n) => "£" + Number(n || 0).toFixed(2);
+
+    document.getElementById("confirmTitle").textContent = b.isStaffMode ? "Booking added" : "You're booked!";
+
+    const paymentLine =
+      b.paymentMethod === "free"   ? "Free — no payment needed" :
+      b.paymentMethod === "online" ? `${money(b.totalAmount)} paid by card` :
+      b.paymentStatus === "collected" ? `${money(b.totalAmount)} collected` :
+                                        `${money(b.totalAmount)} to pay at the venue`;
+
+    document.getElementById("confirmLead").textContent =
+      b.paymentMethod === "online"
+        ? "Your payment was successful and your place is confirmed."
+        : b.isStaffMode
+        ? "The booking has been saved."
+        : "Your place is confirmed.";
+
+    document.getElementById("confirmRef").textContent = b.bookingRef;
+
+    const sessionsHtml = b.sessions
+      .map(s => `${esc(s.dow)} ${esc(fmtDate(s.date))}${s.time ? ", " + esc(s.time) : ""}`)
+      .join("<br>");
+    const attendeesHtml = b.attendees.map(a => esc(a.name)).join("<br>");
+
+    document.getElementById("confirmDetails").innerHTML = `
+      <div class="confirm-row"><span>Activity</span><span>${esc(b.activityName)}</span></div>
+      <div class="confirm-row"><span>${b.sessions.length === 1 ? "Session" : "Sessions"}</span><span>${sessionsHtml}</span></div>
+      <div class="confirm-row"><span>${b.attendees.length === 1 ? "Attendee" : "Attendees"}</span><span>${attendeesHtml}</span></div>
+      <div class="confirm-row"><span>Payment</span><span>${esc(paymentLine)}${b.receiptUrl ? `<br><a href="${esc(b.receiptUrl)}" target="_blank" rel="noopener" style="color:var(--c-red); font-weight:600;">View / save receipt</a>` : ""}</span></div>`;
+
+    const noteEl = document.getElementById("confirmNote");
+    if (b.isStaffMode) {
+      noteEl.textContent = "Give the customer the booking reference above if they need it.";
+    } else if (CONFIRMATION_EMAILS_ENABLED && b.contactEmail) {
+      noteEl.innerHTML = `A confirmation email is on its way to <strong>${esc(b.contactEmail)}</strong>. If it hasn't arrived in a few minutes, please check your junk folder.`;
+    } else {
+      noteEl.textContent = "Please keep a note of your booking reference (a screenshot is fine) and quote it if you need to contact Northwood Stadium about this booking.";
+    }
+
+    const calBlock = document.getElementById("confirmCalendar");
+    if (b.isStaffMode) {
+      calBlock.classList.add("hidden");
+    } else {
+      const events = calEventsFrom(
+        b.sessions.map(s => ({ id: s.id, date: s.date, time: s.time })),
+        { title: b.activityName, location: b.venue, ref: b.bookingRef, attendees: b.attendees.map(a => a.name) }
+      );
+      document.getElementById("confirmCalBtn").onclick = () => downloadIcs(events, `northwood-${b.bookingRef}`);
+      document.getElementById("confirmCalGoogle").innerHTML = googleLinksHtml(events);
+      calBlock.classList.toggle("hidden", !events.length);
+    }
+
+    confirmOverlay.classList.remove("hidden");
+    confirmDoneBtn.focus();
+  }
+
   function renderPanel() {
     const activity = activeActivities.find(a => a.id === currentActivityId);
     if (!activity) { panelEl.innerHTML = ""; return; }
@@ -1862,6 +2283,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 
       try {
         let squarePaymentId = null;
+        let squareReceiptUrl = null;
 
         // Only charge via Square if this is an online payment.
         if (effectivePaymentMethod === "online") {
@@ -1914,6 +2336,9 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
             return;
           }
           squarePaymentId = chargeResult.paymentId;
+          // Only trust a proper https link (it comes from our own function,
+          // but it ends up as a clickable link for the customer).
+          squareReceiptUrl = /^https:\/\//.test(chargeResult.receiptUrl || "") ? chargeResult.receiptUrl : null;
         }
 
         // Capacity-safe write: a transaction reads the live booked count for
@@ -1926,6 +2351,10 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
         // A shared bookingGroupId ties the per-session docs together when
         // more than one session was booked in a single go.
         const bookingGroupId = generateIdempotencyKey();
+        // Short, human-friendly reference shown to the customer (and saved
+        // on every booking doc) so staff can match a phone call / email to
+        // a booking, e.g. "NW-K3F9QZ".
+        const bookingRef = "NW-" + bookingGroupId.split("-")[1].slice(0, 6).toUpperCase().padEnd(6, "0");
         const counterRefs = selectedSessions.map(s => db.collection("activitySessionCounts").doc(s.id));
 
         // One activityBookingGroups doc is written per checkout (regardless of
@@ -1962,6 +2391,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
               sessionDate: s.date,
               sessionTime: s.time,
               bookingGroupId: selectedSessions.length > 1 ? bookingGroupId : null,
+              bookingRef,
               contactName,
               contactEmail: contactEmail || null,
               contactPhone,
@@ -1973,6 +2403,7 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
               paymentStatus: effectivePaymentStatus,
               amount: attendeeCount * activity.price,
               squarePaymentId: squarePaymentId || null,
+              squareReceiptUrl: squareReceiptUrl || null,
               bookedBy: isStaffMode ? "staff" : "public",
               staffEmail: isStaffMode ? auth.currentUser.email : null,
               customerId: currentCustomer ? currentCustomer.uid : null,
@@ -1993,10 +2424,12 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
             attendees,
             attendeeCount,
             sessionCount: selectedSessions.length,
+            bookingRef,
             paymentMethod: effectivePaymentMethod,
             paymentStatus: effectivePaymentStatus,
             totalAmount,
             squarePaymentId: squarePaymentId || null,
+            squareReceiptUrl: squareReceiptUrl || null,
             bookedBy: isStaffMode ? "staff" : "public",
             staffEmail: isStaffMode ? auth.currentUser.email : null,
             customerId: currentCustomer ? currentCustomer.uid : null,
@@ -2053,17 +2486,23 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
           }
         }
 
-        const sessionWord = selectedSessions.length === 1 ? "session" : `${selectedSessions.length} sessions`;
-        msg.textContent = effectivePaymentMethod === "free"
-          ? `🎉 Booking confirmed for ${sessionWord} — this activity is free, no payment needed.`
-          : effectivePaymentMethod === "online"
-          ? `🎉 Booking confirmed for ${sessionWord} — payment received!`
-          : `🎉 Booking confirmed for ${sessionWord} — pay at the venue.`;
-        msg.className = "form-message success";
+        showBookingConfirmation({
+          activityName: activity.name,
+          venue: activity.venue,
+          bookingRef,
+          sessions: selectedSessions,
+          attendees,
+          totalAmount,
+          paymentMethod: effectivePaymentMethod,
+          paymentStatus: effectivePaymentStatus,
+          receiptUrl: squareReceiptUrl,
+          contactEmail,
+          isStaffMode
+        });
         document.getElementById("bookingForm").reset();
         selectedSessionIds = new Set();
         selectedSessions.forEach(s => { s.booked += attendeeCount; }); // reflect immediately in the session list
-        setTimeout(() => renderPanel(), 1200);
+        renderPanel(); // refreshes behind the popup, so it's ready when they close it
 
       } catch (err) {
         console.error("Booking error:", err);
