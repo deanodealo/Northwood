@@ -606,19 +606,13 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 /* ═══════════════════════════════════════════════════════════
    PAYMENT + FIREBASE CONFIG
    ───────────────────────────────────────────────────────────
-   PLACEHOLDER VALUES — Northwood doesn't have its own Firebase
-   project or Square account set up yet. Once they exist:
-     1. Swap firebaseConfig for the real Northwood project config
-        (Firebase Console → Project Settings).
-     2. Swap SQUARE_APP_ID / SQUARE_LOCATION_ID for Northwood's
-        own Square production values.
-     3. Deploy the SAME createSquarePayment Cloud Function (from
-        functions/index.js) to the Northwood Firebase project,
-        with Northwood's own SQUARE_ACCESS_TOKEN secret and CORS
-        origin set to Northwood's real domain.
-   Nothing else on this page needs to change — it already calls
-   the function generically via bookingType/description, same as
-   the camp and tournament pages.
+   LIVE (production) values for Northwood Stadium.
+     - firebaseConfig: Northwood's own Firebase project.
+     - SQUARE_APP_ID / SQUARE_LOCATION_ID: Northwood's Square
+       production credentials (public by design).
+     - The Square ACCESS TOKEN is NOT here — it lives in Secret
+       Manager as SQUARE_ACCESS_TOKEN and is used only by the
+       createSquarePayment Cloud Function (europe-west2).
    ═══════════════════════════════════════════════════════════ */
 
 const firebaseConfig = {
@@ -635,8 +629,8 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-const SQUARE_APP_ID      = "TODO_NORTHWOOD_SQUARE_APP_ID";
-const SQUARE_LOCATION_ID = "TODO_NORTHWOOD_SQUARE_LOCATION_ID";
+const SQUARE_APP_ID      = "sq0idp-Eu6Tqih9lr9FWSjmWNJoeg";
+const SQUARE_LOCATION_ID = "LTXW0H1YBMZNY";
 const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctions.net/createSquarePayment";
 
 /* ───────────────────────────────────────────────────────────
