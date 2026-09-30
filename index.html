@@ -107,6 +107,48 @@
       .hero-title .ptw-word { opacity: 1 !important; animation: none !important; transform: none !important; }
     }
   </style>
+  <style>
+    /* ============ SPONSORS (rolling logo strip) ============ */
+    .sponsors { background: var(--c-white); padding: 88px 0; }
+    .sponsors .section-inner { padding: 0 var(--pad); }
+    .sponsors-lede { color: var(--c-grey-mid); font-size: 17px; line-height: 1.6; max-width: 640px; margin-top: 8px; }
+    .sponsor-marquee {
+      overflow: hidden; margin-top: 44px;
+      /* soft fade at both edges so logos glide in and out */
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+              mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+    }
+    .sponsor-track {
+      display: flex; align-items: center; width: max-content;
+      list-style: none; margin: 0; padding: 8px 0;
+      animation: sponsor-scroll var(--sponsor-duration, 40s) linear infinite;
+    }
+    /* Pause while someone hovers or tabs onto a logo, so it's clickable/readable. */
+    .sponsor-marquee:hover .sponsor-track,
+    .sponsor-marquee:focus-within .sponsor-track { animation-play-state: paused; }
+    .sponsor-item { flex: 0 0 auto; margin-right: 64px; }
+    .sponsor-item a, .sponsor-item span { display: block; border-radius: 8px; }
+    .sponsor-item a:focus-visible { outline: 2px solid var(--c-red); outline-offset: 6px; }
+    .sponsor-item img {
+      display: block; height: 64px; width: auto; max-width: 220px; object-fit: contain;
+      transition: transform 0.2s ease;
+    }
+    .sponsor-item a:hover img { transform: scale(1.05); }
+    @keyframes sponsor-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    @media (max-width: 600px) {
+      .sponsors { padding: 64px 0; }
+      .sponsor-item { margin-right: 40px; }
+      .sponsor-item img { height: 48px; max-width: 160px; }
+    }
+    /* Visitors who've asked their device to reduce motion get a still,
+       centred grid of logos instead of the scrolling strip. */
+    @media (prefers-reduced-motion: reduce) {
+      .sponsor-marquee { -webkit-mask-image: none; mask-image: none; }
+      .sponsor-track { animation: none; width: auto; flex-wrap: wrap; justify-content: center; row-gap: 32px; padding: 0 var(--pad); }
+      .sponsor-item { margin: 0 24px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -442,6 +484,77 @@
         </div>
       </div>
     </section>
+
+    <!-- ============ SPONSORS ============ -->
+    <!-- Logos are listed in the SPONSORS array in the script just below —
+         edit that list to add, remove or reorder sponsors. -->
+    <section class="section sponsors" id="sponsors" aria-labelledby="sponsorsTitle">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Our Partners</p>
+        <h2 class="section-title" id="sponsorsTitle">Our Sponsors</h2>
+        <p class="sponsors-lede">A huge thank you to the businesses and organisations who support Northwood Stadium and our community.</p>
+      </div>
+      <div class="sponsor-marquee">
+        <ul class="sponsor-track" id="sponsorTrack"></ul>
+      </div>
+    </section>
+
+    <script>
+    (function () {
+      /* ═══════════════════════════════════════════════════════════
+         SPONSORS — edit this list to change the logos.
+         ───────────────────────────────────────────────────────────
+         name: the sponsor's name (used as the image's alt text)
+         logo: image file in images/sponsors/ (PNG or SVG, ideally
+               with a transparent background)
+         url:  their website, or "" for no link
+         These are PLACEHOLDERS — replace them with the real sponsors.
+         ═══════════════════════════════════════════════════════════ */
+      const SPONSORS = [
+        { name: "Sponsor One",      logo: "images/sponsors/sponsor-placeholder-1.svg", url: "" },
+        { name: "Sponsor Two",      logo: "images/sponsors/sponsor-placeholder-2.svg", url: "" },
+        { name: "Sponsor Three",    logo: "images/sponsors/sponsor-placeholder-3.svg", url: "" },
+        { name: "Sponsor Four Ltd", logo: "images/sponsors/sponsor-placeholder-4.svg", url: "" },
+        { name: "Sponsor Five",     logo: "images/sponsors/sponsor-placeholder-5.svg", url: "" },
+        { name: "Sponsor Six",      logo: "images/sponsors/sponsor-placeholder-6.svg", url: "" }
+      ];
+
+      const track = document.getElementById("sponsorTrack");
+      const section = document.getElementById("sponsors");
+      if (!track) return;
+      if (!SPONSORS.length) { section.style.display = "none"; return; }
+
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function itemHtml(sp, hidden) {
+        const img = `<img src="${sp.logo}" alt="${hidden ? "" : sp.name.replace(/"/g, "&quot;")}" loading="lazy">`;
+        const inner = sp.url
+          ? `<a href="${sp.url}" target="_blank" rel="noopener"${hidden ? ' tabindex="-1"' : ""}>${img}</a>`
+          : `<span>${img}</span>`;
+        return `<li class="sponsor-item"${hidden ? ' aria-hidden="true"' : ""}>${inner}</li>`;
+      }
+
+      if (reduceMotion) {
+        // Still grid: each sponsor once.
+        track.innerHTML = SPONSORS.map(sp => itemHtml(sp, false)).join("");
+        return;
+      }
+
+      // With only a few sponsors, repeat the list so one "lap" is wider
+      // than the screen (otherwise there'd be a gap in the loop). Screen
+      // readers only get the first copy of each sponsor.
+      let lap = SPONSORS.slice();
+      while (lap.length < 10) lap = lap.concat(SPONSORS);
+      // Two identical laps back to back; the strip slides exactly one lap
+      // (-50%) and restarts, which looks like an endless loop.
+      const lapHtml = (visibleFirstCopy) => lap
+        .map((sp, i) => itemHtml(sp, !(visibleFirstCopy && i < SPONSORS.length)))
+        .join("");
+      track.innerHTML = lapHtml(true) + lapHtml(false);
+      // Keep a steady speed however many logos there are (~4.5s per logo).
+      track.style.setProperty("--sponsor-duration", `${lap.length * 4.5}s`);
+    })();
+    </script>
 
     <!-- ============ FIND US & OPENING TIMES ============ -->
     <section class="section find-us" id="map">
