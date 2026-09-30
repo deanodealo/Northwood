@@ -122,18 +122,15 @@
     }
     .sponsor-marquee::before { left: 0;  background: linear-gradient(to right, var(--c-white), rgba(255,255,255,0)); }
     .sponsor-marquee::after  { right: 0; background: linear-gradient(to left,  var(--c-white), rgba(255,255,255,0)); }
+    /* The strip is moved by a small script (below) that recycles logos
+       from the left edge to the back of the queue, so it's never much
+       wider than the screen. A single very wide strip slid by a CSS
+       animation made iPhone Safari stop drawing logos part-way along. */
     .sponsor-track {
       display: flex; align-items: center; width: max-content;
       list-style: none; margin: 0; padding: 8px 0;
-      animation: sponsor-scroll var(--sponsor-duration, 40s) linear infinite;
-      /* Keep the moving strip on its own GPU layer — smoother, and stops
-         Safari dropping parts of it mid-animation. */
       will-change: transform;
-      -webkit-backface-visibility: hidden; backface-visibility: hidden;
     }
-    /* Pause while someone hovers or tabs onto a logo, so it's clickable/readable. */
-    .sponsor-marquee:hover .sponsor-track,
-    .sponsor-marquee:focus-within .sponsor-track { animation-play-state: paused; }
     .sponsor-item { flex: 0 0 auto; margin-right: 64px; }
     .sponsor-item a, .sponsor-item span { display: block; border-radius: 8px; }
     .sponsor-item a:focus-visible { outline: 2px solid var(--c-red); outline-offset: 6px; }
@@ -142,7 +139,6 @@
       transition: transform 0.2s ease;
     }
     .sponsor-item a:hover img { transform: scale(1.05); }
-    @keyframes sponsor-scroll { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
 
     @media (max-width: 600px) {
       .sponsors { padding: 64px 0; }
@@ -153,7 +149,7 @@
        centred grid of logos instead of the scrolling strip. */
     @media (prefers-reduced-motion: reduce) {
       .sponsor-marquee::before, .sponsor-marquee::after { display: none; }
-      .sponsor-track { animation: none; width: auto; flex-wrap: wrap; justify-content: center; row-gap: 32px; padding: 0 var(--pad); }
+      .sponsor-track { width: auto; flex-wrap: wrap; justify-content: center; row-gap: 32px; padding: 0 var(--pad); }
       .sponsor-item { margin: 0 24px; }
     }
   </style>
@@ -551,19 +547,68 @@
         return;
       }
 
-      // With only a few sponsors, repeat the list so one "lap" is wider
-      // than the screen (otherwise there'd be a gap in the loop). Screen
-      // readers only get the first copy of each sponsor.
-      let lap = SPONSORS.slice();
-      while (lap.length < 10) lap = lap.concat(SPONSORS);
-      // Two identical laps back to back; the strip slides exactly one lap
-      // (-50%) and restarts, which looks like an endless loop.
-      const lapHtml = (visibleFirstCopy) => lap
-        .map((sp, i) => itemHtml(sp, !(visibleFirstCopy && i < SPONSORS.length)))
-        .join("");
-      track.innerHTML = lapHtml(true) + lapHtml(false);
-      // Keep a steady speed however many logos there are (~4.5s per logo).
-      track.style.setProperty("--sponsor-duration", `${lap.length * 4.5}s`);
+      // Moving strip. Start with one copy of each sponsor, then keep adding
+      // repeat copies (hidden from screen readers) until the row is wider
+      // than the screen plus one logo, so there's never a gap. Each frame
+      // the row slides left a little; once the first logo has fully left
+      // the screen it's moved to the back of the row, and the row is
+      // shifted back by that logo's width — so it looks endless, while
+      // the row itself stays only slightly wider than the screen.
+      const marquee = track.parentElement;
+      const SPEED = 40; // pixels per second
+      track.innerHTML = SPONSORS.map(sp => itemHtml(sp, false)).join("");
+
+      // Only measure once every logo has loaded — before that they have no
+      // width yet, and the row would be topped up far more than needed.
+      function allLoaded() {
+        return [...track.querySelectorAll("img")].every(img => img.complete);
+      }
+      function fill() {
+        if (!allLoaded()) return;
+        let guard = 0;
+        while (track.scrollWidth < marquee.clientWidth + 400 && guard++ < 20) {
+          track.insertAdjacentHTML("beforeend", SPONSORS.map(sp => itemHtml(sp, true)).join(""));
+        }
+      }
+      // Top the row up once the logos have loaded, and again if the screen
+      // is resized or rotated.
+      track.querySelectorAll("img").forEach(img => {
+        if (!img.complete) {
+          img.addEventListener("load", fill, { once: true });
+          img.addEventListener("error", fill, { once: true });
+        }
+      });
+      fill();
+      window.addEventListener("resize", fill);
+
+      let offset = 0;
+      let paused = false;
+      let last = null;
+      marquee.addEventListener("mouseenter", () => { paused = true; });
+      marquee.addEventListener("mouseleave", () => { paused = false; });
+      marquee.addEventListener("focusin", () => { paused = true; });
+      marquee.addEventListener("focusout", () => { paused = false; });
+
+      function step(now) {
+        if (last === null) last = now;
+        // Cap the step so returning to the tab doesn't make it leap ahead.
+        const dt = Math.min((now - last) / 1000, 0.1);
+        last = now;
+        if (!paused) {
+          offset += SPEED * dt;
+          const first = track.firstElementChild;
+          if (first) {
+            const firstWidth = first.offsetWidth + (parseFloat(getComputedStyle(first).marginRight) || 0);
+            if (firstWidth > 0 && offset >= firstWidth) {
+              offset -= firstWidth;
+              track.appendChild(first);
+            }
+          }
+          track.style.transform = `translate3d(${-offset}px, 0, 0)`;
+        }
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
     })();
     </script>
 
