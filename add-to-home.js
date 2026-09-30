@@ -242,9 +242,30 @@
 
   /* ── Register service worker ──────────────────────────────── */
   function registerSW() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
+    if (!('serviceWorker' in navigator)) return;
+    // updateViaCache: 'none' — always fetch sw.js itself fresh, so a new
+    // version is picked up on the next visit rather than up to a day later.
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+      .then(reg => {
+        // Opened from the home screen, the site is often just "resumed"
+        // from the background rather than reloaded, so it can sit on an
+        // old version for days. Each time it comes back to the front:
+        //  - ask for any newer service worker, and
+        //  - if it's been in the background for 30+ minutes, reload the
+        //    page so it picks up the latest version of the site.
+        let hiddenAt = null;
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') {
+            hiddenAt = Date.now();
+            return;
+          }
+          reg.update().catch(() => {});
+          if (isInStandaloneMode() && hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000) {
+            location.reload();
+          }
+        });
+      })
+      .catch(() => {});
   }
 
   /* ── Main ─────────────────────────────────────────────────── */

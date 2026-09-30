@@ -11,7 +11,9 @@
    version, and the cache only exists as an offline fallback.
 */
 
-const CACHE_NAME = 'northwood-v2';
+// Bump this whenever sw.js changes, so phones swap to the new version
+// and clear out the old cache.
+const CACHE_NAME = 'northwood-v3';
 const PRECACHE = [
   './',
   './index.html',
@@ -46,8 +48,19 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
   if (new URL(req.url).origin !== self.location.origin) return;
 
+  // cache: 'no-cache' makes the browser check with GitHub Pages for a
+  // newer copy every time (a quick "has it changed?" check — unchanged
+  // files aren't re-downloaded), instead of reusing its own saved copy
+  // for up to 10 minutes. That was leaving home-screen installs showing
+  // an older version of the site after an update.
+  // (A page navigation can't be re-issued with extra options, so that's
+  // fetched by URL instead.)
+  const fresh = req.mode === 'navigate'
+    ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
+    : fetch(req, { cache: 'no-cache' });
+
   event.respondWith(
-    fetch(req)
+    fresh
       .then(response => {
         if (response.ok) {
           const clone = response.clone();
