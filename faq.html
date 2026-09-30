@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQs | Northwood Stadium</title>
+  <meta name="description" content="Answers to common questions about booking activities, accounts, family members and payments at Northwood Stadium.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    /* No hero image under the fixed header (same as terms/privacy), so
+       the first section needs its own top padding to clear the header. */
+    .faq-page { padding-top: calc(var(--header-h) + 32px); }
+    .faq-page .section-inner { max-width: 820px; }
+    .faq-lede { font-size: 17px; color: var(--c-grey-mid); line-height: 1.6; margin: 8px 0 24px; }
+
+    .faq-quicknav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 40px; }
+    .faq-quicknav a {
+      font-size: 14px; font-weight: 600; color: var(--c-black); text-decoration: none;
+      background: var(--c-grey-light); border: 1px solid var(--c-grey-line-dark);
+      border-radius: 999px; padding: 8px 16px;
+    }
+    .faq-quicknav a:hover { border-color: var(--c-red); color: var(--c-red); }
+
+    .faq-group {
+      font-family: var(--f-display); font-weight: 800; text-transform: uppercase;
+      font-size: 24px; letter-spacing: 0.5px; color: var(--c-black);
+      margin: 48px 0 14px; padding-top: 4px;
+    }
+    /* Anchors land below the fixed header rather than under it. */
+    .faq-group, .faq-item { scroll-margin-top: calc(var(--header-h) + 20px); }
+
+    .faq-item { border: 1px solid var(--c-grey-line-dark); border-radius: 10px; margin-bottom: 10px; background: var(--c-white); }
+    .faq-item summary {
+      list-style: none; cursor: pointer; position: relative;
+      padding: 18px 52px 18px 20px; font-size: 16px; font-weight: 700; color: var(--c-black); line-height: 1.4;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: "+"; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+      font-size: 24px; font-weight: 500; color: var(--c-red); line-height: 1;
+    }
+    .faq-item[open] summary::after { content: "\2212"; }
+    .faq-item[open] { border-color: rgba(200,16,46,0.35); }
+    .faq-item summary:focus-visible { outline: 2px solid var(--c-red); outline-offset: 2px; border-radius: 10px; }
+
+    .faq-answer { padding: 0 20px 18px; font-size: 15px; line-height: 1.65; color: #333; }
+    .faq-answer p { margin: 0 0 10px; }
+    .faq-answer p:last-child { margin-bottom: 0; }
+    .faq-answer ul, .faq-answer ol { margin: 0 0 10px; padding-left: 22px; }
+    .faq-answer li { margin-bottom: 6px; }
+    .faq-answer a, .faq-more a { color: var(--c-red); font-weight: 600; }
+
+    .faq-more { margin-top: 48px; padding: 24px; background: var(--c-grey-light); border-radius: 12px; }
+    .faq-more h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 20px; margin-bottom: 6px; }
+    .faq-more p { margin: 0; color: #333; line-height: 1.6; }
+
+    @media (max-width: 600px) {
+      .faq-item summary { padding: 16px 46px 16px 16px; font-size: 15px; }
+      .faq-item summary::after { right: 16px; }
+      .faq-answer { padding: 0 16px 16px; }
+    }
+
+    .footer-credit img { border-radius: 22%; }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html#top" class="logo">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="index.html#booking">Book Facilities</a>
+        <a href="index.html#membership">Track &amp; Gym Memberships</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ============ FAQ CONTENT ============ -->
+    <section class="section faq-page">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Help</p>
+        <h1 class="section-title">Frequently Asked Questions</h1>
+        <p class="faq-lede">Quick answers on booking activities, accounts, family members and payments. Tap a question to see the answer.</p>
+
+        <nav class="faq-quicknav" aria-label="Jump to section">
+          <a href="#faq-accounts">Accounts</a>
+          <a href="#faq-booking">Booking</a>
+          <a href="#faq-family">Family</a>
+          <a href="#faq-payments">Payments</a>
+          <a href="#faq-my-bookings">My Bookings</a>
+          <a href="#faq-visiting">Visiting</a>
+        </nav>
+
+        <!-- ── Accounts ── -->
+        <h2 class="faq-group" id="faq-accounts">Accounts</h2>
+
+        <details class="faq-item" id="account-needed">
+          <summary>Do I need an account to book?</summary>
+          <div class="faq-answer">
+            <p>No — you can book any activity as a guest without creating an account. Just fill in your details at the time of booking.</p>
+            <p>An account does make things quicker and easier though — see <a href="#account-benefits">why create an account</a>.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="account-benefits">
+          <summary>Why should I create an account?</summary>
+          <div class="faq-answer">
+            <p>If you book while signed in to an account, you get:</p>
+            <ul>
+              <li><strong>Your details filled in for you</strong> — no retyping your name, phone and postcode every time.</li>
+              <li><strong>Saved family members</strong> — add your children once, then just tick their names when booking. See <a href="#manage-family">Manage Family</a>.</li>
+              <li><strong>My Bookings</strong> — see all your upcoming sessions in one place, with your booking references, receipts and add-to-calendar links.</li>
+            </ul>
+            <p>Bookings made as a guest aren't linked to an account, so they won't appear in My Bookings — so it's worth signing in <em>before</em> you book.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="create-account">
+          <summary>How do I create an account?</summary>
+          <div class="faq-answer">
+            <ol>
+              <li>Click <strong>My Account</strong> — it's in the menu on the home page, or at the top of the <a href="activitybooking.html">Book an Activity</a> page.</li>
+              <li>Choose the <strong>Register</strong> tab.</li>
+              <li>Enter your name, date of birth, postcode, email, phone number and a password (at least 6 characters).</li>
+              <li>Press <strong>Register</strong> — you'll be signed in straight away.</li>
+            </ol>
+            <p>Once you're signed in, a bar at the top of the page shows your name, with links to My Bookings and Manage Family.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="forgot-password">
+          <summary>I've forgotten my password</summary>
+          <div class="faq-answer">
+            <p>Click <strong>My Account</strong>, type your email address into the Log In form, then click <strong>Forgot password?</strong>. We'll email you a link to set a new one.</p>
+            <p>If it doesn't arrive within a few minutes, check your junk or spam folder.</p>
+          </div>
+        </details>
+
+        <!-- ── Booking ── -->
+        <h2 class="faq-group" id="faq-booking">Booking an Activity</h2>
+
+        <details class="faq-item" id="how-to-book">
+          <summary>How do I book an activity?</summary>
+          <div class="faq-answer">
+            <ol>
+              <li>Go to the <a href="activitybooking.html">Book an Activity</a> page. If you have an account, sign in first.</li>
+              <li>Choose the activity from the tabs at the top.</li>
+              <li>Tap the session(s) you want — each one shows whether it's <strong>Available</strong> or <strong>Full</strong>.</li>
+              <li>Fill in your contact details and choose who's attending — yourself, your child / children, or both.</li>
+              <li>Choose how to pay (where there's a choice) and press the book button.</li>
+            </ol>
+            <p>You'll then see a confirmation with your booking reference — see <a href="#booking-confirmed">how do I know my booking went through?</a></p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="multiple-sessions">
+          <summary>Can I book more than one session at once?</summary>
+          <div class="faq-answer">
+            <p>Yes — just tap each session you want before booking. You'll be booked (and charged) for every session you select, all in one go.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="book-children">
+          <summary>Can I book for my children?</summary>
+          <div class="faq-answer">
+            <p>Yes. When booking, tick <strong>Book a place for my child / children</strong> and add their details. You can book for yourself and your children together in the same booking.</p>
+            <p>If you have an account, save your children in <a href="#manage-family">Manage Family</a> and you'll just need to tick their names each time.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="booking-confirmed">
+          <summary>How do I know my booking went through?</summary>
+          <div class="faq-answer">
+            <p>Once your booking is complete, a confirmation appears on screen showing:</p>
+            <ul>
+              <li>your <strong>booking reference</strong> (e.g. NW-K3F9QZ)</li>
+              <li>the activity, session date(s) and time(s), and who's booked on</li>
+              <li>how you paid — with a link to your receipt if you paid online.</li>
+            </ul>
+            <p>Please keep a note of your booking reference (a screenshot is fine) and quote it if you need to contact us about your booking. If you were signed in, the booking will also appear in <a href="#my-bookings">My Bookings</a>.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="add-to-calendar">
+          <summary>Can I add my session to my calendar?</summary>
+          <div class="faq-answer">
+            <p>Yes. Press <strong>Add to calendar</strong> on the booking confirmation. This works with iPhone, Outlook and Samsung calendars, and includes a reminder an hour before. If you use Google Calendar, use the Google Calendar link just below the button instead.</p>
+            <p>If you were signed in, you can also add any upcoming session from <a href="#my-bookings">My Bookings</a> later.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="session-full">
+          <summary>What if a session is full?</summary>
+          <div class="faq-answer">
+            <p>Full sessions are marked <strong>Full</strong> and can't be selected. Try another date, or <a href="#contact-us">get in touch</a> with us.</p>
+          </div>
+        </details>
+
+        <!-- ── Family ── -->
+        <h2 class="faq-group" id="faq-family">Family Members</h2>
+
+        <details class="faq-item" id="manage-family">
+          <summary>What is Manage Family, and why use it?</summary>
+          <div class="faq-answer">
+            <p>Manage Family lets you save your children's details to your account once — name, date of birth and any notes (such as dietary or medical needs). Then, when you book, you simply tick their names instead of typing everything in again.</p>
+            <p>Ages are worked out automatically from their date of birth, so they're always up to date. You'll need an account to use it — see <a href="#create-account">how to create one</a>.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="family-edit">
+          <summary>How do I add, edit or remove a family member?</summary>
+          <div class="faq-answer">
+            <ol>
+              <li>Sign in, then click <strong>Manage Family</strong> in the bar showing your name.</li>
+              <li>Press <strong>+ Add a family member</strong> and fill in their details — or change the details of someone already listed.</li>
+              <li>Press <strong>Save</strong> under that person. Changes aren't kept until you press Save.</li>
+            </ol>
+            <p>To remove someone, press <strong>Remove</strong> next to their name.</p>
+          </div>
+        </details>
+
+        <!-- ── Payments ── -->
+        <h2 class="faq-group" id="faq-payments">Payments</h2>
+
+        <details class="faq-item" id="how-to-pay">
+          <summary>How can I pay?</summary>
+          <div class="faq-answer">
+            <p>You can pay online by debit or credit card when you book. For some activities you can also choose to <strong>pay at the venue</strong> instead — if that's available, you'll see the option when booking. Free activities don't need any payment.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="payment-secure">
+          <summary>Is paying online secure?</summary>
+          <div class="faq-answer">
+            <p>Yes. Online payments are handled by <strong>Square</strong>, a secure, established payment provider. Your card details are entered into Square's own secure payment form and go straight to Square — they're never seen or stored by Northwood Stadium or this website.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="receipt">
+          <summary>How do I get a receipt?</summary>
+          <div class="faq-answer">
+            <p>If you pay online, press <strong>View / save receipt</strong> on the booking confirmation to open your receipt, which you can print or save. If you were signed in, there's also a <strong>Receipt</strong> link on that booking in <a href="#my-bookings">My Bookings</a>.</p>
+            <p>If you pay at the venue, please ask the team on the day.</p>
+          </div>
+        </details>
+
+        <!-- ── My Bookings ── -->
+        <h2 class="faq-group" id="faq-my-bookings">My Bookings</h2>
+
+        <details class="faq-item" id="my-bookings">
+          <summary>Where can I see my bookings?</summary>
+          <div class="faq-answer">
+            <p>Sign in, then click <strong>My Bookings</strong> in the bar showing your name — or <a href="activitybooking.html#my-bookings">open My Bookings now</a>.</p>
+            <p>It lists all your upcoming sessions, soonest first, with the date, time, who's booked on and your booking reference. Once a session has finished, it drops off the list.</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="booking-not-showing">
+          <summary>Why isn't my booking showing in My Bookings?</summary>
+          <div class="faq-answer">
+            <p>The most common reasons are:</p>
+            <ul>
+              <li><strong>You weren't signed in when you booked.</strong> Guest bookings aren't linked to an account, so they don't appear in My Bookings — but the booking itself is still valid.</li>
+              <li><strong>You're signed in to a different account</strong> from the one you booked with.</li>
+              <li><strong>The session has already finished</strong> — My Bookings only shows upcoming sessions.</li>
+            </ul>
+            <p>If you're unsure whether you're booked on, <a href="#contact-us">contact us</a> with your booking reference and we'll check for you.</p>
+          </div>
+        </details>
+
+        <!-- ── Visiting ── -->
+        <h2 class="faq-group" id="faq-visiting">Visiting Northwood</h2>
+
+        <details class="faq-item" id="pitches-memberships">
+          <summary>How do I book a pitch, the sports hall, or a gym / track membership?</summary>
+          <div class="faq-answer">
+            <p>These are booked separately from activities:</p>
+            <ul>
+              <li><strong>3G pitches and the sports hall</strong> — book through <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" target="_blank" rel="noopener">Pitchbooking</a>.</li>
+              <li><strong>Gym and track memberships</strong> — sign up through our <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" target="_blank" rel="noopener">membership page</a>.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="faq-item" id="where-opening">
+          <summary>Where are you, and when are you open?</summary>
+          <div class="faq-answer">
+            <p>Northwood Stadium, Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA — <a href="index.html#map">see the map</a>.</p>
+            <p>Monday – Friday: 10:00 – 22:00<br>Saturday – Sunday: 09:00 – 17:00</p>
+          </div>
+        </details>
+
+        <details class="faq-item" id="contact-us">
+          <summary>How do I contact you?</summary>
+          <div class="faq-answer">
+            <p>Email <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> or call <a href="tel:07547438786">07547 438786</a>. If it's about a booking, please include your booking reference.</p>
+          </div>
+        </details>
+
+        <div class="faq-more">
+          <h3>Can't find your answer?</h3>
+          <p>Get in touch at <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> or call <a href="tel:07547438786">07547 438786</a> — we're happy to help.</p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="index.html#contact">Contact</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="index.html#booking">Book a Facility</a>
+          <a href="index.html#membership">Track &amp; Gym Memberships</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    // Links like faq.html#receipt open that answer and scroll to it, so
+    // other pages can link straight to a specific question.
+    (function () {
+      function openFromHash() {
+        if (!location.hash) return;
+        const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        if (el && el.tagName === "DETAILS") {
+          el.open = true;
+          requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
+        }
+      }
+      window.addEventListener("hashchange", openFromHash);
+      openFromHash();
+    })();
+  </script>
+</body>
+</html>
