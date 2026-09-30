@@ -1496,7 +1496,7 @@ const CONFIRMATION_EMAILS_ENABLED = false;
     const metaParts = [];
     if (names) metaParts.push(`For: ${names}`);
     if (b.amount) metaParts.push(`£${Number(b.amount).toFixed(2)}`);
-    if (b.bookingRef) metaParts.push(`<span style="white-space:nowrap;">Ref: <strong>${esc(b.bookingRef)}</strong></span>`);
+    if (typeof b.bookingRef === "string" && b.bookingRef) metaParts.push(`<span style="white-space:nowrap;">Ref: <strong>${esc(b.bookingRef)}</strong></span>`);
     if (b.squareReceiptUrl && /^https:\/\//.test(b.squareReceiptUrl)) metaParts.push(`<a href="${esc(b.squareReceiptUrl)}" target="_blank" rel="noopener" style="color:var(--c-red); font-weight:600;">Receipt</a>`);
     return `
       <div class="mybk-card${isPast ? " is-past" : ""}" ${accent}>
@@ -1513,10 +1513,11 @@ const CONFIRMATION_EMAILS_ENABLED = false;
   }
 
   function myBookingCalEvents(b) {
+    const ref = typeof b.bookingRef === "string" ? b.bookingRef : "";
     const act = activeActivities.find(a => a.id === b.activityId);
     return calEventsFrom(
       [{ id: b.sessionId || b.id, date: b.sessionDate, time: b.sessionTime }],
-      { title: b.activityName || "Northwood Stadium activity", location: (act && act.venue) || "Northwood Stadium", ref: b.bookingRef, attendees: (b.attendees || []).map(a => a.name) }
+      { title: b.activityName || "Northwood Stadium activity", location: (act && act.venue) || "Northwood Stadium", ref, attendees: (b.attendees || []).map(a => a.name) }
     );
   }
 
@@ -1546,7 +1547,7 @@ const CONFIRMATION_EMAILS_ENABLED = false;
     myBookingsList.querySelectorAll("[data-cal-id]").forEach(btn => {
       btn.addEventListener("click", () => {
         const b = upcoming.find(x => x.id === btn.dataset.calId);
-        if (b) downloadIcs(myBookingCalEvents(b), `northwood-${b.bookingRef || b.sessionDate}`);
+        if (b) downloadIcs(myBookingCalEvents(b), `northwood-${(typeof b.bookingRef === "string" && b.bookingRef) || b.sessionDate}`);
       });
     });
   }
@@ -2424,6 +2425,15 @@ const CONFIRMATION_EMAILS_ENABLED = false;
         let squarePaymentId = null;
         let squareReceiptUrl = null;
 
+        // A shared bookingGroupId ties the per-session docs together when
+        // more than one session was booked in a single go.
+        const bookingGroupId = generateIdempotencyKey();
+        // Short, human-friendly reference shown to the customer, saved on
+        // every booking doc, and sent to Square as the payment's reference —
+        // so staff can match a phone call, email or Square transaction to a
+        // booking, e.g. "NW-K3F9QZ".
+        const bookingRef = "NW-" + bookingGroupId.split("-")[1].slice(0, 6).toUpperCase().padEnd(6, "0");
+
         // Only charge via Square if this is an online payment.
         if (effectivePaymentMethod === "online") {
           if (!card) {
@@ -2452,7 +2462,6 @@ const CONFIRMATION_EMAILS_ENABLED = false;
             return;
           }
 
-          const bookingRef = generateIdempotencyKey();
           const idempotencyKey = generateIdempotencyKey();
           const response = await fetch(CHARGE_FUNCTION_URL, {
             method: "POST",
@@ -2487,13 +2496,6 @@ const CONFIRMATION_EMAILS_ENABLED = false;
         // writes one booking doc per session — all sessions succeed or none
         // do. This protects against a staff desk booking and an online
         // booking landing on the last spot(s) of any selected session at once.
-        // A shared bookingGroupId ties the per-session docs together when
-        // more than one session was booked in a single go.
-        const bookingGroupId = generateIdempotencyKey();
-        // Short, human-friendly reference shown to the customer (and saved
-        // on every booking doc) so staff can match a phone call / email to
-        // a booking, e.g. "NW-K3F9QZ".
-        const bookingRef = "NW-" + bookingGroupId.split("-")[1].slice(0, 6).toUpperCase().padEnd(6, "0");
         const counterRefs = selectedSessions.map(s => db.collection("activitySessionCounts").doc(s.id));
 
         // One activityBookingGroups doc is written per checkout (regardless of
@@ -2521,8 +2523,10 @@ const CONFIRMATION_EMAILS_ENABLED = false;
 
           selectedSessions.forEach((s, i) => {
             tx.set(counterRefs[i], { booked: currentBookedById[s.id] + attendeeCount }, { merge: true });
-            const bookingRef = db.collection("activityBookings").doc();
-            tx.set(bookingRef, {
+            // Named bookingDocRef (not bookingRef) so it doesn't shadow the
+            // NW-XXXXXX reference saved in the `bookingRef` field below.
+            const bookingDocRef = db.collection("activityBookings").doc();
+            tx.set(bookingDocRef, {
               activityId: activity.id,
               activityName: activity.name,
               provider: activity.provider,
