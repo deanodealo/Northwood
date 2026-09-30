@@ -215,6 +215,21 @@
       color: var(--c-black); background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1);
       border-radius: 8px; box-sizing: border-box;
     }
+    /* iPhone Safari draws date inputs with its own native styling, which
+       ignores width limits and overhangs the popup (same issue fixed on
+       manage-activities.html). Stripping the native look makes it behave
+       like the other fields; tapping still opens the normal date picker. */
+    input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      min-height: 46px;
+      box-sizing: border-box;
+    }
+    input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
     .account-field input:focus { outline: none; border-color: var(--c-red); background: white; }
     .family-member-block {
       border: 1.5px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 16px; margin-bottom: 14px; background: rgba(0,0,0,0.015);

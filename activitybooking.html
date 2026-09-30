@@ -299,6 +299,21 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="number"]
   border-radius: 8px;
   transition: border-color 0.15s, background 0.15s;
 }
+/* iPhone Safari draws date inputs with its own native styling, which
+   ignores width limits and overhangs the popup/form (same issue fixed on
+   manage-activities.html). Stripping the native look makes it behave like
+   the other fields; tapping still opens the normal date picker. */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 2.9em;
+  box-sizing: border-box;
+}
+input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
 input:focus, textarea:focus, select:focus { outline: none; border-color: var(--activity-accent, var(--c-red)); background: white; }
 .required-mark { color: var(--c-red); }
 
