@@ -11,7 +11,7 @@
    version, and the cache only exists as an offline fallback.
 */
 
-const CACHE_NAME = 'northwood-v1';
+const CACHE_NAME = 'northwood-v2';
 const PRECACHE = [
   './',
   './index.html',
@@ -36,13 +36,25 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const req = event.request;
+
+  // Only handle this site's own page/asset GETs. Everything else —
+  // Firebase Auth sign-in (POST), Firestore's live connection, Square,
+  // Google Fonts, the payment Cloud Function — goes straight to the
+  // network untouched. Intercepting those broke staff login (Firestore
+  // reported 'client is offline') and threw 'POST is unsupported'.
+  if (req.method !== 'GET') return;
+  if (new URL(req.url).origin !== self.location.origin) return;
+
   event.respondWith(
-    fetch(event.request)
+    fetch(req)
       .then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
+        }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(req))
   );
 });
