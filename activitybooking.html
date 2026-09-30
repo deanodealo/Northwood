@@ -1531,6 +1531,13 @@ const CONFIRMATION_EMAILS_ENABLED = false;
     staffBanner.classList.add("hidden");
     customerBanner.classList.remove("hidden");
     customerBannerName.textContent = currentCustomer.name;
+    // Arrived from the "My Bookings" link on the home/facilities pages'
+    // red account bar — open the list straight away, then clear the hash
+    // so a refresh or later login doesn't keep reopening it.
+    if (location.hash === "#my-bookings") {
+      history.replaceState(null, "", location.pathname + location.search);
+      openMyBookings();
+    }
     // "My Account" would be a dead click once logged in — the banner
     // above already covers Manage Family and Log Out, so there's
     // nothing left for the button to do.
