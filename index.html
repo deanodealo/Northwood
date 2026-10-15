@@ -298,6 +298,10 @@
     /* styles.css sets 4 columns; with Youth Club added that would leave
        one card alone on a second row. Desktop shows all five in a row,
        and on 2-column tablets the fifth card is centred on its own row. */
+    /* 3G tile has two buttons: individual slot + team bookings */
+    .offer-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn-small-outline { background: transparent; color: var(--c-black); box-shadow: inset 0 0 0 1.5px var(--c-black); }
+    .btn-small-outline:hover { background: var(--c-red); color: var(--c-white); box-shadow: none; }
     @media (min-width: 1101px) {
       .offer-grid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
       .offer-body { padding: 20px; }
@@ -508,7 +512,10 @@
             <div class="offer-body">
               <h3>3G Football</h3>
               <p>Floodlit 3G pitch built for five-a-side through to full-size fixtures, available for teams, leagues and casual hires all year round.</p>
-              <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" class="btn btn-small">Book Now</a>
+              <div class="offer-actions">
+                <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" class="btn btn-small">Book a Slot</a>
+                <a href="team-bookings.html" class="btn btn-small btn-small-outline">Team Bookings</a>
+              </div>
             </div>
           </div>
 
@@ -621,7 +628,7 @@
       <div class="work-card">
         <p class="work-card-label">Local Businesses &amp; Clubs</p>
         <h3 class="work-card-title">Partner With Northwood</h3>
-        <p class="work-card-copy">Independent business, club, league or coaching provider? Run your sessions from our football pitches, track, gym and sports hall, and make Northwood your new home.</p>
+        <p class="work-card-copy">Independent business, club, league or coaching provider? Run your sessions from our football pitches, track, gym and sports hall, and make Northwood your new home. Football team after a weekly 3G slot? See <a href="team-bookings.html" style="color:var(--c-white); font-weight:700; text-decoration:underline;">team &amp; club bookings</a>.</p>
         <ul class="work-card-tags">
           <li>Block booking discounts</li>
           <li>Clubs &amp; leagues</li>
@@ -898,11 +905,13 @@
           <a href="#offer">Facilities</a>
           <a href="#activities">Activities</a>
           <a href="youthclub.html">Youth Club</a>
+          <a href="events.html">Events</a>
         </div>
 
         <div class="footer-col">
           <h4>Book</h4>
           <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
           <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
           <a href="activitiesadmin.html">Staff Login</a>
         </div>
@@ -918,6 +927,7 @@
         <div class="footer-col">
           <h4>Site Information</h4>
           <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
           <a href="terms.html">Terms &amp; Conditions</a>
           <a href="privacy.html">Privacy Policy</a>
         </div>

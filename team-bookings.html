@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team & Club 3G Bookings | Northwood Stadium</title>
+  <meta name="description" content="Weekly subscription and casual 3G pitch bookings for junior and senior football teams at Northwood Stadium.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subpage.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#0B0B0C">
+</head>
+<body>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="page-hero">
+      <div class="page-hero-media" aria-hidden="true"><img src="images/3gfooty.jpg" alt=""></div>
+      <div class="page-hero-inner">
+        <p class="hero-eyebrow">Junior &amp; Senior Football</p>
+        <h1 class="page-hero-title">Team &amp; Club 3G Bookings</h1>
+        <p class="page-hero-sub">Secure a regular weekly slot on our floodlit 3G pitch for your team's training or matches. Subscriptions guarantee your slot, with payment taken automatically each week.</p>
+        <div class="page-hero-actions">
+          <a href="#booking-form" class="btn-red">Request a Booking</a>
+          <a href="#pricing" class="btn-outline-light">View Prices</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRICING ============ -->
+    <section class="section" id="pricing">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Booking Types &amp; Prices</p>
+        <h2 class="section-title">Subscription or Casual?</h2>
+        <p class="lede">All team bookings are made on a subscription basis wherever possible. A subscription guarantees your weekly slot and is the cheaper option.</p>
+
+        <div class="price-grid">
+          <div class="price-card featured">
+            <span class="badge">Recommended</span>
+            <h3>Junior Subscription</h3>
+            <p class="who">Under 18s · 4 weeks or more</p>
+            <p class="price">£34</p>
+            <p class="per">per hour, weekly</p>
+          </div>
+          <div class="price-card featured">
+            <span class="badge">Recommended</span>
+            <h3>Senior Subscription</h3>
+            <p class="who">18 and over · 4 weeks or more</p>
+            <p class="price">£40</p>
+            <p class="per">per hour, weekly</p>
+          </div>
+          <div class="price-card">
+            <h3>Junior Casual</h3>
+            <p class="who">Under 18s · one-off / short term</p>
+            <p class="price">£38</p>
+            <p class="per">per hour</p>
+          </div>
+          <div class="price-card">
+            <h3>Senior Casual</h3>
+            <p class="who">18 and over · one-off / short term</p>
+            <p class="price">£44</p>
+            <p class="per">per hour</p>
+          </div>
+        </div>
+
+        <div class="info-panel warn" style="margin-top: 32px;">
+          <strong>Looking for a casual booking?</strong> Please contact us before completing the form to confirm availability and arrange payment — casual slots can't be guaranteed without prior confirmation.
+          Email <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> or WhatsApp <a href="https://wa.me/447547438786" target="_blank" rel="noopener">07547 438786</a>.
+        </div>
+
+        <p class="section-note" style="margin-top: 20px;">Booking a pitch just for yourself and friends? Use <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" style="color: var(--c-red); font-weight: 700; text-decoration: underline;">PitchBooking</a> to book a single slot online.</p>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="section find-us" id="how-it-works">
+      <div class="section-inner">
+        <p class="section-eyebrow">— How Subscriptions Work</p>
+        <h2 class="section-title">Your Slot, Every Week</h2>
+        <ul class="info-list" style="max-width: 760px; margin-top: 8px;">
+          <li>Once confirmed, your slot is reserved on a rolling weekly basis.</li>
+          <li>Payment is taken automatically each week, on the day of your session, via PitchBooking.</li>
+          <li>Need to miss a week? Give us 24 hours' notice by email or WhatsApp and no payment will be taken.</li>
+          <li>Already know dates you won't need (school holidays, cup weeks, pre-season)? Add them to the form and we'll exclude them from your subscription.</li>
+        </ul>
+
+        <h3 class="find-us-heading" style="margin-top: 56px;">What happens after you apply</h3>
+        <ol class="steps">
+          <li><strong>Confirmation sent</strong>Once our team has reviewed your request, you'll receive a booking confirmation by email and text from PitchBooking.</li>
+          <li><strong>Claim your booking</strong>Follow the link in your confirmation to claim your booking on PitchBooking. You'll need a free account if you don't already have one.</li>
+          <li><strong>Set up your subscription</strong>Set up your weekly payment. Your slot is not fully secured until this step is complete.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ BOOKING FORM ============ -->
+    <section class="section" id="booking-form">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Request a Booking</p>
+        <h2 class="section-title">3G Team Booking Form</h2>
+        <p class="lede" style="margin-bottom: 40px;">Fields marked <span class="req">*</span> are required. We'll review your request and confirm your slot via PitchBooking.</p>
+
+        <!-- FORMSPREE: replace YOUR_FORM_ID with this form's ID from formspree.io
+             (create a separate Formspree form for each booking form). -->
+        <form class="booking-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+          <input type="hidden" name="_subject" value="New 3G team booking request">
+          <div class="hp-field" aria-hidden="true"><label>Leave this empty <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
+
+          <fieldset class="form-section">
+            <legend><span class="form-section-num">1</span>Team Details</legend>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="tb-team">Team name <span class="req">*</span></label>
+                <input type="text" id="tb-team" name="Team name" required>
+              </div>
+              <div class="field">
+                <label for="tb-age">Age group / league</label>
+                <input type="text" id="tb-age" name="Age group / league" placeholder="e.g. U12s, Staffs Sunday League">
+              </div>
+              <div class="field">
+                <label for="tb-squad">Approximate squad size</label>
+                <input type="number" id="tb-squad" name="Approximate squad size" min="1" inputmode="numeric">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend><span class="form-section-num">2</span>Contact Details</legend>
+            <div class="form-grid">
+              <div class="field">
+                <label for="tb-name">Contact name <span class="req">*</span></label>
+                <input type="text" id="tb-name" name="Contact name" autocomplete="name" required>
+              </div>
+              <div class="field">
+                <label for="tb-phone">Phone number <span class="req">*</span></label>
+                <input type="tel" id="tb-phone" name="Phone number" autocomplete="tel" required>
+              </div>
+              <div class="field">
+                <label for="tb-email">Contact email <span class="req">*</span></label>
+                <input type="email" id="tb-email" name="email" autocomplete="email" required>
+              </div>
+              <div class="field">
+                <label for="tb-sec">Secretary email</label>
+                <input type="email" id="tb-sec" name="Secretary email">
+                <span class="hint">If different to the contact email</span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend><span class="form-section-num">3</span>Booking Details</legend>
+            <div class="form-grid">
+              <div class="field full">
+                <span class="group-label" id="tb-days-label">Preferred day(s) <span class="req">*</span></span>
+                <div class="choice-group" data-require-one role="group" aria-labelledby="tb-days-label">
+                  <label class="choice"><input type="checkbox" name="Preferred days" value="Mon">Mon</label>
+                  <label class="choice"><input type="checkbox" name="Preferred days" value="Tue">Tue</label>
+                  <label class="choice"><input type="checkbox" name="Preferred days" value="Wed">Wed</label>
+                  <label class="choice"><input type="checkbox" name="Preferred days" value="Thu">Thu</label>
+                  <label class="choice"><input type="checkbox" name="Preferred days" value="Fri">Fri</label>
+                  <label class="choice"><input type="checkbox" name="Preferred days" value="Sat">Sat</label>
+                  <label class="choice"><input type="checkbox" name="Preferred days" value="Sun">Sun</label>
+                </div>
+                <p class="group-error">Please choose at least one day.</p>
+              </div>
+              <div class="field">
+                <label for="tb-time">Preferred time &amp; duration <span class="req">*</span></label>
+                <input type="text" id="tb-time" name="Preferred time and duration" placeholder="e.g. 7pm, 1 hour" required>
+              </div>
+              <div class="field">
+                <label for="tb-start">Requested start date <span class="req">*</span></label>
+                <input type="date" id="tb-start" name="Requested start date" required>
+              </div>
+              <div class="field full">
+                <label for="tb-pitch">Pitch preference</label>
+                <input type="text" id="tb-pitch" name="Pitch preference" placeholder="If any">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend><span class="form-section-num">4</span>Booking Type</legend>
+            <div class="option-cards" data-require-one role="radiogroup" aria-label="Booking type">
+              <label class="option-card">
+                <input type="radio" name="Booking type" value="Junior Subscription (£34 per hour, weekly)">
+                <span class="oc-tag">Recommended</span>
+                <span class="oc-title">Junior Subscription</span>
+                <span class="oc-sub">Under 18s · 4 weeks or more</span>
+                <span class="oc-price">£34 per hour / weekly</span>
+              </label>
+              <label class="option-card">
+                <input type="radio" name="Booking type" value="Senior Subscription (£40 per hour, weekly)">
+                <span class="oc-tag">Recommended</span>
+                <span class="oc-title">Senior Subscription</span>
+                <span class="oc-sub">18 and over · 4 weeks or more</span>
+                <span class="oc-price">£40 per hour / weekly</span>
+              </label>
+              <label class="option-card">
+                <input type="radio" name="Booking type" value="Junior Casual (£38 per hour)">
+                <span class="oc-title">Junior Casual</span>
+                <span class="oc-sub">Under 18s · one-off / short term</span>
+                <span class="oc-price">£38 per hour</span>
+              </label>
+              <label class="option-card">
+                <input type="radio" name="Booking type" value="Senior Casual (£44 per hour)">
+                <span class="oc-title">Senior Casual</span>
+                <span class="oc-sub">18 and over · one-off / short term</span>
+                <span class="oc-price">£44 per hour</span>
+              </label>
+            </div>
+            <p class="group-error">Please choose a booking type.</p>
+
+            <!-- Casual: must have contacted Northwood first -->
+            <div class="conditional" data-show-when="Booking type=Junior Casual (£38 per hour)|Senior Casual (£44 per hour)" hidden>
+              <div class="info-panel warn" style="margin-bottom: 16px;">
+                <strong>Casual bookings must be agreed with us first.</strong> If you haven't already, please email <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> or WhatsApp <a href="https://wa.me/447547438786" target="_blank" rel="noopener">07547 438786</a> to confirm availability and arrange payment before submitting this form.
+              </div>
+              <label class="agree"><input type="checkbox" name="Casual booking agreed in advance" value="Yes" required><span>I have already contacted Northwood to confirm availability and payment for this casual booking.</span></label>
+            </div>
+
+            <!-- Subscription: start / end dates -->
+            <div class="conditional" data-show-when="Booking type=Junior Subscription (£34 per hour, weekly)|Senior Subscription (£40 per hour, weekly)" hidden>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="tb-sub-start">Subscription start date <span class="req">*</span></label>
+                  <input type="date" id="tb-sub-start" name="Subscription start date" required>
+                </div>
+                <div class="field">
+                  <label for="tb-sub-end">Subscription end date</label>
+                  <input type="date" id="tb-sub-end" name="Subscription end date">
+                  <span class="hint">Leave blank if ongoing</span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend><span class="form-section-num">5</span>Known Exclusions</legend>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="tb-excl">Dates you won't need your slot</label>
+                <textarea id="tb-excl" name="Known exclusion dates" placeholder="e.g. 23 Dec – school holidays&#10;14 Feb – cup week"></textarea>
+                <span class="hint">One per line, with a reason if you like. We'll apply these so no payment is taken on those dates. More can be added later with 24 hours' notice.</span>
+              </div>
+              <div class="field full">
+                <label for="tb-notes">Anything else we should know?</label>
+                <textarea id="tb-notes" name="Additional notes"></textarea>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend><span class="form-section-num">6</span>Declaration</legend>
+            <p class="declaration-text">All 3G bookings are subject to the following. Failure to comply may result in your booking being suspended or permanently cancelled without refund.</p>
+            <ul class="rules">
+              <li><strong>Payment</strong>All payments must be made in accordance with your booking type. Missed or failed subscription payments may result in your slot being released and your booking cancelled. It is your responsibility to keep your payment details up to date on PitchBooking.</li>
+              <li><strong>Litter &amp; pitch condition</strong>All teams are responsible for leaving the pitch and surrounding areas clean and tidy after each session. Recurring instances of litter, mess or damage will result in a formal warning followed by cancellation of the booking.</li>
+              <li><strong>Conduct on the pitch</strong>Any player found urinating on or around the pitch will result in the immediate cancellation of the team's booking. Toilet facilities are available on site and must be used at all times. This is a zero-tolerance rule.</li>
+            </ul>
+            <label class="agree"><input type="checkbox" name="Agrees to pitch hire terms" value="Yes" required><span>I confirm the information provided is accurate and I agree to the Northwood Community Sports pitch hire terms above. I understand subscription payments are taken automatically each week and that 24 hours' notice is required to cancel a session. I accept responsibility for the conduct of all players and attendees during our booking.</span></label>
+            <label class="agree"><input type="checkbox" name="Agrees to Conditions of Hire" value="Yes" required><span>I have read and agree to the <a href="conditions-of-hire.html" target="_blank" rel="noopener">Conditions of Hire</a>.</span></label>
+            <div class="form-grid" style="margin-top: 8px;">
+              <div class="field">
+                <label for="tb-sign">Full name (as your signature) <span class="req">*</span></label>
+                <input type="text" id="tb-sign" name="Signed by" autocomplete="name" required>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="form-submit-row">
+            <button type="submit" class="btn-red">Send Booking Request</button>
+            <p class="form-error-summary" role="alert"></p>
+          </div>
+          <p class="form-fallback" style="margin-top: 16px;">Prefer a paper form? <a href="docs/3g-team-booking-form.pdf" download>Download the PDF</a> and email it to info@northwoodstadium.co.uk.</p>
+        </form>
+
+        <template class="form-success-template">
+          <div class="form-success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L19 7"/></svg></div>
+          <h3>Request Received</h3>
+          <p>Thanks — we've received your booking request. Our team will review it and you'll get a confirmation from PitchBooking by email and text. Questions in the meantime? Email info@northwoodstadium.co.uk or WhatsApp 07547 438786.</p>
+        </template>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="youthclub.html">Youth Club</a>
+          <a href="events.html">Events</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="subpage.js"></script>
+</body>
+</html>

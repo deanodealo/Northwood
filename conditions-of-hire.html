@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conditions of Hire | Northwood Stadium</title>
+  <meta name="description" content="Conditions of hire for Northwood Stadium facilities — please read before booking.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subpage.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#0B0B0C">
+  <style>
+    /* ============ CONDITIONS OF HIRE PAGE ============ */
+    .coh-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 64px; align-items: start; }
+    .coh-org { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 20px; letter-spacing: 0.4px; margin-bottom: 28px; }
+    .coh-list { counter-reset: clause; list-style: none; }
+    .coh-list > li {
+      counter-increment: clause; position: relative; padding: 0 0 22px 52px; margin-bottom: 22px;
+      border-bottom: 1px solid var(--c-grey-line-dark); scroll-margin-top: calc(var(--header-h) + 24px);
+    }
+    .coh-list > li:last-child { border-bottom: none; }
+    .coh-list > li::before {
+      content: counter(clause); position: absolute; left: 0; top: -2px;
+      width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--c-black); color: var(--c-white); font-family: var(--f-display); font-weight: 800; font-size: 16px;
+    }
+    .coh-list p, .coh-sub li { color: #3A3A3E; font-size: 15px; line-height: 1.75; }
+    .coh-sub { margin: 10px 0 0 4px; padding-left: 26px; display: grid; gap: 8px; }
+    .coh-alpha { list-style: lower-alpha; }
+    .coh-roman { list-style: lower-roman; margin-top: 8px; }
+    .coh-sub li::marker { font-weight: 700; color: var(--c-red); }
+
+    .coh-side { position: sticky; top: calc(var(--header-h) + 24px); display: grid; gap: 20px; }
+    .coh-card { background: var(--c-black); color: var(--c-white); border-radius: 14px; padding: 28px; border-top: 4px solid var(--c-red); }
+    .coh-card h2 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 24px; margin-bottom: 10px; }
+    .coh-card p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.78); margin-bottom: 18px; }
+    .coh-card p:last-child { margin-bottom: 0; }
+    .coh-links { display: grid; gap: 8px; }
+    .coh-links a {
+      display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-radius: 8px;
+      background: rgba(255,255,255,0.08); font-weight: 700; font-size: 14px; transition: background 0.2s var(--ease);
+    }
+    .coh-links a::after { content: "→"; color: var(--c-red); }
+    .coh-links a:hover { background: rgba(255,255,255,0.16); }
+    .coh-card-plain { background: var(--c-grey-light); color: var(--c-black); }
+    .coh-card-plain p { color: var(--c-grey-mid); }
+    .coh-card-plain a { color: var(--c-red); font-weight: 700; }
+
+    @media (max-width: 900px) {
+      .coh-layout { grid-template-columns: 1fr; gap: 40px; }
+      .coh-side { position: static; }
+    }
+    @media (max-width: 480px) {
+      .coh-list > li { padding-left: 44px; }
+      .coh-list > li::before { width: 30px; height: 30px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="page-hero">
+      <div class="page-hero-inner">
+        <p class="hero-eyebrow">Booking Information</p>
+        <h1 class="page-hero-title">Conditions of Hire</h1>
+        <p class="page-hero-sub">These conditions apply to all hire of Northwood Stadium facilities. Please read them before submitting a booking form.</p>
+        <div class="page-hero-actions">
+          <a href="docs/conditions-of-hire.pdf" class="btn-outline-light" download>Download PDF</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONDITIONS ============
+         Text copied from Northwood's "Booking T&Cs" PDF. If they send an
+         updated version, replace the clauses below and the PDF in docs/. -->
+    <section class="section">
+      <div class="section-inner coh-layout">
+
+        <article class="coh-body">
+          <p class="coh-org">Northwood Community Sports Limited — Northwood Stadium</p>
+
+          <ol class="coh-list">
+            <li id="clause-1">
+              <p>In these conditions the following expressions shall be interpreted as follows:</p>
+              <ol class="coh-sub coh-alpha">
+                <li>“The Venue” shall be all or part of Northwood Stadium indicated on the Application to Hire Facilities form (“Application Form”) together with any facilities or equipment hired therewith.</li>
+                <li>“The Events Organiser” means the person appointed by Northwood Community Sports Limited from time to time to act as the person responsible for the management of events at the Venue.</li>
+              </ol>
+            </li>
+            <li id="clause-2"><p>All applications for the hire of the Venue must be made in writing on the Application Form available from the Northwood Stadium. In all cases the Application Form should be returned duly signed and completed to the Northwood Stadium at least 28 days prior to the date of hiring. The person in whose name the application is made shall be deemed to be the hirer for the purpose of these conditions. Where an organisation or club is named on the Application Form and the hirer is hiring the Venue on their behalf, that organisation or club shall also be considered as the hirer and shall be jointly and severally liable with the person in whose name the application is made.</p></li>
+            <li id="clause-3"><p>Northwood Community Sports reserves the right at any time to refuse or cancel the hire of the Venue. Northwood Community Sports shall not be liable for any payment whatsoever either to the hirer or to any other person in respect of a claim for compensation, loss or damage arising from the cancellation of any hire of the Venue.</p></li>
+            <li id="clause-4"><p>Northwood Community Sports shall not be responsible for any loss or damage suffered by or to the hirer or any other person as a result of (but not limited to) any breakdown, failure of equipment or utilities, leakage or accident, whatsoever, necessitating the cancellation or interruption of the hiring and the hirer shall indemnify Northwood Community Sports against any costs, claims or demands arising out of such breakdown, failure of equipment or utilities, leakage or accident.</p></li>
+            <li id="clause-5"><p>Northwood Community Sports reserves the right to charge the hirer the full fee for hire indicated on the Application Form if suitable notice of cancellation is not received from the hirer at least 28 days prior to the booking.</p></li>
+            <li id="clause-6"><p>The hirer shall not assign, sublet or sublicense the permission to use the Venue without the prior approval of the Events Manager.</p></li>
+            <li id="clause-7"><p>All furniture, equipment, apparatus or appliances (“Equipment”) delivered to the Venue by or on behalf of the hirer must be unloaded, placed in position and removed by the hirer or persons employed by him for such purposes, at such times as shall be agreed by the Events Manager or his representative and no Equipment shall be delivered to or placed in position on the Venue without the previous consent from the Events Manager or his representative. The hirer must ensure all Equipment is in safe working condition, fit for purpose and covered by the hirer’s own insurance.</p></li>
+            <li id="clause-8"><p>The Venue must be vacated by the expiration of the time of hire. The hours of hire are the total of those for which the Venue may be used by the hirer as shown on the Application Form and do not refer to the duration of the show/performance/event (“event”) for which the Venue were hired.</p></li>
+            <li id="clause-9"><p>No decorations are to be placed upon or additions made to the Venue without the consent of the Events Manager or his representative.</p></li>
+            <li id="clause-10"><p>No right to supply refreshments of any kind whatsoever shall be deemed to be given to the hirer or to any other person by a grant of the use of the Venue.</p></li>
+            <li id="clause-11"><p>No intoxicating liquor shall be brought upon the Venue.</p></li>
+            <li id="clause-12"><p>Any food or beverage requirements specific to the event (e.g. buffets, refreshments) should be confirmed by the hirer at least 10 days before the event.</p></li>
+            <li id="clause-13"><p>Northwood Community Sports does not accept any responsibility for the sale or collection of monies on behalf of the hirer.</p></li>
+            <li id="clause-14"><p>The full fee as specified overleaf shall be paid for the Venue at least 21 days prior to the date of the event. Any further charge becoming payable as a result of exceeding the allotted period of hire or for any other reason shall be payable within 14 days of receipt of the appropriate invoice. Any fees or additional charges which are not paid on the due date shall bear interest at the daily rate of 2% over the base rate of the Bank of England.</p></li>
+            <li id="clause-15"><p>The fee, unless specifically stated to the contrary, is for the use of the Venue, together with such dressing accommodation, seats, apparatus and appliances as are provided by Northwood Community Sports at the Venue. Any additional Equipment required by the hirer must be provided at his own cost. Where the Venue is arranging equipment on the hirer’s behalf, the hirer shall confirm his requirements at least 28 days before the event, and accepts any associated charge.</p></li>
+            <li id="clause-16"><p>The fee also covers standard heating and lighting of the Venue, the standard preparation and reinstatement of the Venue and the normal duties of the staff under the direction of the Events Manager or his representative. The fee does not include any additional work, service or staffing which must be provided by and at the cost of the hirer, including any requirements for audio and/or visual recording or coverage of the event.</p></li>
+            <li id="clause-17"><p>The hirer may at the discretion of the Events Manager exhibit advertisements for the event within the Venue only on such notice boards as are specified by the Events Manager.</p></li>
+            <li id="clause-18">
+              <p>The hirer shall be responsible for:</p>
+              <ol class="coh-sub coh-alpha">
+                <li>The payment of the fee and any other charges;</li>
+                <li>The provision of Stewards to control entrance to the Venue and to preserve order during the hiring;</li>
+                <li>The employment of any police officer at the request of the Events Manager;</li>
+                <li>Indemnifying Northwood Community Sports from and against damage or loss to the Venue, furniture fittings, Equipment, apparatus, appliances or other property, articles or items whatsoever whether owned by the Council or the hirer, during the period of hire or arising as a result of such hire and the expenses of making good such damage or loss;</li>
+                <li>Indemnifying Northwood Community Sports from all claims, costs, demands and damages arising from:
+                  <ol class="coh-sub coh-roman">
+                    <li>accidents or injury sustained by any persons on the Venue which are due to the fault or negligence of the hirer;</li>
+                    <li>any infringement of third party intellectual property rights;</li>
+                  </ol>
+                </li>
+                <li>The provision of suitably trained persons to be on duty and be responsible for the safety of the persons using the Venue during the whole of the period of the hiring as deemed necessary by the Events Manager;</li>
+                <li>Compliance with the Regulations relating to the Venue and any other conditions and regulations which are from time to time in force;</li>
+                <li>Compliance with the requirements of Section 12(1) of the Children and Young Persons Act 1933 regarding the safety of children at entertainments;</li>
+                <li>The hirer shall comply with the requirements of the Health and Safety at Work etc. Act 1974 and any other acts, orders, regulations and codes of practice relating to health and safety which may apply to the hirer or its employees;</li>
+                <li>Holding public liability insurance with an indemnity limit of not less than five million pounds (£5,000,000) for the duration of the event or hire. In addition, public liability insurance for caterers (where applicable) is compulsory with an indemnity limit of not less than two million pounds (£2,000,000) for the duration of the event or hire. The Hirer shall provide copies of these policies to the Venue no less than 28 days prior to the start of the event or hire.</li>
+              </ol>
+            </li>
+            <li id="clause-19"><p>The hirer shall permit Northwood Community Sports and their employees to enter the Venue at all times.</p></li>
+            <li id="clause-20"><p>The Events Manager or his representative is responsible for the enforcement of these regulations and is required by Northwood Community Sports to prevent the use of any Equipment and/or prevent any event, exhibition or performance which he may consider objectionable or dangerous.</p></li>
+            <li id="clause-21"><p>Northwood Community Sports reserves the right to alter fees and charges without notice. The fee or charge payable shall be that ruling at the time of the event, not at the time of application unless specifically agreed in writing with the Events Manager. The hirer will be informed of the change in fees and charges and will be given the right to cancel the booking without cost but without the right of making any claim against Northwood Community Sports in respect of such cancellation.</p></li>
+          </ol>
+        </article>
+
+        <aside class="coh-side">
+          <div class="coh-card">
+            <h2>Ready to book?</h2>
+            <p>When you submit a booking form on this website, you'll be asked to confirm that you have read and agree to these conditions.</p>
+            <div class="coh-links">
+              <a href="events.html#school">School session hire</a>
+              <a href="events.html#event">Event booking</a>
+              <a href="team-bookings.html">Team &amp; club 3G bookings</a>
+            </div>
+          </div>
+          <div class="coh-card coh-card-plain">
+            <h2>Questions?</h2>
+            <p>Contact the bookings team before completing a form.</p>
+            <p><a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a><br>07547 438786</p>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="youthclub.html">Youth Club</a>
+          <a href="events.html">Events</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="subpage.js"></script>
+</body>
+</html>
