@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Youth Club | Northwood Stadium</title>
+  <meta name="description" content="Northwood Youth Club — free sport, games and youth work for young people in Stoke-on-Trent. Every Monday & Friday, 4:00pm – 6:00pm.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#0B0B0C">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       YOUTH CLUB PAGE
+       Built on the shared tokens/components in styles.css (.section,
+       .section-eyebrow, .section-title, .about banner, .btn, .btn-about).
+       Everything below is specific to this page.
+       ═══════════════════════════════════════════════════════════ */
+
+    /* ---------- Shared bits ---------- */
+    .yc-book-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      background: var(--c-red); color: var(--c-white);
+      font-family: var(--f-display); font-weight: 800; font-size: 18px;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      padding: 16px 34px; border-radius: 6px;
+      transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+    }
+    .yc-book-btn:hover { background: var(--c-red-dark); transform: translateY(-2px); }
+    .yc-book-btn svg { width: 16px; height: 16px; }
+
+    .yc-copy p { color: var(--c-grey-mid); font-size: 16px; line-height: 1.75; margin-bottom: 18px; }
+    .yc-copy p:last-child { margin-bottom: 0; }
+    .yc-copy strong { color: var(--c-black); }
+
+    .yc-photo { border-radius: 18px; overflow: hidden; box-shadow: 0 20px 44px rgba(11,11,12,0.12); background: var(--c-grey-light); }
+    .yc-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* ---------- HERO ---------- */
+    .yc-hero {
+      position: relative; min-height: 100svh; display: flex; align-items: flex-end;
+      overflow: hidden; background: var(--c-black);
+    }
+    .yc-hero-media { position: absolute; inset: 0; }
+    .yc-hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+    .yc-hero-scrim {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(11,11,12,0.45) 0%, rgba(11,11,12,0.25) 35%, rgba(11,11,12,0.92) 100%);
+    }
+    .yc-hero-content {
+      position: relative; z-index: 1; width: 100%;
+      max-width: var(--max-w); margin: 0 auto;
+      padding: calc(var(--header-h) + 80px) var(--pad) 80px;
+    }
+    .yc-hero-title {
+      font-family: var(--f-display); font-weight: 800; text-transform: uppercase;
+      color: var(--c-white); font-size: clamp(38px, 6vw, 80px); line-height: 1.02;
+      letter-spacing: -0.5px; max-width: 880px; margin-bottom: 28px;
+    }
+    .yc-hero-title span { color: var(--c-red); }
+    .yc-hero-facts { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 36px; }
+    .yc-fact {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 12px 18px; border-radius: 999px;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.22);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      color: var(--c-white); font-weight: 600; font-size: 15px;
+    }
+    .yc-fact svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .yc-fact-free { background: var(--c-red); border-color: var(--c-red); font-family: var(--f-display); font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+    /* ---------- MISSION (text + two stacked photos) ---------- */
+    .yc-split {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+    }
+    .yc-photo-pair { position: relative; padding: 0 0 64px 0; }
+    .yc-photo-pair .yc-photo:first-child { aspect-ratio: 4 / 3; width: 88%; }
+    .yc-photo-pair .yc-photo:last-child {
+      position: absolute; right: 0; bottom: 0; width: 52%; aspect-ratio: 1 / 1;
+      border: 6px solid var(--c-white);
+    }
+
+    /* ---------- MORE THAN SPORT (photo 7 as the feature) ---------- */
+    .yc-feature-photo { aspect-ratio: 16 / 8; margin-top: 48px; margin-bottom: 48px; }
+    .yc-feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+    .yc-pillars { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-self: start; }
+    .yc-pillars li {
+      background: var(--c-white); border-radius: 10px; padding: 18px 20px;
+      border-left: 4px solid var(--c-red); font-weight: 700; font-size: 15px;
+      box-shadow: 0 8px 24px rgba(11,11,12,0.06);
+    }
+
+    /* ---------- ACTIVITIES (chips + 4-image gallery) ---------- */
+    .yc-activity-list { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; }
+    .yc-activity-list li {
+      font-family: var(--f-display); font-weight: 700; font-size: 17px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 10px 18px; border-radius: 999px;
+      background: var(--c-black); color: var(--c-white);
+    }
+    .yc-activity-list li:last-child { background: var(--c-red); }
+    .yc-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 48px; }
+    .yc-gallery .yc-photo { aspect-ratio: 3 / 4; border-radius: 12px; box-shadow: 0 10px 28px rgba(11,11,12,0.1); }
+    .yc-gallery img { transition: transform 0.5s var(--ease); }
+    .yc-gallery .yc-photo:hover img { transform: scale(1.05); }
+
+    /* ---------- FREE FOR EVERYONE (red banner) ---------- */
+    .yc-free .yc-split { gap: 56px; }
+    .yc-free .yc-photo { aspect-ratio: 4 / 3; box-shadow: 0 24px 50px rgba(0,0,0,0.3); }
+    .yc-free-copy p { color: rgba(255,255,255,0.88); font-size: 16px; line-height: 1.75; margin-bottom: 18px; }
+    .yc-funders { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .yc-funders span {
+      font-size: 13px; font-weight: 700; color: var(--c-white);
+      padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    /* ---------- PARTNERS ---------- */
+    .yc-partners-top { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
+    .yc-partners-top .yc-photo { aspect-ratio: 4 / 3; }
+    .yc-logo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 56px; }
+    .yc-logo-tile {
+      background: var(--c-white); border: 1px solid rgba(11,11,12,0.08); border-radius: 12px;
+      min-height: 130px; padding: 20px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px; text-align: center;
+      box-shadow: 0 8px 24px rgba(11,11,12,0.05);
+    }
+    .yc-logo-tile img { max-height: 64px; max-width: 100%; width: auto; object-fit: contain; }
+    .yc-logo-tile span { font-size: 12px; font-weight: 700; color: var(--c-grey-mid); letter-spacing: 0.3px; }
+    /* If a logo file is missing, the tile falls back to the name in display type */
+    .yc-logo-tile.no-logo span { font-family: var(--f-display); font-size: 18px; text-transform: uppercase; color: var(--c-black); }
+
+    /* ---------- VISION + FINAL CTA ---------- */
+    .yc-vision-photo { aspect-ratio: 1 / 1; max-width: 480px; justify-self: end; width: 100%; }
+    .yc-vision-quote {
+      font-family: var(--f-display); font-weight: 700; text-transform: uppercase;
+      font-size: clamp(22px, 2.4vw, 28px); line-height: 1.2; color: var(--c-black);
+      border-left: 4px solid var(--c-red); padding-left: 20px; margin: 28px 0;
+    }
+    .yc-cta {
+      background: var(--c-black); color: var(--c-white); text-align: center;
+      padding: 100px var(--pad);
+    }
+    .yc-cta h2 {
+      font-family: var(--f-display); font-weight: 800; text-transform: uppercase;
+      font-size: clamp(32px, 5vw, 60px); line-height: 1.02; margin-bottom: 18px;
+    }
+    .yc-cta h2 span { color: var(--c-red); }
+    .yc-cta p { color: rgba(255,255,255,0.75); font-size: 17px; max-width: 560px; margin: 0 auto 32px; line-height: 1.6; }
+    .yc-cta-when { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 36px; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1000px) {
+      .yc-logo-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .yc-split, .yc-feature-grid, .yc-partners-top { grid-template-columns: 1fr; gap: 40px; }
+      .yc-gallery { grid-template-columns: repeat(2, 1fr); }
+      .yc-feature-photo { aspect-ratio: 4 / 3; }
+      .yc-vision-photo { justify-self: start; max-width: none; aspect-ratio: 4 / 3; }
+      .yc-free .yc-photo { order: -1; }
+    }
+    @media (max-width: 560px) {
+      .yc-logo-grid { grid-template-columns: repeat(2, 1fr); }
+      .yc-pillars { grid-template-columns: 1fr; }
+      .yc-hero-content { padding-bottom: 56px; }
+      .yc-book-btn { width: 100%; }
+      .yc-photo-pair { padding-bottom: 48px; }
+    }
+
+    /* ---------- Call Now button + popup (same as index.html) ---------- */
+    .header-actions { display: flex; align-items: center; gap: 14px; }
+    .call-now-btn {
+      position: relative; flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+      background: var(--c-red); color: #fff; border: none; cursor: pointer; padding: 0;
+      display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent;
+    }
+    .call-now-btn svg { width: 20px; height: 20px; position: relative; z-index: 1; animation: callWiggle 3s ease-in-out infinite; }
+    .call-now-btn::before, .call-now-btn::after {
+      content: ""; position: absolute; inset: 0; border-radius: 50%;
+      background: var(--c-red); opacity: 0.55; animation: callPulse 2s ease-out infinite;
+    }
+    .call-now-btn::after { animation-delay: 1s; }
+    .call-now-btn:hover { filter: brightness(1.1); }
+    .call-now-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+    @keyframes callPulse { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.9); opacity: 0; } }
+    @keyframes callWiggle {
+      0%, 80%, 100% { transform: rotate(0); } 84% { transform: rotate(-14deg); }
+      88% { transform: rotate(12deg); } 92% { transform: rotate(-8deg); } 96% { transform: rotate(5deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .call-now-btn::before, .call-now-btn::after, .call-now-btn svg { animation: none; }
+      .call-now-btn::before, .call-now-btn::after { opacity: 0; }
+    }
+    .call-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(11,11,12,0.65); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .call-modal-overlay[hidden] { display: none; }
+    .call-modal { background: #fff; border-radius: 16px; width: 100%; max-width: 360px; padding: 2rem 1.75rem 1.5rem; text-align: center; border-top: 4px solid var(--c-red); box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
+    .call-modal-icon { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 1rem; background: rgba(215,20,26,0.1); color: var(--c-red); display: flex; align-items: center; justify-content: center; }
+    .call-modal-icon svg { width: 26px; height: 26px; }
+    .call-modal h3 { font-family: var(--f-display); font-weight: 800; font-size: 1.5rem; text-transform: uppercase; color: var(--c-black); margin: 0 0 0.35rem; }
+    .call-modal-number { font-family: var(--f-display); font-weight: 800; font-size: 1.9rem; letter-spacing: 0.5px; color: var(--c-black); margin: 0.25rem 0 0.5rem; }
+    .call-modal-hours { font-size: 0.85rem; color: var(--c-grey-mid); line-height: 1.5; margin: 0 0 1.4rem; }
+    .call-modal-go { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.95rem; border-radius: 10px; background: var(--c-red); color: #fff; font-family: var(--f-display); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .call-modal-go svg { width: 18px; height: 18px; }
+    .call-modal-cancel { margin-top: 0.6rem; width: 100%; padding: 0.8rem; border-radius: 10px; background: none; border: 1.5px solid rgba(0,0,0,0.15); cursor: pointer; font-family: var(--f-body); font-weight: 600; font-size: 0.9rem; color: var(--c-black); }
+
+    .footer-credit img { border-radius: 22%; }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- ============ HERO — Photo 1 ============ -->
+    <section class="yc-hero">
+      <div class="yc-hero-media" aria-hidden="true">
+        <img src="images/1.png" alt="">
+        <div class="yc-hero-scrim"></div>
+      </div>
+      <div class="yc-hero-content">
+        <p class="hero-eyebrow">Northwood Youth Club</p>
+        <h1 class="yc-hero-title">More Than Sport.<br><span>Building Friendships, Confidence &amp; Futures.</span></h1>
+        <div class="yc-hero-facts">
+          <span class="yc-fact yc-fact-free">Completely Free</span>
+          <span class="yc-fact">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            Every Monday &amp; Friday
+          </span>
+          <span class="yc-fact">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            4:00pm – 6:00pm
+          </span>
+        </div>
+        <a href="https://eequ.org/book/northwood-stadium-youth-club-with-dizzy-heights-34772" class="yc-book-btn" target="_blank" rel="noopener">
+          Book Your Free Place
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- ============ OUR MISSION — Photos 4 & 6 ============ -->
+    <section class="section" id="mission">
+      <div class="section-inner yc-split">
+        <div class="yc-copy">
+          <p class="section-eyebrow">— Our Mission</p>
+          <h2 class="section-title">A Place to Belong, An Opportunity to Grow</h2>
+          <p>Northwood Youth Club was originally set up to help reduce anti-social behaviour in the surrounding area, by giving young people positive activities and somewhere safe to spend their time.</p>
+          <p>Our ambition has since grown well beyond running sports sessions. We want to create a <strong>welcoming environment</strong> where young people can build friendships, develop confidence, improve their social skills and feel part of their community.</p>
+        </div>
+        <div class="yc-photo-pair">
+          <div class="yc-photo"><img src="images/4.png" alt="Young people socialising together at Northwood Youth Club" loading="lazy"></div>
+          <div class="yc-photo"><img src="images/6.png" alt="Young people enjoying time together at the youth club" loading="lazy"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MORE THAN JUST SPORT — Photo 7 (feature) ============ -->
+    <section class="section find-us" id="support">
+      <div class="section-inner">
+        <p class="section-eyebrow">— More Than Just Sport</p>
+        <h2 class="section-title">Supporting Young People Beyond the Pitch</h2>
+
+        <div class="yc-photo yc-feature-photo">
+          <img src="images/7.png" alt="A Northwood staff member talking with a group of young people" loading="lazy">
+        </div>
+
+        <div class="yc-feature-grid">
+          <div class="yc-copy">
+            <p>Our <strong>dedicated youth workers</strong> support young people throughout every session, helping them develop communication skills, teamwork, confidence and positive relationships.</p>
+            <p>Our long-term ambition is to make a lasting difference to the lives of those who attend, supporting their personal development and helping prepare them for future education, employment and life opportunities.</p>
+          </div>
+          <ul class="yc-pillars">
+            <li>Communication</li>
+            <li>Teamwork</li>
+            <li>Confidence</li>
+            <li>Positive relationships</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHAT HAPPENS AT YOUTH CLUB — Photos 3, 8, 9, 10 ============ -->
+    <section class="section" id="activities">
+      <div class="section-inner">
+        <p class="section-eyebrow">— What Happens at Youth Club?</p>
+        <h2 class="section-title">Something for Everyone</h2>
+        <div class="yc-copy" style="max-width: 720px;">
+          <p>Sessions are inclusive and suitable for young people of all sporting abilities. There's no pressure to compete — everyone is encouraged to get involved, make friends and enjoy themselves.</p>
+        </div>
+        <ul class="yc-activity-list">
+          <li>Football</li>
+          <li>Basketball</li>
+          <li>Badminton</li>
+          <li>Netball</li>
+          <li>Table Tennis</li>
+          <li>Team Games &amp; More</li>
+        </ul>
+
+        <div class="yc-gallery">
+          <div class="yc-photo"><img src="images/3.png" alt="Youth club activity session" loading="lazy"></div>
+          <div class="yc-photo"><img src="images/8.png" alt="Young people playing sport at Northwood" loading="lazy"></div>
+          <div class="yc-photo"><img src="images/9.png" alt="Youth club games in the sports hall" loading="lazy"></div>
+          <div class="yc-photo"><img src="images/10.png" alt="Young people taking part in a youth club session" loading="lazy"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FREE FOR EVERYONE — Photo 11 ============ -->
+    <section class="section about yc-free" id="free">
+      <img src="images/logored.png" alt="" class="about-mark" aria-hidden="true">
+      <div class="section-inner about-inner yc-split">
+        <div class="yc-free-copy">
+          <p class="about-label">— Free for Everyone</p>
+          <h2 class="about-title">Removing Barriers, Creating Opportunities</h2>
+          <p>We're proud to have secured funding through The National Lottery Community Fund's Awards for All programme and Sport England's Movement Fund.</p>
+          <p>That support means the Youth Club is completely free to attend — removing financial barriers so that every young person in the community can take part, whatever their circumstances.</p>
+          <div class="yc-funders">
+            <span>National Lottery Awards for All</span>
+            <span>Sport England Movement Fund</span>
+          </div>
+        </div>
+        <div class="yc-photo"><img src="images/11.png" alt="A group of young people from the youth club posing together" loading="lazy"></div>
+      </div>
+    </section>
+
+    <!-- ============ PARTNERS & SUPPORTERS — Photo 5 + logos ============ -->
+    <!-- LOGOS: drop the files into images/partners/ using the names below.
+         Until a file exists, its tile shows the organisation's name instead. -->
+    <section class="section find-us" id="partners">
+      <div class="section-inner">
+        <div class="yc-partners-top">
+          <div class="yc-copy">
+            <p class="section-eyebrow">— Our Partners &amp; Supporters</p>
+            <h2 class="section-title">Making It Possible Together</h2>
+            <p>We deliver the Youth Club in partnership with <strong>Dizzy Heights</strong>, who share our ambition to support young people in the local area.</p>
+            <p>Our Monday sessions are also supported by <strong>Stoke City Foundation</strong>.</p>
+          </div>
+          <div class="yc-photo"><img src="images/5.png" alt="Young people chatting with Northwood staff" loading="lazy"></div>
+        </div>
+
+        <div class="yc-logo-grid">
+          <div class="yc-logo-tile"><img src="images/logowhite.png" alt="" loading="lazy"><span>Northwood Community Sports</span></div>
+          <div class="yc-logo-tile"><img src="images/dizzylogo.png" alt="" loading="lazy"><span>Dizzy Heights</span></div>
+          <div class="yc-logo-tile"><img src="images/scfc.jpg" alt="" loading="lazy"><span>Stoke City Foundation</span></div>
+          <div class="yc-logo-tile"><img src="images/sporteng.webp" alt="" loading="lazy"><span>Sport England</span></div>
+          <div class="yc-logo-tile"><img src="images/nationallot.svg" alt="" loading="lazy"><span>The National Lottery Community Fund</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ OUR VISION — Photo 12 ============ -->
+    <section class="section" id="vision">
+      <div class="section-inner yc-split">
+        <div class="yc-copy">
+          <p class="section-eyebrow">— Our Vision</p>
+          <h2 class="section-title">Making a Difference That Lasts</h2>
+          <p>We want Northwood Youth Club to become something young people look back on as a positive and important part of growing up.</p>
+          <p class="yc-vision-quote">A place where friendships began, confidence developed, new interests were discovered and opportunities became possible.</p>
+          <p>We don't just want to give young people somewhere to spend a few hours each week. We want to have a lasting, positive influence on their lives and futures.</p>
+        </div>
+        <div class="yc-photo yc-vision-photo"><img src="images/12.png" alt="Two young people smiling and giving a thumbs up" loading="lazy"></div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CALL TO ACTION ============ -->
+    <section class="yc-cta">
+      <h2>Come Along. <span>Join In.</span></h2>
+      <p>Bring a friend or come on your own — everyone's welcome, and it won't cost you a penny.</p>
+      <div class="yc-cta-when">
+        <span class="yc-fact yc-fact-free">Free</span>
+        <span class="yc-fact">Mondays &amp; Fridays</span>
+        <span class="yc-fact">4:00pm – 6:00pm</span>
+      </div>
+      <a href="https://eequ.org/book/northwood-stadium-youth-club-with-dizzy-heights-34772" class="yc-book-btn" target="_blank" rel="noopener">
+        Book Your Free Place
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER (same as index.html, links pointed back to the home page) ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="youthclub.html">Youth Club</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    // ── Mobile nav toggle ─────────────────────────────────────
+    const toggle = document.getElementById("navToggle");
+    const nav = document.getElementById("mainNav");
+    if (toggle && nav) {
+      toggle.addEventListener("click", () => {
+        const open = nav.classList.toggle("is-open");
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+      nav.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+        nav.classList.remove("is-open");
+        toggle.setAttribute("aria-expanded", "false");
+      }));
+    }
+
+    // ── Call Now popup ────────────────────────────────────────
+    const btn = document.getElementById("callNowBtn");
+    const modal = document.getElementById("callModal");
+    const cancel = document.getElementById("callModalCancel");
+    if (btn && modal) {
+      const open = () => { modal.hidden = false; modal.querySelector(".call-modal-go").focus(); };
+      const close = () => { modal.hidden = true; btn.focus(); };
+      btn.addEventListener("click", open);
+      cancel.addEventListener("click", close);
+      modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
+    }
+
+    // ── Partner logos: fall back to the name if a logo file is missing ──
+    document.querySelectorAll(".yc-logo-tile img").forEach(img => {
+      const fail = () => { img.remove(); img.closest(".yc-logo-tile").classList.add("no-logo"); };
+      if (img.complete && img.naturalWidth === 0) fail();
+      else img.addEventListener("error", fail, { once: true });
+    });
+  })();
+  </script>
+</body>
+</html>
