@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events & School Hire | Northwood Stadium</title>
+  <meta name="description" content="Book Northwood Stadium for school lessons, sports days, tournaments, college and company events.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subpage.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#0B0B0C">
+  <style>
+    /* ============ EVENTS PAGE ============ */
+    .ev-options { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 40px; }
+    .ev-option {
+      display: flex; flex-direction: column; align-items: flex-start; padding: 36px; border-radius: 16px;
+      background: var(--c-black); color: var(--c-white); border-top: 4px solid var(--c-red);
+    }
+    .ev-option-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 10px; }
+    .ev-option h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(26px, 2.8vw, 34px); line-height: 1.05; margin-bottom: 12px; }
+    .ev-option-copy { font-size: 15px; line-height: 1.7; color: rgba(255,255,255,0.82); margin-bottom: 22px; }
+    .ev-option .info-list { margin-bottom: 28px; }
+    .ev-option .info-list li { color: rgba(255,255,255,0.85); font-size: 14px; }
+    .ev-option .btn-red { margin-top: auto; }
+
+    .ev-facilities { margin-top: 56px; }
+    .ev-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; }
+    .ev-chips li {
+      font-family: var(--f-display); font-weight: 700; font-size: 17px; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 10px 18px; border-radius: 999px; background: var(--c-grey-light); border: 1px solid rgba(11,11,12,0.08);
+    }
+
+    .ev-tabs { display: none; }
+    .ev-tabs-on .ev-tabs {
+      display: inline-flex; gap: 6px; padding: 6px; margin: 32px 0 28px; border-radius: 12px;
+      background: var(--c-white); box-shadow: 0 8px 24px rgba(11,11,12,0.06); max-width: 100%;
+    }
+    .ev-tab {
+      border: none; cursor: pointer; background: transparent; color: var(--c-black); border-radius: 8px;
+      font-family: var(--f-display); font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 12px 22px; transition: background 0.2s var(--ease), color 0.2s var(--ease);
+    }
+    .ev-tab[aria-selected="true"] { background: var(--c-red); color: var(--c-white); }
+    .ev-tab:not([aria-selected="true"]):hover { background: var(--c-grey-light); }
+
+    .ev-panel { scroll-margin-top: calc(var(--header-h) + 24px); }
+    .ev-panel + .ev-panel { margin-top: 64px; }           /* no-JS: both forms stacked */
+    .ev-tabs-on .ev-panel + .ev-panel { margin-top: 0; }
+    .ev-panel-title { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 26px; margin: 32px 0 20px; }
+    .ev-tabs-on .ev-panel-title { display: none; }           /* the tab already says which form it is */
+    #forms { scroll-margin-top: var(--header-h); }
+
+    @media (max-width: 860px) {
+      .ev-options { grid-template-columns: 1fr; }
+      .ev-option { padding: 28px 24px; }
+    }
+    @media (max-width: 480px) {
+      .ev-tabs-on .ev-tabs { display: flex; width: 100%; }
+      .ev-tab { flex: 1; padding: 12px 8px; font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="page-hero">
+      <div class="page-hero-media" aria-hidden="true"><img src="images/track.jpg" alt=""></div>
+      <div class="page-hero-inner">
+        <p class="hero-eyebrow">Schools · Colleges · Companies</p>
+        <h1 class="page-hero-title">Events &amp; School Hire</h1>
+        <p class="page-hero-sub">From weekly PE lessons and sports days to tournaments and team-building days, we'll set up the space and facilities around your group.</p>
+        <div class="page-hero-actions">
+          <a href="#school" class="btn-red" data-tab-link="school">School Session Hire</a>
+          <a href="#event" class="btn-outline-light" data-tab-link="event">Book an Event</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TWO WAYS TO BOOK ============ -->
+    <section class="section" id="options">
+      <div class="section-inner">
+        <p class="section-eyebrow">— How Can We Help?</p>
+        <h2 class="section-title">Two Ways to Book</h2>
+
+        <div class="ev-options">
+          <article class="ev-option">
+            <p class="ev-option-label">For schools</p>
+            <h3>School Session Hire</h3>
+            <p class="ev-option-copy">Regular weekly lessons on our athletics track, sports hall or 3G pitch, with a flat school rate.</p>
+            <ul class="info-list">
+              <li><strong>£30 per hour</strong> flat rate — Athletics Track, Sports Hall (1/3) or 3G Pitch (1/3)</li>
+              <li>Invoiced termly in advance, payment due within 14 days</li>
+              <li>Sessions missed due to INSET days, half term or bank holidays aren't charged</li>
+              <li>A short site induction is arranged before your first session</li>
+            </ul>
+            <a href="#school" class="btn-red" data-tab-link="school">Start School Booking</a>
+          </article>
+
+          <article class="ev-option">
+            <p class="ev-option-label">For events</p>
+            <h3>Host an Event</h3>
+            <p class="ev-option-copy">Sports days, tournaments, college fixtures, company and community events — using one space or the whole venue.</p>
+            <ul class="info-list">
+              <li><strong>10% non-refundable deposit</strong> confirms your date</li>
+              <li>Balance due no later than 7 days before the event</li>
+              <li>Vendors on site: £50 flat fee per vendor</li>
+              <li>Large spectated events: 1 additional member of staff per 150 spectators</li>
+              <li>A pre-event call or site meeting is required for every event</li>
+            </ul>
+            <a href="#event" class="btn-red" data-tab-link="event">Start Event Booking</a>
+          </article>
+        </div>
+
+        <div class="ev-facilities">
+          <h3 class="find-us-heading">Spaces available to hire</h3>
+          <ul class="ev-chips">
+            <li>Athletics Track</li><li>Grandstand</li><li>Sports Hall</li><li>3G Pitch</li>
+            <li>Functional Fitness Space</li><li>Gym</li><li>Changing Rooms</li><li>Car Park</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BOOKING FORMS ============ -->
+    <section class="section find-us" id="forms">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Booking Forms</p>
+        <h2 class="section-title">Make a Booking Request</h2>
+        <p class="lede">Choose the form that fits your booking. Fields marked <span class="req">*</span> are required. Submitting a form is a booking request — your booking is confirmed once we've been in touch.</p>
+
+        <div class="ev-tabs" role="tablist" aria-label="Booking forms">
+          <button type="button" class="ev-tab" role="tab" id="tab-school" aria-controls="school" aria-selected="true" data-tab="school">School Session Hire</button>
+          <button type="button" class="ev-tab" role="tab" id="tab-event" aria-controls="event" aria-selected="false" data-tab="event">Event Booking</button>
+        </div>
+
+        <!-- ─────────────────── SCHOOL FORM ─────────────────── -->
+        <div class="ev-panel" id="school" role="tabpanel" aria-labelledby="tab-school">
+          <h3 class="ev-panel-title">School Lesson Facility Hire</h3>
+
+          <!-- FORMSPREE: replace YOUR_FORM_ID with the school form's ID from formspree.io -->
+          <form class="booking-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <input type="hidden" name="_subject" value="New school session hire request">
+            <div class="hp-field" aria-hidden="true"><label>Leave this empty <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">1</span>School &amp; Contact Details</legend>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="sc-school">School name <span class="req">*</span></label>
+                  <input type="text" id="sc-school" name="School name" autocomplete="organization" required>
+                </div>
+                <div class="field">
+                  <label for="sc-contact">Lead contact name &amp; role <span class="req">*</span></label>
+                  <input type="text" id="sc-contact" name="Lead contact name and role" placeholder="e.g. Jane Smith, Head of PE" required>
+                </div>
+                <div class="field">
+                  <label for="sc-phone">Phone number <span class="req">*</span></label>
+                  <input type="tel" id="sc-phone" name="Phone number" autocomplete="tel" required>
+                </div>
+                <div class="field">
+                  <label for="sc-email">Email address <span class="req">*</span></label>
+                  <input type="email" id="sc-email" name="email" autocomplete="email" required>
+                </div>
+                <div class="field full">
+                  <label for="sc-address">School address <span class="req">*</span></label>
+                  <textarea id="sc-address" name="School address" autocomplete="street-address" style="min-height: 72px;" required></textarea>
+                </div>
+                <div class="field full">
+                  <span class="group-label" id="sc-type-label">School type <span class="req">*</span></span>
+                  <div class="choice-group" data-require-one role="radiogroup" aria-labelledby="sc-type-label">
+                    <label class="choice"><input type="radio" name="School type" value="Mainstream Primary">Mainstream Primary</label>
+                    <label class="choice"><input type="radio" name="School type" value="Mainstream Secondary">Mainstream Secondary</label>
+                    <label class="choice"><input type="radio" name="School type" value="Special School">Special School</label>
+                    <label class="choice"><input type="radio" name="School type" value="Private / Independent">Private / Independent</label>
+                    <label class="choice"><input type="radio" name="School type" value="Alternative Provision">Alternative Provision</label>
+                  </div>
+                  <p class="group-error">Please choose a school type.</p>
+                </div>
+                <div class="field">
+                  <label for="sc-pli">Public liability insurance (provider)</label>
+                  <input type="text" id="sc-pli" name="Public liability insurance provider">
+                </div>
+                <div class="field">
+                  <label for="sc-policy">Policy number &amp; expiry date</label>
+                  <input type="text" id="sc-policy" name="Policy number and expiry">
+                </div>
+                <div class="field">
+                  <label for="sc-dsl">Designated Safeguarding Lead (name) <span class="req">*</span></label>
+                  <input type="text" id="sc-dsl" name="Designated Safeguarding Lead" required>
+                </div>
+                <div class="field">
+                  <label for="sc-dsl-phone">DSL contact number <span class="req">*</span></label>
+                  <input type="tel" id="sc-dsl-phone" name="DSL contact number" required>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">2</span>Booking Details</legend>
+              <div class="form-grid">
+                <div class="field full">
+                  <span class="group-label" id="sc-fac-label">Facility required <span class="req">*</span> <span class="hint">— school rate applies to all three</span></span>
+                  <div class="choice-group" data-require-one role="group" aria-labelledby="sc-fac-label">
+                    <label class="choice"><input type="checkbox" name="Facility required" value="Athletics Track">Athletics Track</label>
+                    <label class="choice"><input type="checkbox" name="Facility required" value="Sports Hall (1/3)">Sports Hall (1/3)</label>
+                    <label class="choice"><input type="checkbox" name="Facility required" value="3G Pitch (1/3)">3G Pitch (1/3)</label>
+                  </div>
+                  <p class="group-error">Please choose at least one facility.</p>
+                </div>
+                <div class="field full">
+                  <span class="group-label" id="sc-act-label">Activity / sport <span class="req">*</span></span>
+                  <div class="choice-group" data-require-one role="group" aria-labelledby="sc-act-label">
+                    <label class="choice"><input type="checkbox" name="Activity / sport" value="Football">Football</label>
+                    <label class="choice"><input type="checkbox" name="Activity / sport" value="Netball">Netball</label>
+                    <label class="choice"><input type="checkbox" name="Activity / sport" value="Basketball">Basketball</label>
+                    <label class="choice"><input type="checkbox" name="Activity / sport" value="Badminton">Badminton</label>
+                    <label class="choice"><input type="checkbox" name="Activity / sport" value="Tennis">Tennis</label>
+                    <label class="choice"><input type="checkbox" name="Activity / sport" value="Table Tennis">Table Tennis</label>
+                    <label class="choice"><input type="checkbox" name="Activity / sport" value="Athletics Coaching">Athletics Coaching</label>
+                  </div>
+                  <p class="group-error">Please choose at least one activity.</p>
+                </div>
+                <div class="field">
+                  <label for="sc-days">Preferred day(s) of week <span class="req">*</span></label>
+                  <input type="text" id="sc-days" name="Preferred days" placeholder="e.g. Tuesday and Thursday" required>
+                </div>
+                <div class="field">
+                  <label for="sc-time">Preferred time <span class="req">*</span></label>
+                  <input type="text" id="sc-time" name="Preferred time" placeholder="e.g. 1:30pm – 3pm" required>
+                </div>
+                <div class="field">
+                  <label for="sc-length">Session length (hours) <span class="req">*</span></label>
+                  <input type="number" id="sc-length" name="Session length (hours)" min="0.5" step="0.5" inputmode="decimal" required>
+                </div>
+                <div class="field">
+                  <label for="sc-perweek">Sessions per week <span class="req">*</span></label>
+                  <input type="number" id="sc-perweek" name="Sessions per week" min="1" inputmode="numeric" required>
+                </div>
+                <div class="field">
+                  <label for="sc-years">Key stage / year group(s) <span class="req">*</span></label>
+                  <input type="text" id="sc-years" name="Key stage / year groups" placeholder="e.g. KS3, Years 7–8" required>
+                </div>
+                <div class="field">
+                  <label for="sc-size">Approx. group size <span class="req">*</span></label>
+                  <input type="number" id="sc-size" name="Approx. group size" min="1" inputmode="numeric" required>
+                </div>
+                <div class="field">
+                  <label for="sc-start">Preferred start date <span class="req">*</span></label>
+                  <input type="date" id="sc-start" name="Preferred start date" required>
+                </div>
+                <div class="field">
+                  <label for="sc-term">Term / academic year</label>
+                  <input type="text" id="sc-term" name="Term / academic year" placeholder="e.g. Spring 2027">
+                </div>
+                <div class="field full">
+                  <span class="group-label" id="sc-pattern-label">Booking pattern <span class="req">*</span></span>
+                  <div class="choice-group" data-require-one role="radiogroup" aria-labelledby="sc-pattern-label">
+                    <label class="choice"><input type="radio" name="Booking pattern" value="Ongoing — renews automatically each term">Ongoing — renews automatically each term</label>
+                    <label class="choice"><input type="radio" name="Booking pattern" value="Fixed number of weeks">Fixed number of weeks</label>
+                  </div>
+                  <p class="group-error">Please choose a booking pattern.</p>
+                  <div class="conditional field" data-show-when="Booking pattern=Fixed number of weeks" hidden>
+                    <label for="sc-fixed">Number of weeks / end date <span class="req">*</span></label>
+                    <input type="text" id="sc-fixed" name="Fixed — number of weeks / end date" required>
+                  </div>
+                </div>
+                <div class="field full">
+                  <span class="group-label" id="sc-sup-label">Will the school provide its own staff supervision throughout the session? <span class="req">*</span></span>
+                  <div class="choice-group" data-require-one role="radiogroup" aria-labelledby="sc-sup-label">
+                    <label class="choice"><input type="radio" name="School providing own supervision" value="Yes — school staff / coach present throughout">Yes — school staff / coach present throughout</label>
+                    <label class="choice"><input type="radio" name="School providing own supervision" value="No — please discuss options">No — please discuss options</label>
+                  </div>
+                  <p class="group-error">Please choose an option.</p>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">3</span>Pricing &amp; Site Induction</legend>
+              <div class="info-panel" style="margin-bottom: 22px;">
+                <strong>School Sports Hire: £30.00 per hour (flat).</strong> Confirmed regular slots are invoiced termly, in advance, based on the number of sessions booked for that term. Payment is due within 14 days of invoice. Sessions missed due to school closure (INSET days, half term, bank holidays) are not charged.
+              </div>
+              <p class="declaration-text" style="margin-bottom: 18px;"><strong style="color: var(--c-black);">Site induction is required before the first session.</strong> A short induction covering site access, changing rooms, safeguarding contacts and emergency procedures will be arranged with the school beforehand.</p>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="sc-method">Preferred contact method</label>
+                  <select id="sc-method" name="Preferred contact method for induction">
+                    <option value="">Choose…</option>
+                    <option>Phone call</option>
+                    <option>Email</option>
+                    <option>On-site meeting</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="sc-best">Best time to contact</label>
+                  <input type="text" id="sc-best" name="Best time to contact" placeholder="e.g. after 3:30pm">
+                </div>
+                <div class="field full">
+                  <label for="sc-notes">Anything else we should know?</label>
+                  <textarea id="sc-notes" name="Additional notes"></textarea>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">4</span>Declaration &amp; Agreement</legend>
+              <label class="agree"><input type="checkbox" name="Agrees to school hire terms" value="Yes" required><span>I confirm the information provided is accurate and that the school agrees to Northwood Community Sports' school hire terms, including termly invoicing in advance, the supervision arrangements confirmed above, and site safeguarding procedures covered at induction.</span></label>
+              <label class="agree"><input type="checkbox" name="Agrees to Conditions of Hire" value="Yes" required><span>I have read and agree to the <a href="conditions-of-hire.html" target="_blank" rel="noopener">Conditions of Hire</a>.</span></label>
+              <div class="form-grid" style="margin-top: 8px;">
+                <div class="field">
+                  <label for="sc-sign">Full name (as your signature) <span class="req">*</span></label>
+                  <input type="text" id="sc-sign" name="Signed by" autocomplete="name" required>
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="form-submit-row">
+              <button type="submit" class="btn-red">Send School Booking Request</button>
+              <p class="form-error-summary" role="alert"></p>
+            </div>
+            <p class="form-fallback" style="margin-top: 16px;">Prefer a paper form? <a href="docs/school-hire-booking-form.pdf" download>Download the PDF</a> and email it to info@northwoodstadium.co.uk.</p>
+          </form>
+
+          <template class="form-success-template">
+            <div class="form-success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L19 7"/></svg></div>
+            <h3>Request Received</h3>
+            <p>Thanks — we've received your school booking request and will be in touch to confirm availability and arrange your site induction. Questions in the meantime? Email info@northwoodstadium.co.uk.</p>
+          </template>
+        </div>
+
+        <!-- ─────────────────── EVENT FORM ─────────────────── -->
+        <div class="ev-panel" id="event" role="tabpanel" aria-labelledby="tab-event">
+          <h3 class="ev-panel-title">Event Booking Form</h3>
+
+          <!-- FORMSPREE: replace YOUR_FORM_ID with the event form's ID from formspree.io -->
+          <form class="booking-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <input type="hidden" name="_subject" value="New event booking request">
+            <div class="hp-field" aria-hidden="true"><label>Leave this empty <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">1</span>Event Details</legend>
+              <div class="form-grid">
+                <div class="field full">
+                  <label for="ev-name">Event name / description <span class="req">*</span></label>
+                  <input type="text" id="ev-name" name="Event name / description" required>
+                </div>
+                <div class="field">
+                  <label for="ev-dates">Event date(s) <span class="req">*</span></label>
+                  <input type="text" id="ev-dates" name="Event dates" placeholder="e.g. Sat 13 June 2027" required>
+                </div>
+                <div class="field">
+                  <label for="ev-type">Event type <span class="req">*</span></label>
+                  <input type="text" id="ev-type" name="Event type" placeholder="e.g. Sports day, tournament, company event" required>
+                </div>
+                <div class="field">
+                  <label for="ev-start">Start time <span class="req">*</span></label>
+                  <input type="time" id="ev-start" name="Start time" required>
+                </div>
+                <div class="field">
+                  <label for="ev-end">End time (incl. setup / breakdown) <span class="req">*</span></label>
+                  <input type="time" id="ev-end" name="End time (incl. setup / breakdown)" required>
+                </div>
+                <div class="field">
+                  <label for="ev-part">Expected participants <span class="req">*</span></label>
+                  <input type="number" id="ev-part" name="Expected participants" min="1" inputmode="numeric" required>
+                </div>
+                <div class="field">
+                  <label for="ev-spec">Expected spectators</label>
+                  <input type="number" id="ev-spec" name="Expected spectators" min="0" inputmode="numeric">
+                  <span class="hint">Large spectated events need 1 additional member of staff per 150 spectators.</span>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">2</span>Facilities Required</legend>
+              <div class="form-grid">
+                <div class="field full">
+                  <span class="group-label" id="ev-fac-label">Tick all that apply <span class="req">*</span></span>
+                  <div class="choice-group" data-require-one role="group" aria-labelledby="ev-fac-label">
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="Sports Hall (Full)">Sports Hall (Full)</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="Sports Hall (1/3)">Sports Hall (1/3)</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="Athletics Track">Athletics Track</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="Grandstand">Grandstand</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="3G Pitch (Full)">3G Pitch (Full)</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="3G Pitch (7-a-side)">3G Pitch (7-a-side)</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="Functional Fitness Space">Functional Fitness Space</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="Gym">Gym</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="Car Park">Car Park</label>
+                    <label class="choice"><input type="checkbox" name="Facilities required" value="Changing Rooms">Changing Rooms</label>
+                  </div>
+                  <p class="group-error">Please choose at least one facility.</p>
+                </div>
+                <div class="field full">
+                  <label for="ev-other">Any other space or access requirements</label>
+                  <textarea id="ev-other" name="Other space / access requirements"></textarea>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">3</span>Organiser Details</legend>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="ev-org">Organisation / club name <span class="req">*</span></label>
+                  <input type="text" id="ev-org" name="Organisation / club name" autocomplete="organization" required>
+                </div>
+                <div class="field">
+                  <label for="ev-lead">Lead contact name <span class="req">*</span></label>
+                  <input type="text" id="ev-lead" name="Lead contact name" autocomplete="name" required>
+                </div>
+                <div class="field">
+                  <label for="ev-phone">Phone number <span class="req">*</span></label>
+                  <input type="tel" id="ev-phone" name="Phone number" autocomplete="tel" required>
+                </div>
+                <div class="field">
+                  <label for="ev-email">Email address <span class="req">*</span></label>
+                  <input type="email" id="ev-email" name="email" autocomplete="email" required>
+                </div>
+                <div class="field full">
+                  <label for="ev-address">Address <span class="req">*</span></label>
+                  <textarea id="ev-address" name="Address" autocomplete="street-address" style="min-height: 72px;" required></textarea>
+                </div>
+                <div class="field">
+                  <label for="ev-pli">Public liability insurance (provider)</label>
+                  <input type="text" id="ev-pli" name="Public liability insurance provider">
+                </div>
+                <div class="field">
+                  <label for="ev-policy">Policy number &amp; expiry date</label>
+                  <input type="text" id="ev-policy" name="Policy number and expiry">
+                </div>
+                <p class="field full hint" style="margin-top: -6px;">Hirers need public liability insurance of at least £5,000,000 (£2,000,000 for caterers), with copies provided no less than 28 days before the event — see <a href="conditions-of-hire.html#clause-18" target="_blank" rel="noopener" style="color: var(--c-red); font-weight: 600;">Conditions of Hire, clause 18</a>.</p>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">4</span>Vendors &amp; Additional Services</legend>
+              <div class="info-panel" style="margin-bottom: 22px;"><strong>Vendor site fee:</strong> any vendor attending the site (food, merchandise, equipment, etc.) is subject to a flat fee of £50 per vendor, payable with your event balance.</div>
+              <div class="form-grid">
+                <div class="field full">
+                  <span class="group-label" id="ev-vend-label">Will vendors be attending? <span class="req">*</span></span>
+                  <div class="choice-group" data-require-one role="radiogroup" aria-labelledby="ev-vend-label">
+                    <label class="choice"><input type="radio" name="Vendors attending" value="Yes">Yes</label>
+                    <label class="choice"><input type="radio" name="Vendors attending" value="No">No</label>
+                  </div>
+                  <p class="group-error">Please choose Yes or No.</p>
+                </div>
+              </div>
+              <div class="conditional form-grid" data-show-when="Vendors attending=Yes" hidden>
+                <div class="field">
+                  <label for="ev-vnum">Number of vendors <span class="req">*</span></label>
+                  <input type="number" id="ev-vnum" name="Number of vendors" min="1" inputmode="numeric" required>
+                </div>
+                <div class="field">
+                  <label for="ev-vtypes">Names / types of vendors</label>
+                  <input type="text" id="ev-vtypes" name="Vendor names / types" placeholder="e.g. catering, merchandise">
+                </div>
+              </div>
+              <div class="form-grid" style="margin-top: 18px;">
+                <div class="field full">
+                  <span class="group-label">Additional requirements <span class="hint">— costs may apply</span></span>
+                  <div class="choice-group" role="group" aria-label="Additional requirements">
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="PA / Sound System">PA / Sound System</label>
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="Licensed Bar">Licensed Bar</label>
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="First Aid Provision">First Aid Provision</label>
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="Security">Security</label>
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="Media / Filming">Media / Filming</label>
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="Event decoration">Event decoration</label>
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="Coffee van">Coffee van</label>
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="Food vendor">Food vendor</label>
+                    <label class="choice"><input type="checkbox" name="Additional requirements" value="Portaloos">Portaloos</label>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">5</span>Staffing</legend>
+              <div class="info-panel" style="margin-bottom: 22px;"><strong>Additional staffing:</strong> for large spectated events, NCS requires 1 additional member of staff per 150 spectators. Staffing costs will be confirmed at your pre-event meeting and added to your final invoice.</div>
+              <div class="form-grid">
+                <div class="field full">
+                  <span class="group-label" id="ev-stew-label">Will you be providing your own stewards / security? <span class="req">*</span></span>
+                  <div class="choice-group" data-require-one role="radiogroup" aria-labelledby="ev-stew-label">
+                    <label class="choice"><input type="radio" name="Own stewards / security" value="Yes">Yes</label>
+                    <label class="choice"><input type="radio" name="Own stewards / security" value="No">No</label>
+                    <label class="choice"><input type="radio" name="Own stewards / security" value="Partially">Partially</label>
+                  </div>
+                  <p class="group-error">Please choose an option.</p>
+                </div>
+                <div class="conditional field full" data-show-when="Own stewards / security=Partially" hidden>
+                  <label for="ev-stew-details">Details <span class="req">*</span></label>
+                  <textarea id="ev-stew-details" name="Stewards / security details" required></textarea>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">6</span>Payment &amp; Pre-Event Meeting</legend>
+              <ul class="info-list" style="margin-bottom: 22px;">
+                <li>A <strong>10% non-refundable deposit</strong> is required to confirm your booking. Your date is not secured until this is received.</li>
+                <li>The full balance must be paid no later than 7 days before the event. Failure to do so may result in the booking being released.</li>
+                <li>Vendor site fees are payable with the balance.</li>
+                <li>A pre-event call or on-site meeting with an NCS team member is required before every event, so our staff fully understand the requirements, layout and any safety considerations. This is arranged after your deposit is received.</li>
+              </ul>
+              <div class="form-grid">
+                <div class="field">
+                  <span class="group-label" id="ev-meet-label">Preferred contact method</span>
+                  <div class="choice-group" role="radiogroup" aria-labelledby="ev-meet-label">
+                    <label class="choice"><input type="radio" name="Pre-event meeting preference" value="Phone call">Phone call</label>
+                    <label class="choice"><input type="radio" name="Pre-event meeting preference" value="On-site meeting">On-site meeting</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="ev-best">Best time to contact</label>
+                  <input type="text" id="ev-best" name="Best time to contact" placeholder="e.g. weekday mornings">
+                </div>
+                <div class="field full">
+                  <label for="ev-notes">Anything else we should know?</label>
+                  <textarea id="ev-notes" name="Additional notes"></textarea>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="form-section-num">7</span>Declaration &amp; Agreement</legend>
+              <label class="agree"><input type="checkbox" name="Agrees to event hire terms" value="Yes" required><span>I confirm the information provided is accurate and that I have read and agree to the Northwood Community Sports event hire terms and conditions. I understand that the deposit is non-refundable and that full payment is required 7 days prior to the event. I accept responsibility for the conduct of all participants, spectators and vendors associated with this event.</span></label>
+              <label class="agree"><input type="checkbox" name="Agrees to Conditions of Hire" value="Yes" required><span>I have read and agree to the <a href="conditions-of-hire.html" target="_blank" rel="noopener">Conditions of Hire</a>.</span></label>
+              <div class="form-grid" style="margin-top: 8px;">
+                <div class="field">
+                  <label for="ev-sign">Full name (as your signature) <span class="req">*</span></label>
+                  <input type="text" id="ev-sign" name="Signed by" autocomplete="name" required>
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="form-submit-row">
+              <button type="submit" class="btn-red">Send Event Booking Request</button>
+              <p class="form-error-summary" role="alert"></p>
+            </div>
+            <p class="form-fallback" style="margin-top: 16px;">Prefer a paper form? <a href="docs/event-booking-form.pdf" download>Download the PDF</a> and email it to info@northwoodstadium.co.uk.</p>
+          </form>
+
+          <template class="form-success-template">
+            <div class="form-success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L19 7"/></svg></div>
+            <h3>Request Received</h3>
+            <p>Thanks — we've received your event booking request. We'll be in touch to confirm availability, pricing and your deposit. Questions in the meantime? Email info@northwoodstadium.co.uk.</p>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <script>
+    /* Tabs: switch between the school and event forms. Links to
+       events.html#school or events.html#event open the right one.
+       Without JavaScript both forms simply show one after the other. */
+    (function () {
+      const tabs = [...document.querySelectorAll(".ev-tab")];
+      const panels = [...document.querySelectorAll(".ev-panel")];
+      if (!tabs.length) return;
+      document.documentElement.classList.add("ev-tabs-on");
+
+      function show(id, scroll) {
+        if (!panels.some(p => p.id === id)) id = "school";
+        tabs.forEach(t => {
+          const on = t.dataset.tab === id;
+          t.setAttribute("aria-selected", on ? "true" : "false");
+          t.tabIndex = on ? 0 : -1;
+        });
+        panels.forEach(p => { p.hidden = p.id !== id; });
+        if (scroll) document.getElementById("forms").scrollIntoView({ behavior: "smooth" });
+      }
+
+      tabs.forEach(t => t.addEventListener("click", () => {
+        show(t.dataset.tab, false);
+        history.replaceState(null, "", "#" + t.dataset.tab);
+      }));
+      tabs.forEach((t, i) => t.addEventListener("keydown", e => {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus(); next.click();
+      }));
+      document.querySelectorAll("[data-tab-link]").forEach(a => a.addEventListener("click", e => {
+        e.preventDefault();
+        show(a.dataset.tabLink, true);
+        history.replaceState(null, "", "#" + a.dataset.tabLink);
+      }));
+
+      const fromHash = location.hash.replace("#", "");
+      if (fromHash === "school" || fromHash === "event") {
+        show(fromHash, false);
+        setTimeout(() => document.getElementById("forms").scrollIntoView(), 50);
+      } else {
+        show("school", false);
+      }
+    })();
+    </script>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="youthclub.html">Youth Club</a>
+          <a href="events.html">Events</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="subpage.js"></script>
+</body>
+</html>
