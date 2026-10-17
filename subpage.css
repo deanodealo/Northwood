@@ -156,7 +156,9 @@ fieldset.form-section { min-width: 0; }
 .option-card .oc-sub { display: block; font-size: 13px; color: var(--c-grey-mid); margin: 2px 0 8px; }
 .option-card .oc-price { display: block; font-weight: 700; font-size: 15px; }
 .option-card .oc-tag {
-  position: absolute; top: 16px; right: 16px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  /* Sits on the card's top edge (like the price-card badges) so it can
+     never collide with the title on narrow screens. */
+  position: absolute; top: -10px; right: 16px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
   background: var(--accent); color: var(--c-white); padding: 3px 8px; border-radius: 999px;
 }
 .option-cards.invalid .option-card { border-color: var(--c-red); }
