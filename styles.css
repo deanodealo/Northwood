@@ -2,28 +2,26 @@
    NORTHWOOD STADIUM — DESIGN TOKENS
    ========================================================================== */
 :root {
-  /* Colour */
-  --c-black:       #0B0B0C;
-  --c-black-soft:  #17171A;
+  /* Colour — Northwood brand palette (brand sheet 1) */
+  --c-track:  #DA3832;
+  --c-gym:    #1A1818;
+  --c-chalk:  #F3F0EB;
+  --c-pitch:  #3F7148;
+  --c-court:  #377BBA;
+
+  /* Roles. Older rules use these names, so they now point at the brand
+     colours above. --c-red is the master brand colour: logo, header,
+     main booking buttons, footer and error messages — it stays red on
+     every page. Per-facility colour comes from --accent (below). */
+  --c-black:       var(--c-gym);
+  --c-black-soft:  #2A2727;
   --c-white:       #FFFFFF;
-  --c-red:         #C8102E;
-  --c-red-dark:    #8C0000;
-  --c-grey-light:  #F2F1F0;
+  --c-red:         var(--c-track);
+  --c-red-dark:    #B02A25;   /* hover state only */
+  --c-grey-light:  var(--c-chalk);
   --c-grey-mid:    #6E6E72;
   --c-grey-line:   rgba(255,255,255,0.12);
-  --c-grey-line-dark: rgba(11,11,12,0.10);
-
-  /* Activity theme colours (per-activity accent, swap as needed) */
-  --c-blue:      #1B4CB4;
-  --c-blue-dark: #0D2F63;
-  --c-purple:      #6B2FA8;
-  --c-purple-dark: #3E1863;
-  --c-charcoal:      #4A4A4E;
-  --c-charcoal-dark: #222225;
-  --c-fb-blue:      #1877F2;
-  --c-fb-blue-dark: #0C3E8C;
-  --c-ig-purple:    #6228D7;
-  --c-ig-pink:      #C21975;
+  --c-grey-line-dark: rgba(26,24,24,0.10);
 
   /* Type */
   --f-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
@@ -36,6 +34,27 @@
 
   /* Motion */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   FACILITY ACCENT COLOURS
+   --accent is the facility colour: Track red by default. Add a theme class
+   to <body>, a <section> or a single card and everything inside switches:
+     .theme-pitch  3G / football          .theme-court  sports hall / indoor
+     .theme-gym    gym / memberships      .theme-track  track (the default)
+   --accent-ink  a slightly deeper version for SMALL text on light
+                 backgrounds (red and blue are too faint on Chalk otherwise)
+   --accent-tint a pale wash for selected states
+   Both are recalculated wherever a theme class is set, so they always
+   match the local accent.
+   ========================================================================== */
+:root, .theme-track { --accent: var(--c-track); }
+.theme-pitch { --accent: var(--c-pitch); }
+.theme-court { --accent: var(--c-court); }
+.theme-gym   { --accent: var(--c-gym); }
+:root, .theme-track, .theme-pitch, .theme-court, .theme-gym {
+  --accent-ink:  color-mix(in srgb, var(--accent) 82%, #000);
+  --accent-tint: color-mix(in srgb, var(--accent) 9%, #fff);
 }
 
 /* ==========================================================================
@@ -277,7 +296,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .hero-eyebrow {
-  color: var(--c-red);
+  color: var(--c-white);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 3px;
@@ -293,7 +312,7 @@ a { color: inherit; text-decoration: none; }
   left: 0; top: 50%;
   width: 18px;
   height: 2px;
-  background: var(--c-red);
+  background: var(--accent);
   transform: translateY(-50%);
 }
 
@@ -405,7 +424,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .section-eyebrow {
-  color: var(--c-red);
+  color: var(--accent-ink);
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 2px;
@@ -497,7 +516,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .find-us-email {
-  color: var(--c-red);
+  color: var(--accent-ink);
   font-weight: 700;
   font-size: 15px;
 }
@@ -523,21 +542,8 @@ a { color: inherit; text-decoration: none; }
 /* ---- About (full-bleed banner block) ---- */
 .about {
   position: relative;
-  background: linear-gradient(135deg, var(--c-red-dark) 0%, var(--c-red) 50%, var(--c-red-dark) 100%);
+  background: var(--accent);
   overflow: hidden;
-}
-
-.about.partner-grey {
-  background: linear-gradient(135deg, var(--c-charcoal-dark) 0%, var(--c-charcoal) 50%, var(--c-charcoal-dark) 100%);
-}
-
-.about.fb-blue {
-  background: linear-gradient(100deg,
-    var(--c-fb-blue-dark) 0%,
-    var(--c-fb-blue) 32%,
-    #5A3FA6 55%,
-    var(--c-ig-purple) 72%,
-    var(--c-ig-pink) 100%);
 }
 
 /* ---- Follow Our Journey (social embeds) ---- */
@@ -576,7 +582,7 @@ a { color: inherit; text-decoration: none; }
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: var(--c-fb-blue);
+  background: #1877F2; /* Facebook's own blue for its icon */
 }
 
 .facebook-icon svg {
@@ -641,14 +647,6 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 800px) {
   .social-embeds { grid-template-columns: 1fr; }
   .social-link-card { padding: 28px; }
-  .about.fb-blue {
-    background: linear-gradient(180deg,
-      var(--c-fb-blue-dark) 0%,
-      var(--c-fb-blue) 32%,
-      #5A3FA6 55%,
-      var(--c-ig-purple) 72%,
-      var(--c-ig-pink) 100%);
-  }
 }
 
 .about-mark {
@@ -805,18 +803,9 @@ a { color: inherit; text-decoration: none; }
 
 .activity-feature-link:hover { transform: translateX(4px); }
 
-/* Theme colours — add a new modifier per activity as needed */
-.activity-feature.blue {
-  background: linear-gradient(135deg, var(--c-blue-dark) 0%, var(--c-blue) 60%, var(--c-blue-dark) 100%);
-}
-
-.activity-feature.red {
-  background: linear-gradient(135deg, var(--c-red-dark) 0%, var(--c-red) 60%, var(--c-red-dark) 100%);
-}
-
-.activity-feature.purple {
-  background: linear-gradient(135deg, var(--c-purple-dark) 0%, var(--c-purple) 60%, var(--c-purple-dark) 100%);
-}
+/* Each card's colour comes from its activity's brand colour, set
+   inline by the home page script (manage-activities.html picks it). */
+.activity-feature { background: var(--accent); }
 
 @media (max-width: 800px) {
   .activity-feature { flex-direction: column; }
@@ -828,8 +817,8 @@ a { color: inherit; text-decoration: none; }
   position: relative;
   background-image: repeating-linear-gradient(
     90deg,
-    rgba(200,16,46,0.035) 0px,
-    rgba(200,16,46,0.035) 1px,
+    color-mix(in srgb, var(--c-red) 4%, transparent) 0px,
+    color-mix(in srgb, var(--c-red) 4%, transparent) 1px,
     transparent 1px,
     transparent 90px
   );
@@ -865,7 +854,7 @@ a { color: inherit; text-decoration: none; }
   aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--c-grey-light);
-  border-bottom: 3px solid var(--c-red);
+  border-bottom: 3px solid var(--accent);
 }
 
 .offer-media img {
@@ -910,7 +899,7 @@ a { color: inherit; text-decoration: none; }
   transition: background 0.2s var(--ease);
 }
 
-.btn-small:hover { background: var(--c-red); }
+.btn-small:hover { background: var(--accent); }
 
 @media (max-width: 1100px) {
   .offer-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1117,7 +1106,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 .facility-quicknav a:hover {
-  background: var(--c-red);
+  background: var(--accent);
+}
+
+.facility-quicknav a.theme-gym:hover {
+  box-shadow: inset 0 0 0 2px var(--c-white), 0 0 0 2px var(--c-gym);
 }
 
 .facility-detail {
@@ -1194,7 +1187,7 @@ a { color: inherit; text-decoration: none; }
   top: 8px;
   width: 14px;
   height: 2px;
-  background: var(--c-red);
+  background: var(--accent);
 }
 
 @media (max-width: 860px) {
@@ -1293,11 +1286,52 @@ a { color: inherit; text-decoration: none; }
 .contact-modal-btn:hover { transform: translateY(-2px); }
 
 .contact-modal-message {
-  background: var(--c-charcoal);
+  background: rgba(255,255,255,0.12);
 }
-.contact-modal-message:hover { background: var(--c-charcoal-dark); }
+.contact-modal-message:hover { background: rgba(255,255,255,0.2); }
 
 .contact-modal-call {
   background: var(--c-red);
 }
 .contact-modal-call:hover { background: var(--c-red-dark); }
+/* ==========================================================================
+   CALL NOW (header button + popup) — shared by every page
+   ========================================================================== */
+.header-actions { display: flex; align-items: center; gap: 14px; }
+.call-now-btn {
+  position: relative; flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+  background: var(--c-red); color: #fff; border: none; cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent;
+}
+.call-now-btn svg { width: 20px; height: 20px; position: relative; z-index: 1; animation: callWiggle 3s ease-in-out infinite; }
+.call-now-btn::before, .call-now-btn::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: var(--c-red); opacity: 0.55; animation: callPulse 2s ease-out infinite;
+}
+.call-now-btn::after { animation-delay: 1s; }
+.call-now-btn:hover { filter: brightness(1.1); }
+.call-now-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@keyframes callPulse { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.9); opacity: 0; } }
+@keyframes callWiggle {
+  0%, 80%, 100% { transform: rotate(0); } 84% { transform: rotate(-14deg); }
+  88% { transform: rotate(12deg); } 92% { transform: rotate(-8deg); } 96% { transform: rotate(5deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .call-now-btn::before, .call-now-btn::after, .call-now-btn svg { animation: none; }
+  .call-now-btn::before, .call-now-btn::after { opacity: 0; }
+}
+.call-modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(26,24,24,0.65); display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+.call-modal-overlay[hidden] { display: none; }
+.call-modal { background: #fff; border-radius: 16px; width: 100%; max-width: 360px; padding: 2rem 1.75rem 1.5rem; text-align: center; border-top: 4px solid var(--c-red); box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
+.call-modal-icon { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 1rem; background: color-mix(in srgb, var(--c-red) 10%, #fff); color: var(--c-red); display: flex; align-items: center; justify-content: center; }
+.call-modal-icon svg { width: 26px; height: 26px; }
+.call-modal h3 { font-family: var(--f-display); font-weight: 800; font-size: 1.5rem; text-transform: uppercase; color: var(--c-black); margin: 0 0 0.35rem; }
+.call-modal-number { font-family: var(--f-display); font-weight: 800; font-size: 1.9rem; letter-spacing: 0.5px; color: var(--c-black); margin: 0.25rem 0 0.5rem; }
+.call-modal-hours { font-family: var(--f-body); font-size: 0.85rem; color: var(--c-grey-mid); line-height: 1.5; margin: 0 0 1.4rem; }
+.call-modal-go { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.95rem; border-radius: 10px; background: var(--c-red); color: #fff; text-decoration: none; font-family: var(--f-display); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.call-modal-go svg { width: 18px; height: 18px; }
+.call-modal-go:hover { filter: brightness(1.08); }
+.call-modal-cancel { margin-top: 0.6rem; width: 100%; padding: 0.8rem; border-radius: 10px; background: none; border: 1.5px solid rgba(0,0,0,0.15); cursor: pointer; font-family: var(--f-body); font-weight: 600; font-size: 0.9rem; color: var(--c-black); }
+
+/* Footer "Site by Dealo" credit logo — rounded to read as an app tile */
+.footer-credit img { border-radius: 22%; }

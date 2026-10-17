@@ -41,7 +41,7 @@ if (header) {
   // regardless of what's behind the header.
   const onScroll = () => {
     if (window.scrollY > 40) {
-      header.style.background = 'rgba(11,11,12,0.95)';
+      header.style.background = 'rgba(26,24,24,0.95)';
     } else {
       header.style.background = 'rgba(58,58,60,0.95)';
     }
