@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<meta name="theme-color" content="#0B0B0C">
+<meta name="theme-color" content="#1A1818">
 
 <!-- Square Web Payments SDK (Production) -->
 <script src="https://web.squarecdn.com/v1/square.js"></script>
@@ -516,89 +516,6 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 .mybk-cal { margin-top: 0.45rem; background: none; border: none; padding: 0; font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-red); text-decoration: underline; cursor: pointer; }
 .mybk-more { background: none; border: none; padding: 0.25rem 0; font-family: var(--f-body); font-size: 0.82rem; font-weight: 600; color: var(--c-red); text-decoration: underline; cursor: pointer; }
 </style>
-  <style>
-    /* ============ CALL NOW (header button + popup) ============ */
-    /* Sits in the sticky header so it's on screen however far down the
-       page someone scrolls. Wrapped with the menu toggle in .header-actions
-       so the header keeps the same three-item layout it had before. */
-    .header-actions { display: flex; align-items: center; gap: 14px; }
-    .call-now-btn {
-      position: relative; flex-shrink: 0;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: var(--c-red, #D7141A); color: #fff;
-      border: none; cursor: pointer; padding: 0;
-      display: flex; align-items: center; justify-content: center;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .call-now-btn svg { width: 20px; height: 20px; position: relative; z-index: 1; animation: callWiggle 3s ease-in-out infinite; }
-    /* Expanding ring behind the button = the "pulse". */
-    .call-now-btn::before, .call-now-btn::after {
-      content: ""; position: absolute; inset: 0; border-radius: 50%;
-      background: var(--c-red, #D7141A); opacity: 0.55;
-      animation: callPulse 2s ease-out infinite;
-    }
-    .call-now-btn::after { animation-delay: 1s; }
-    .call-now-btn:hover { filter: brightness(1.1); }
-    .call-now-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-    @keyframes callPulse {
-      0%   { transform: scale(1);   opacity: 0.55; }
-      100% { transform: scale(1.9); opacity: 0; }
-    }
-    @keyframes callWiggle {
-      0%, 80%, 100% { transform: rotate(0); }
-      84% { transform: rotate(-14deg); }
-      88% { transform: rotate(12deg); }
-      92% { transform: rotate(-8deg); }
-      96% { transform: rotate(5deg); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .call-now-btn::before, .call-now-btn::after, .call-now-btn svg { animation: none; }
-      .call-now-btn::before, .call-now-btn::after { opacity: 0; }
-    }
-
-    .call-modal-overlay {
-      position: fixed; inset: 0; z-index: 1000;
-      background: rgba(11,11,12,0.65);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1.5rem;
-    }
-    .call-modal-overlay[hidden] { display: none; }
-    .call-modal {
-      background: #fff; border-radius: 16px; width: 100%; max-width: 360px;
-      padding: 2rem 1.75rem 1.5rem; text-align: center;
-      border-top: 4px solid var(--c-red, #D7141A);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-    }
-    .call-modal-icon {
-      width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 1rem;
-      background: rgba(215,20,26,0.1); color: var(--c-red, #D7141A);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .call-modal-icon svg { width: 26px; height: 26px; }
-    .call-modal h3 {
-      font-family: var(--f-display); font-weight: 800; font-size: 1.5rem;
-      text-transform: uppercase; color: var(--c-black, #0B0B0C); margin: 0 0 0.35rem;
-    }
-    .call-modal-number {
-      font-family: var(--f-display); font-weight: 800; font-size: 1.9rem;
-      letter-spacing: 0.5px; color: var(--c-black, #0B0B0C); margin: 0.25rem 0 0.5rem;
-    }
-    .call-modal-hours { font-family: var(--f-body); font-size: 0.85rem; color: var(--c-grey-mid, #6b6b6b); line-height: 1.5; margin: 0 0 1.4rem; }
-    .call-modal-go {
-      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-      width: 100%; padding: 0.95rem; border-radius: 10px;
-      background: var(--c-red, #D7141A); color: #fff; text-decoration: none;
-      font-family: var(--f-display); font-weight: 700; font-size: 1.1rem;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .call-modal-go svg { width: 18px; height: 18px; }
-    .call-modal-go:hover { filter: brightness(1.08); }
-    .call-modal-cancel {
-      margin-top: 0.6rem; width: 100%; padding: 0.8rem; border-radius: 10px;
-      background: none; border: 1.5px solid rgba(0,0,0,0.15); cursor: pointer;
-      font-family: var(--f-body); font-weight: 600; font-size: 0.9rem; color: var(--c-black, #0B0B0C);
-    }
-  </style>
 </head>
 <body class="ab-page">
 
@@ -645,7 +562,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
     </div>
   </div>
 
-  <div class="ab-staff-banner hidden" id="customerBanner" style="background:var(--activity-accent, var(--c-blue));">
+  <div class="ab-staff-banner hidden" id="customerBanner" style="background:var(--c-red);">
     <span>Signed in as <strong id="customerBannerName"></strong> — <a href="#" id="myBookingsLink" style="color:white; text-decoration:underline;">My bookings</a> · <a href="#" id="manageFamilyLink" style="color:white; text-decoration:underline;">Manage family</a></span>
     <button id="customerLogoutBtn">Log out</button>
   </div>
@@ -1062,6 +979,17 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     return `${context} failed. Please try again.`;
   }
 
+
+  // Activity colours are limited to the four brand colours. Activities
+  // saved before the rebrand may still hold an old colour, so those are
+  // mapped to the nearest brand colour when they're loaded.
+  const BRAND_ACCENTS = ["#DA3832", "#3F7148", "#377BBA", "#1A1818"];
+  const LEGACY_ACCENTS = { "#2563EB": "#377BBA", "#1E3A8A": "#377BBA", "#7C3AED": "#377BBA", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
+  function normalizeAccent(hex) {
+    const h = String(hex || "").toUpperCase();
+    return BRAND_ACCENTS.includes(h) ? h : (LEGACY_ACCENTS[h] || "#DA3832");
+  }
+
   function isSessionPast(session) {
     const today = new Date(); today.setHours(0,0,0,0);
     return new Date(session.date + "T00:00:00") < today;
@@ -1139,7 +1067,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       try {
         const activities = snap.docs.map(doc => {
           const data = doc.data();
-          return { id: doc.id, ...data, sessions: (data.sessions || []).map(s => ({ ...s, booked: 0 })) };
+          return { id: doc.id, ...data, accentColor: normalizeAccent(data.accentColor), sessions: (data.sessions || []).map(s => ({ ...s, booked: 0 })) };
         });
 
         const allSessionIds = activities.flatMap(a => a.sessions.map(s => s.id));

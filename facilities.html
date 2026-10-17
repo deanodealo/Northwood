@@ -16,89 +16,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <style>
-    /* ============ CALL NOW (header button + popup) ============ */
-    /* Sits in the sticky header so it's on screen however far down the
-       page someone scrolls. Wrapped with the menu toggle in .header-actions
-       so the header keeps the same three-item layout it had before. */
-    .header-actions { display: flex; align-items: center; gap: 14px; }
-    .call-now-btn {
-      position: relative; flex-shrink: 0;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: var(--c-red, #D7141A); color: #fff;
-      border: none; cursor: pointer; padding: 0;
-      display: flex; align-items: center; justify-content: center;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .call-now-btn svg { width: 20px; height: 20px; position: relative; z-index: 1; animation: callWiggle 3s ease-in-out infinite; }
-    /* Expanding ring behind the button = the "pulse". */
-    .call-now-btn::before, .call-now-btn::after {
-      content: ""; position: absolute; inset: 0; border-radius: 50%;
-      background: var(--c-red, #D7141A); opacity: 0.55;
-      animation: callPulse 2s ease-out infinite;
-    }
-    .call-now-btn::after { animation-delay: 1s; }
-    .call-now-btn:hover { filter: brightness(1.1); }
-    .call-now-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-    @keyframes callPulse {
-      0%   { transform: scale(1);   opacity: 0.55; }
-      100% { transform: scale(1.9); opacity: 0; }
-    }
-    @keyframes callWiggle {
-      0%, 80%, 100% { transform: rotate(0); }
-      84% { transform: rotate(-14deg); }
-      88% { transform: rotate(12deg); }
-      92% { transform: rotate(-8deg); }
-      96% { transform: rotate(5deg); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .call-now-btn::before, .call-now-btn::after, .call-now-btn svg { animation: none; }
-      .call-now-btn::before, .call-now-btn::after { opacity: 0; }
-    }
-
-    .call-modal-overlay {
-      position: fixed; inset: 0; z-index: 1000;
-      background: rgba(11,11,12,0.65);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1.5rem;
-    }
-    .call-modal-overlay[hidden] { display: none; }
-    .call-modal {
-      background: #fff; border-radius: 16px; width: 100%; max-width: 360px;
-      padding: 2rem 1.75rem 1.5rem; text-align: center;
-      border-top: 4px solid var(--c-red, #D7141A);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-    }
-    .call-modal-icon {
-      width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 1rem;
-      background: rgba(215,20,26,0.1); color: var(--c-red, #D7141A);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .call-modal-icon svg { width: 26px; height: 26px; }
-    .call-modal h3 {
-      font-family: var(--f-display); font-weight: 800; font-size: 1.5rem;
-      text-transform: uppercase; color: var(--c-black, #0B0B0C); margin: 0 0 0.35rem;
-    }
-    .call-modal-number {
-      font-family: var(--f-display); font-weight: 800; font-size: 1.9rem;
-      letter-spacing: 0.5px; color: var(--c-black, #0B0B0C); margin: 0.25rem 0 0.5rem;
-    }
-    .call-modal-hours { font-family: var(--f-body); font-size: 0.85rem; color: var(--c-grey-mid, #6b6b6b); line-height: 1.5; margin: 0 0 1.4rem; }
-    .call-modal-go {
-      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-      width: 100%; padding: 0.95rem; border-radius: 10px;
-      background: var(--c-red, #D7141A); color: #fff; text-decoration: none;
-      font-family: var(--f-display); font-weight: 700; font-size: 1.1rem;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .call-modal-go svg { width: 18px; height: 18px; }
-    .call-modal-go:hover { filter: brightness(1.08); }
-    .call-modal-cancel {
-      margin-top: 0.6rem; width: 100%; padding: 0.8rem; border-radius: 10px;
-      background: none; border: 1.5px solid rgba(0,0,0,0.15); cursor: pointer;
-      font-family: var(--f-body); font-weight: 600; font-size: 0.9rem; color: var(--c-black, #0B0B0C);
-    }
-  </style>
 </head>
 <body>
 
@@ -141,7 +58,7 @@
   </div>
 
   <!-- ============ ACCOUNT STATUS BAR (shown only when signed in) ============ -->
-  <div id="customerStatusBar" style="display:none; position:fixed; top:var(--header-h); left:0; right:0; z-index:150; background:var(--c-red); color:var(--c-white); font-family:'DM Sans', sans-serif; font-size:13px; font-weight:500; padding:10px var(--pad); text-align:center;">
+  <div id="customerStatusBar" style="display:none; position:fixed; top:var(--header-h); left:0; right:0; z-index:150; background:var(--c-red); color:var(--c-white); font-family:var(--f-body); font-size:13px; font-weight:500; padding:10px var(--pad); text-align:center;">
     Signed in as <strong id="customerStatusName"></strong>
     · <a href="activitybooking.html#my-bookings" id="myBookingsNavLink" style="color:var(--c-white); text-decoration:underline;">My Bookings</a>
     · <a href="#" id="manageFamilyNavLink" style="color:var(--c-white); text-decoration:underline;">Manage Family</a>
@@ -150,7 +67,7 @@
 
   <!-- ============ ACCOUNT MODAL: LOGIN / REGISTER ============ -->
   <div id="accountModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(11,11,12,0.6); z-index:200; align-items:flex-start; justify-content:center; padding:24px; overflow-y:auto;">
-    <div style="background:white; border-radius:14px; padding:32px; max-width:380px; width:100%; margin:32px auto; font-family:'DM Sans', sans-serif;">
+    <div style="background:white; border-radius:14px; padding:32px; max-width:380px; width:100%; margin:32px auto; font-family:var(--f-body);">
       <div style="display:flex; gap:8px; margin-bottom:20px;">
         <button type="button" id="accountTabLogin" class="account-modal-tab active">Log In</button>
         <button type="button" id="accountTabRegister" class="account-modal-tab">Register</button>
@@ -159,11 +76,11 @@
       <div id="accountLoginPane">
         <div class="account-field"><label>Email</label><input type="email" id="loginEmail" autocomplete="username"></div>
         <div class="account-field"><label>Password</label><input type="password" id="loginPassword" autocomplete="current-password"></div>
-        <a href="#" id="forgotPasswordLink" style="font-family:'DM Sans', sans-serif; font-size:13px; color:var(--c-red); text-decoration:underline;">Forgot password?</a>
+        <a href="#" id="forgotPasswordLink" style="font-family:var(--f-body); font-size:13px; color:var(--c-red); text-decoration:underline;">Forgot password?</a>
       </div>
 
       <div id="accountRegisterPane" style="display:none;">
-        <p style="font-family:'DM Sans', sans-serif; font-size:13px; color:var(--c-grey-mid); margin:0 0 14px;">Not sure? <a href="faq.html#account-benefits" target="_blank" rel="noopener" style="color:var(--c-red); font-weight:600; text-decoration:underline;">Why create an account?</a></p>
+        <p style="font-family:var(--f-body); font-size:13px; color:var(--c-grey-mid); margin:0 0 14px;">Not sure? <a href="faq.html#account-benefits" target="_blank" rel="noopener" style="color:var(--c-red); font-weight:600; text-decoration:underline;">Why create an account?</a></p>
         <div class="account-field"><label>Your Name <span style="color:var(--c-red);">*</span></label><input type="text" id="regName" autocomplete="name"></div>
         <div class="two-col-row">
           <div class="account-field" style="flex:1;"><label>Date of Birth <span style="color:var(--c-red);">*</span></label><input type="date" id="regDob"></div>
@@ -178,27 +95,27 @@
       <div id="accountModalMsg" style="display:none; margin-top:12px; font-size:14px; padding:10px 14px; border-radius:8px;"></div>
 
       <div style="display:flex; gap:10px; margin-top:20px;">
-        <button type="button" id="accountModalCancel" style="flex:1; background:none; border:1.5px solid rgba(0,0,0,0.15); border-radius:8px; padding:12px; font-family:'DM Sans', sans-serif; font-weight:600; cursor:pointer;">Cancel</button>
-        <button type="button" id="accountModalSubmit" style="flex:1; background:var(--c-red); color:white; border:none; border-radius:8px; padding:12px; font-family:'Barlow Condensed', sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-size:16px; cursor:pointer;">Log In</button>
+        <button type="button" id="accountModalCancel" style="flex:1; background:none; border:1.5px solid rgba(0,0,0,0.15); border-radius:8px; padding:12px; font-family:var(--f-body); font-weight:600; cursor:pointer;">Cancel</button>
+        <button type="button" id="accountModalSubmit" style="flex:1; background:var(--c-red); color:white; border:none; border-radius:8px; padding:12px; font-family:var(--f-display); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; font-size:16px; cursor:pointer;">Log In</button>
       </div>
     </div>
   </div>
 
   <!-- ============ MANAGE FAMILY MODAL ============ -->
   <div id="familyModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(11,11,12,0.6); z-index:200; align-items:flex-start; justify-content:center; padding:24px; overflow-y:auto;">
-    <div style="background:white; border-radius:14px; padding:32px; max-width:480px; width:100%; margin:32px auto; font-family:'DM Sans', sans-serif;">
-      <h3 style="font-family:'Barlow Condensed', sans-serif; font-size:22px; font-weight:800; text-transform:uppercase; color:var(--c-black); margin-bottom:12px;">Manage Family</h3>
+    <div style="background:white; border-radius:14px; padding:32px; max-width:480px; width:100%; margin:32px auto; font-family:var(--f-body);">
+      <h3 style="font-family:var(--f-display); font-size:22px; font-weight:800; text-transform:uppercase; color:var(--c-black); margin-bottom:12px;">Manage Family</h3>
       <p style="font-size:13px; color:var(--c-grey-mid); margin-bottom:16px;">Save your children's details here once, then just tick their name at booking time instead of retyping it.</p>
       <div id="familyMembersList"></div>
-      <button type="button" id="addFamilyMemberBtn" style="width:100%; padding:12px; margin-bottom:20px; font-family:'DM Sans', sans-serif; font-size:14px; font-weight:600; color:var(--c-red); background:white; border:1.5px dashed var(--c-red); border-radius:8px; cursor:pointer;">+ Add a family member</button>
+      <button type="button" id="addFamilyMemberBtn" style="width:100%; padding:12px; margin-bottom:20px; font-family:var(--f-body); font-size:14px; font-weight:600; color:var(--c-red); background:white; border:1.5px dashed var(--c-red); border-radius:8px; cursor:pointer;">+ Add a family member</button>
       <div id="familyModalMsg" style="display:none; margin-bottom:12px; font-size:14px; padding:10px 14px; border-radius:8px;"></div>
-      <button type="button" id="familyModalClose" style="width:100%; background:none; border:1.5px solid rgba(0,0,0,0.15); border-radius:8px; padding:12px; font-family:'DM Sans', sans-serif; font-weight:600; cursor:pointer;">Close</button>
+      <button type="button" id="familyModalClose" style="width:100%; background:none; border:1.5px solid rgba(0,0,0,0.15); border-radius:8px; padding:12px; font-family:var(--f-body); font-weight:600; cursor:pointer;">Close</button>
     </div>
   </div>
 
   <style>
     .account-modal-tab {
-      flex: 1; padding: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+      flex: 1; padding: 10px; font-family: var(--f-body); font-size: 14px; font-weight: 600;
       color: var(--c-black); background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.12);
       border-radius: 8px; cursor: pointer;
     }
@@ -212,9 +129,9 @@
     @media (max-width: 480px) {
       .two-col-row { flex-direction: column; gap: 0; }
     }
-    .account-field label { display: block; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--c-black); margin-bottom: 5px; }
+    .account-field label { display: block; font-family: var(--f-body); font-size: 13px; font-weight: 600; color: var(--c-black); margin-bottom: 5px; }
     .account-field input {
-      width: 100%; min-width: 0; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 15px;
+      width: 100%; min-width: 0; padding: 11px 13px; font-family: var(--f-body); font-size: 15px;
       color: var(--c-black); background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1);
       border-radius: 8px; box-sizing: border-box;
     }
@@ -238,15 +155,15 @@
       border: 1.5px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 16px; margin-bottom: 14px; background: rgba(0,0,0,0.015);
     }
     .family-member-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .family-member-header span { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--c-grey-mid); }
-    .family-remove-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: #8C0000; background: none; border: none; cursor: pointer; }
+    .family-member-header span { font-family: var(--f-body); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--c-grey-mid); }
+    .family-remove-btn { font-family: var(--f-body); font-size: 12px; font-weight: 600; color: #8C0000; background: none; border: none; cursor: pointer; }
     .family-save-btn {
-      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; color: white;
+      font-family: var(--f-body); font-size: 14px; font-weight: 700; color: white;
       background: var(--c-red); border: none; border-radius: 8px; padding: 10px 18px; cursor: pointer;
     }
     .family-save-btn:hover { opacity: 0.9; }
     .family-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .family-saved-msg { display: none; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: #1B5E20; }
+    .family-saved-msg { display: none; font-family: var(--f-body); font-size: 14px; font-weight: 600; color: #1B5E20; }
     .form-message-error { background: #FBEAEA; color: #8C0000; }
     .form-message-success { background: #E8F5E9; color: #1B5E20; }
 
@@ -265,16 +182,16 @@
         <p class="facilities-lede">Take a closer look before you book — from our floodlit 3G pitches to our national-standard running track, here's what's waiting for you at Northwood.</p>
 
         <nav class="facility-quicknav" aria-label="Jump to facility">
-          <a href="#facility-3g">3G Football</a>
-          <a href="#facility-gym">Gym</a>
-          <a href="#facility-sportshall">Sports Hall</a>
-          <a href="#facility-track">Track</a>
+          <a href="#facility-3g" class="theme-pitch">3G Football</a>
+          <a href="#facility-gym" class="theme-gym">Gym</a>
+          <a href="#facility-sportshall" class="theme-court">Sports Hall</a>
+          <a href="#facility-track" class="theme-track">Track</a>
         </nav>
       </div>
     </section>
 
     <!-- ============ 3G FOOTBALL ============ -->
-    <section class="facility-detail" id="facility-3g">
+    <section class="facility-detail theme-pitch" id="facility-3g">
       <div class="facility-detail-inner">
         <div class="facility-gallery">
           <img src="images/3gfooty.jpg" alt="3G football pitch">
@@ -296,7 +213,7 @@
     </section>
 
     <!-- ============ GYM ============ -->
-    <section class="facility-detail alt" id="facility-gym">
+    <section class="facility-detail alt theme-gym" id="facility-gym">
       <div class="facility-detail-inner">
         <div class="facility-gallery">
           <img src="images/gym.jpg" alt="Gym">
@@ -318,7 +235,7 @@
     </section>
 
     <!-- ============ SPORTS HALL ============ -->
-    <section class="facility-detail" id="facility-sportshall">
+    <section class="facility-detail theme-court" id="facility-sportshall">
       <div class="facility-detail-inner">
         <div class="facility-gallery">
           <img src="images/sportshall.jpg" alt="Sports hall">
@@ -340,7 +257,7 @@
     </section>
 
     <!-- ============ TRACK ============ -->
-    <section class="facility-detail alt" id="facility-track">
+    <section class="facility-detail alt theme-track" id="facility-track">
       <div class="facility-detail-inner">
         <div class="facility-gallery">
           <img src="images/track.jpg" alt="Athletics track">
@@ -653,14 +570,14 @@
             <div class="account-field" style="flex:1;"><label>Surname</label><input type="text" data-field="surname" data-member="${m.id}" value="${m.surname || ""}"></div>
           </div>
           <div class="account-field"><label>Date of Birth</label><input type="date" data-field="dob" data-member="${m.id}" value="${m.dob || ""}"></div>
-          <div class="account-field"><label>Notes (dietary, medical, or other instructions)</label><textarea data-field="notes" data-member="${m.id}" rows="2" style="width:100%; padding:11px 13px; font-family:'DM Sans',sans-serif; font-size:14px; background:var(--c-grey-light); border:1.5px solid rgba(0,0,0,0.1); border-radius:8px; box-sizing:border-box;">${m.notes || ""}</textarea></div>
+          <div class="account-field"><label>Notes (dietary, medical, or other instructions)</label><textarea data-field="notes" data-member="${m.id}" rows="2" style="width:100%; padding:11px 13px; font-family:var(--f-body); font-size:14px; background:var(--c-grey-light); border:1.5px solid rgba(0,0,0,0.1); border-radius:8px; box-sizing:border-box;">${m.notes || ""}</textarea></div>
           <div style="display:flex; align-items:center; gap:14px;">
             <button type="button" class="family-save-btn" data-save-member="${m.id}">Save</button>
             <span class="family-saved-msg" data-saved-msg="${m.id}">✓ Saved</span>
           </div>
         </div>
       `;
-      }).join("") : '<p style="font-family:\'DM Sans\',sans-serif; font-size:14px; color:var(--c-grey-mid);">No family members saved yet.</p>';
+      }).join("") : '<p style="font-family:var(--f-body); font-size:14px; color:var(--c-grey-mid);">No family members saved yet.</p>';
 
       // Fields just update the in-memory record as you type — nothing is
       // written to the database until "Save" is clicked, so the save

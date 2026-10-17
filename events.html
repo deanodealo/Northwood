@@ -16,13 +16,13 @@
   <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
   <link rel="manifest" href="images/site.webmanifest">
-  <meta name="theme-color" content="#0B0B0C">
+  <meta name="theme-color" content="#1A1818">
   <style>
     /* ============ EVENTS PAGE ============ */
     .ev-options { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 40px; }
     .ev-option {
       display: flex; flex-direction: column; align-items: flex-start; padding: 36px; border-radius: 16px;
-      background: var(--c-black); color: var(--c-white); border-top: 4px solid var(--c-red);
+      background: var(--c-black); color: var(--c-white); border-top: 4px solid var(--accent);
     }
     .ev-option-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 10px; }
     .ev-option h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(26px, 2.8vw, 34px); line-height: 1.05; margin-bottom: 12px; }
@@ -48,7 +48,7 @@
       font-family: var(--f-display); font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;
       padding: 12px 22px; transition: background 0.2s var(--ease), color 0.2s var(--ease);
     }
-    .ev-tab[aria-selected="true"] { background: var(--c-red); color: var(--c-white); }
+    .ev-tab[aria-selected="true"] { background: var(--accent); color: var(--c-white); }
     .ev-tab:not([aria-selected="true"]):hover { background: var(--c-grey-light); }
 
     .ev-panel { scroll-margin-top: calc(var(--header-h) + 24px); }
@@ -476,7 +476,7 @@
                   <label for="ev-policy">Policy number &amp; expiry date</label>
                   <input type="text" id="ev-policy" name="Policy number and expiry">
                 </div>
-                <p class="field full hint" style="margin-top: -6px;">Hirers need public liability insurance of at least £5,000,000 (£2,000,000 for caterers), with copies provided no less than 28 days before the event — see <a href="conditions-of-hire.html#clause-18" target="_blank" rel="noopener" style="color: var(--c-red); font-weight: 600;">Conditions of Hire, clause 18</a>.</p>
+                <p class="field full hint" style="margin-top: -6px;">Hirers need public liability insurance of at least £5,000,000 (£2,000,000 for caterers), with copies provided no less than 28 days before the event — see <a href="conditions-of-hire.html#clause-18" target="_blank" rel="noopener" style="color: var(--accent-ink); font-weight: 600;">Conditions of Hire, clause 18</a>.</p>
               </div>
             </fieldset>
 

@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<meta name="theme-color" content="#0B0B0C">
+<meta name="theme-color" content="#1A1818">
 
 <!-- Firebase (compat SDK — same version and project as activitybooking.html) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -219,7 +219,7 @@ input[type="date"], input[type="time"] {
   cursor: pointer; margin-bottom: 1.25rem; background: var(--c-grey-light); transition: border-color 0.15s;
 }
 .ma-dropzone:hover { border-color: var(--c-red); }
-.ma-dropzone.dragover { border-color: var(--c-red); background: rgba(178,0,0,0.04); }
+.ma-dropzone.dragover { border-color: var(--c-red); background: color-mix(in srgb, var(--c-red) 4%, #fff); }
 .ma-dropzone p { font-family: var(--f-body); font-size: 0.85rem; color: var(--c-grey-mid); }
 .ma-dropzone input { display: none; }
 .ma-image-preview-wrap { position: relative; display: inline-block; margin-bottom: 1.25rem; }
@@ -391,7 +391,7 @@ input[type="date"], input[type="time"] {
         </div>
 
         <div class="ma-section-label">Colour Scheme</div>
-        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Used for this activity's tab and card accent. Picked from a curated set so it always looks right against the site's black/white/red branding.</p>
+        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Pick the colour of the facility this activity runs in — Pitch green for 3G / football, Court blue for the sports hall, Gym black for the gym, Track red for athletics or anything else. Used for the activity's tab, booking card and home page card.</p>
         <div class="ma-swatches" id="colorSwatches"></div>
 
         <div class="ma-section-label">Photo (optional)</div>
@@ -575,26 +575,27 @@ const auth = firebase.auth();
 const storage = firebase.storage();
 
 /* ═══════════════════════════════════════════════════════════
-   COLOUR PALETTE
+   COLOUR PALETTE — Northwood brand colours only (brand sheet 1)
    ───────────────────────────────────────────────────────────
-   A small curated set rather than a free colour picker — every
-   one of these is dark enough for the white text used on tabs,
-   the submit button and selected-session tags (WCAG AA against
-   white), so staff can't accidentally pick something illegible
-   or off-brand. Add more here if needed; each just needs a hex
-   dark enough for white text to sit on comfortably.
+   Each activity takes the colour of the facility it runs in, so
+   colours mean the same thing everywhere on the site:
+     Track red (athletics / general), Pitch green (3G / football),
+     Court blue (sports hall / indoor), Gym black (gym / fitness).
+   Activities saved before the rebrand may hold an old colour;
+   normalizeAccent() maps those to the nearest brand colour.
    ═══════════════════════════════════════════════════════════ */
 
 const ACCENT_PRESETS = [
-  { label: "Blue",         hex: "#2563EB" },
-  { label: "Purple",       hex: "#7C3AED" },
-  { label: "Teal",         hex: "#0D9488" },
-  { label: "Charcoal",     hex: "#374151" },
-  { label: "Burnt Orange", hex: "#C2410C" },
-  { label: "Rose",         hex: "#BE123C" },
-  { label: "Forest Green", hex: "#15803D" },
-  { label: "Navy",         hex: "#1E3A8A" }
+  { label: "Track red — athletics / general", hex: "#DA3832" },
+  { label: "Pitch green — 3G / football",     hex: "#3F7148" },
+  { label: "Court blue — sports hall / indoor", hex: "#377BBA" },
+  { label: "Gym black — gym / fitness",       hex: "#1A1818" }
 ];
+const LEGACY_ACCENTS = { "#2563EB": "#377BBA", "#1E3A8A": "#377BBA", "#7C3AED": "#377BBA", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
+function normalizeAccent(hex) {
+  const h = String(hex || "").toUpperCase();
+  return ACCENT_PRESETS.some(p => p.hex === h) ? h : (LEGACY_ACCENTS[h] || "#DA3832");
+}
 
 /* ═══════════════════════════════════════════════════════════
    CUSTOM QUESTIONS — per-activity extra questions shown on the
@@ -650,7 +651,7 @@ const SEED_ACTIVITIES = [
     id: "wnf",
     name: "Wednesday Night Football",
     provider: "Northwood Stadium",
-    accentColor: "#2563EB",
+    accentColor: "#3F7148",
     description: "5-a-side, all abilities welcome. Turn up and play, or book ahead to guarantee your spot.",
     venue: "3G Pitch, Northwood Stadium",
     ageNote: "16+",
@@ -669,7 +670,7 @@ const SEED_ACTIVITIES = [
     id: "funetics",
     name: "Funetics",
     provider: "Funetics Coaching",
-    accentColor: "#7C3AED",
+    accentColor: "#377BBA",
     description: "Fun, multi-sport coaching sessions for kids — games-based, no pressure, lots of energy.",
     venue: "Sports Hall, Northwood Stadium",
     ageNote: "5 - 11 years",
@@ -829,7 +830,7 @@ const SEED_ACTIVITIES = [
     activityListEl.innerHTML = '<div class="ma-empty">Loading…</div>';
     try {
       const snap = await db.collection("activities").orderBy("createdAt", "asc").get();
-      activitiesCache = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      activitiesCache = snap.docs.map(doc => { const d = doc.data(); return { id: doc.id, ...d, accentColor: normalizeAccent(d.accentColor) }; });
 
       migrateBanner.classList.toggle("hidden", activitiesCache.length !== 0);
       renderActivityList();

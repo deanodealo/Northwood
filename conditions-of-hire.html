@@ -16,7 +16,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
   <link rel="manifest" href="images/site.webmanifest">
-  <meta name="theme-color" content="#0B0B0C">
+  <meta name="theme-color" content="#1A1818">
   <style>
     /* ============ CONDITIONS OF HIRE PAGE ============ */
     .coh-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 64px; align-items: start; }
@@ -36,10 +36,10 @@
     .coh-sub { margin: 10px 0 0 4px; padding-left: 26px; display: grid; gap: 8px; }
     .coh-alpha { list-style: lower-alpha; }
     .coh-roman { list-style: lower-roman; margin-top: 8px; }
-    .coh-sub li::marker { font-weight: 700; color: var(--c-red); }
+    .coh-sub li::marker { font-weight: 700; color: var(--accent-ink); }
 
     .coh-side { position: sticky; top: calc(var(--header-h) + 24px); display: grid; gap: 20px; }
-    .coh-card { background: var(--c-black); color: var(--c-white); border-radius: 14px; padding: 28px; border-top: 4px solid var(--c-red); }
+    .coh-card { background: var(--c-black); color: var(--c-white); border-radius: 14px; padding: 28px; border-top: 4px solid var(--accent); }
     .coh-card h2 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 24px; margin-bottom: 10px; }
     .coh-card p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.78); margin-bottom: 18px; }
     .coh-card p:last-child { margin-bottom: 0; }
@@ -48,11 +48,11 @@
       display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-radius: 8px;
       background: rgba(255,255,255,0.08); font-weight: 700; font-size: 14px; transition: background 0.2s var(--ease);
     }
-    .coh-links a::after { content: "→"; color: var(--c-red); }
+    .coh-links a::after { content: "→"; color: var(--accent); }
     .coh-links a:hover { background: rgba(255,255,255,0.16); }
     .coh-card-plain { background: var(--c-grey-light); color: var(--c-black); }
     .coh-card-plain p { color: var(--c-grey-mid); }
-    .coh-card-plain a { color: var(--c-red); font-weight: 700; }
+    .coh-card-plain a { color: var(--accent-ink); font-weight: 700; }
 
     @media (max-width: 900px) {
       .coh-layout { grid-template-columns: 1fr; gap: 40px; }
