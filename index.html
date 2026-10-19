@@ -211,23 +211,11 @@
     }
   </style>
   <style>
-    /* ============ WHAT'S ON OFFER — 5-card layout ============ */
-    /* styles.css sets 4 columns; with Youth Club added that would leave
-       one card alone on a second row. Desktop shows all five in a row,
-       and on 2-column tablets the fifth card is centred on its own row. */
+    /* ============ WHAT'S ON OFFER ============ */
     /* 3G tile has two buttons: individual slot + team bookings */
     .offer-actions { display: flex; flex-wrap: wrap; gap: 8px; }
     .btn-small-outline { background: transparent; color: var(--c-black); box-shadow: inset 0 0 0 1.5px var(--c-black); }
     .btn-small-outline:hover { background: var(--c-red); color: var(--c-white); box-shadow: none; }
-    @media (min-width: 1101px) {
-      .offer-grid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
-      .offer-body { padding: 20px; }
-    }
-    @media (min-width: 561px) and (max-width: 1100px) {
-      .offer-grid > .offer-card:nth-child(5):last-child {
-        grid-column: 1 / -1; justify-self: center; width: calc(50% - 14px);
-      }
-    }
   </style>
 </head>
 <body>
@@ -466,17 +454,6 @@
               <h3>Track</h3>
               <p>A full outdoor athletics track for training, timed sessions and events, open to clubs, schools and individual members.</p>
               <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn btn-small">View Memberships</a>
-            </div>
-          </div>
-
-          <div class="offer-card theme-court">
-            <div class="offer-media">
-              <img src="images/1.png" alt="Youth Club at Northwood" style="object-position: center bottom;">
-            </div>
-            <div class="offer-body">
-              <h3>Youth Club</h3>
-              <p>Regular youth club sessions with sport, games and activities in a safe, friendly space for young people to meet and get active.</p>
-              <a href="youthclub.html" class="btn btn-small">Book Now</a>
             </div>
           </div>
 
@@ -1264,12 +1241,30 @@
       return BRAND_ACCENTS.includes(h) ? h : (LEGACY_ACCENTS[h] || "#DA3832");
     }
 
+    // Youth Club is a permanent card, not a Firestore activity: registration
+    // is handled by a third party (eequ, linked from youthclub.html), so it
+    // must not go through activitybooking.html, and staff shouldn't be able
+    // to edit or disable it from Manage Activities. It always shows first.
+    // To change it, edit this block.
+    const YOUTH_CLUB_CARD = `
+          <div class="activity-feature" style="--accent:#377BBA">
+            <div class="activity-feature-media"><img src="images/1.png" alt="Youth Club at Northwood" style="object-position: center bottom;"></div>
+            <div class="activity-feature-content">
+              <h3 class="activity-feature-title">Youth Club</h3>
+              <p class="activity-feature-body">Regular youth club sessions with sport, games and activities in a safe, friendly space for young people to meet and get active.</p>
+              <a href="youthclub.html" class="activity-feature-link">Find out more &amp; register →</a>
+            </div>
+          </div>
+        `;
+    const MSG_STYLE = 'color:var(--c-grey-mid); font-family:var(--f-body);';
+
     function renderHomeActivities(activities) {
       if (!activities.length) {
-        featuresEl.innerHTML = '<p style="color:var(--c-grey-mid); font-family:var(--f-body);">No activities are currently open for booking — check back soon.</p>';
+        // Nothing open in Firestore: Youth Club still shows on its own.
+        featuresEl.innerHTML = YOUTH_CLUB_CARD;
         return;
       }
-      featuresEl.innerHTML = activities.map(a => {
+      featuresEl.innerHTML = YOUTH_CLUB_CARD + activities.map(a => {
         const media = a.imageUrl ? `<img src="${a.imageUrl}" alt="${escAttr(a.name)}">` : "";
         return `
           <div class="activity-feature" style="--accent:${normalizeAccent(a.accentColor)}">
@@ -1295,11 +1290,19 @@
         renderHomeActivities(activities);
       }, err => {
         console.error("Activities listener error:", err);
-        featuresEl.innerHTML = '<p style="color:var(--c-grey-mid); font-family:var(--f-body);">Couldn\'t load activities right now — please refresh the page.</p>';
+        featuresEl.innerHTML = YOUTH_CLUB_CARD + `<p style="${MSG_STYLE}">Couldn't load the other activities right now — please refresh the page.</p>`;
       });
     }
 
-    startHomeActivitiesListener();
+    // Show Youth Club immediately, before Firestore responds.
+    featuresEl.innerHTML = YOUTH_CLUB_CARD + `<p style="${MSG_STYLE}">Loading activities…</p>`;
+    try {
+      startHomeActivitiesListener();
+    } catch (err) {
+      // e.g. the Firebase scripts failed to load - Youth Club still shows.
+      console.error("Activities listener failed to start:", err);
+      featuresEl.innerHTML = YOUTH_CLUB_CARD + `<p style="${MSG_STYLE}">Couldn't load the other activities right now — please refresh the page.</p>`;
+    }
   })();
   </script>
 
