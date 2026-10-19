@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sponsorship | Northwood Stadium</title>
+  <meta name="description" content="Trackside and facility advertising boards at Northwood Stadium, Stoke-on-Trent. Sponsorship packages from £400 a year, and every pound goes back into local sport.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subpage.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#0B0B0C">
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       SPONSORSHIP PAGE
+       Built on the shared tokens/components in styles.css + subpage.css
+       (.page-hero, .section, .section-eyebrow, .section-title, .about band,
+       .price-card, .steps, .booking-form). Everything below is page-specific.
+
+       PHOTO SLOTS: every <div class="sp-ph"> is a placeholder for a photo
+       that's still with the photographer. To swap one in, replace the whole
+       <div class="sp-ph">…</div> with:
+         <img src="images/FILE.jpg" alt="…" loading="lazy">
+       inside the same parent — the parent already sets the size and crop.
+       ═══════════════════════════════════════════════════════════ */
+    :root { --c-gold: #C9A227; --c-gold-soft: rgba(201,162,39,0.14); }
+
+    /* ---------- Hero extras ---------- */
+    .sp-eyebrow {
+      display: inline-block; color: var(--c-white); background: var(--c-red);
+      font-weight: 700; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+      padding: 7px 12px; border-radius: 4px; margin-bottom: 22px;
+    }
+    .page-hero-title .hl { color: var(--c-red); }
+    .sp-stats {
+      position: relative; z-index: 2; max-width: var(--max-w); margin: 56px auto 0;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid rgba(255,255,255,0.18);
+    }
+    .sp-stat { padding: 22px 20px 0 0; }
+    .sp-stat + .sp-stat { padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.18); }
+    .sp-stat-num {
+      display: block; font-family: var(--f-display); font-weight: 800; color: var(--c-white);
+      font-size: clamp(30px, 3.4vw, 44px); line-height: 1; font-variant-numeric: tabular-nums;
+    }
+    .sp-stat-label { display: block; color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 8px; line-height: 1.4; }
+
+    /* ---------- Photo placeholder ---------- */
+    .sp-ph {
+      position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; padding: 20px; text-align: center; color: rgba(255,255,255,0.85);
+      background:
+        repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 14px, transparent 14px 28px),
+        linear-gradient(160deg, #26262A 0%, var(--c-black) 100%);
+      outline: 2px dashed rgba(255,255,255,0.28); outline-offset: -12px;
+    }
+    .sp-ph svg { width: 34px; height: 34px; color: var(--c-red); }
+    .sp-ph-title { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 20px; letter-spacing: 0.4px; color: var(--c-white); }
+    .sp-ph-spec { font-size: 12px; letter-spacing: 0.4px; color: rgba(255,255,255,0.6); max-width: 300px; line-height: 1.5; }
+    .sp-media { position: relative; overflow: hidden; border-radius: 12px; background: var(--c-black); }
+    .sp-media > img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ---------- Venue cards ---------- */
+    .sp-venue-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 40px; }
+    .sp-venue {
+      background: var(--c-white); border-radius: 14px; overflow: hidden;
+      box-shadow: 0 8px 24px rgba(11,11,12,0.06); display: flex; flex-direction: column;
+    }
+    .sp-venue .sp-media { aspect-ratio: 4 / 3; border-radius: 0; }
+    .sp-venue-body { padding: 22px 22px 26px; border-top: 4px solid var(--c-red); }
+    .sp-venue h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 22px; line-height: 1.1; margin-bottom: 8px; }
+    .sp-venue p { color: var(--c-grey-mid); font-size: 15px; line-height: 1.6; }
+
+    /* ---------- Who sees your board ---------- */
+    .sp-split { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: center; }
+    .sp-split > * { min-width: 0; }
+    .sp-copy p { color: var(--c-grey-mid); font-size: 17px; line-height: 1.7; margin-bottom: 16px; }
+    .sp-copy p strong { color: var(--c-black); }
+    .sp-audience { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 24px; }
+    .sp-audience li {
+      background: var(--c-grey-light); border-radius: 8px; padding: 12px 14px;
+      font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 10px;
+    }
+    .sp-audience li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c-red); flex-shrink: 0; }
+    .sp-split .sp-media { aspect-ratio: 16 / 10; }
+
+    /* ---------- Packages ---------- */
+    .sp-pkg-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px 40px; }
+    .sp-term {
+      display: inline-flex; background: var(--c-white); border-radius: 999px; padding: 4px;
+      box-shadow: inset 0 0 0 1.5px rgba(11,11,12,0.12);
+    }
+    .sp-term button {
+      border: none; background: none; cursor: pointer; border-radius: 999px; padding: 10px 18px;
+      font-family: var(--f-body); font-weight: 700; font-size: 14px; color: var(--c-grey-mid);
+      transition: background 0.2s var(--ease), color 0.2s var(--ease);
+    }
+    .sp-term button[aria-pressed="true"] { background: var(--c-black); color: var(--c-white); }
+    .sp-term .save { color: var(--c-red); }
+    .sp-term button[aria-pressed="true"] .save { color: #FF6B7F; }
+
+    .sp-price-grid { grid-template-columns: repeat(3, 1fr); align-items: stretch; }
+    .sp-price-grid .price-card { padding: 30px 26px; }
+    .price-card .price { font-variant-numeric: tabular-nums; }
+    .price-card .per { min-height: 2.6em; }
+    .sp-feat { list-style: none; display: grid; gap: 10px; margin: 22px 0 26px; padding-top: 20px; border-top: 1px solid rgba(11,11,12,0.08); flex: 1; }
+    .sp-feat li { position: relative; padding-left: 26px; font-size: 15px; line-height: 1.5; }
+    .sp-feat li::before {
+      content: ""; position: absolute; left: 0; top: 4px; width: 14px; height: 8px;
+      border-left: 2.5px solid var(--c-red); border-bottom: 2.5px solid var(--c-red); transform: rotate(-45deg);
+    }
+    .sp-feat li span { color: var(--c-grey-mid); }
+    .sp-card-btn { width: 100%; }
+    .btn-dark {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      background: var(--c-black); color: var(--c-white); border-radius: 6px;
+      font-family: var(--f-display); font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.6px;
+      padding: 15px 30px; transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+    }
+    .btn-dark:hover { background: var(--c-red); transform: translateY(-2px); }
+
+    /* Grandstand naming partner */
+    .sp-naming {
+      margin-top: 28px; display: grid; grid-template-columns: 1.05fr 1fr; overflow: hidden;
+      background: var(--c-black); color: var(--c-white); border-radius: 16px; border: 2px solid var(--c-gold);
+    }
+    .sp-naming > * { min-width: 0; }
+    .sp-naming .sp-media { border-radius: 0; min-height: 360px; }
+    .sp-naming-body { padding: 40px 40px 44px; display: flex; flex-direction: column; }
+    .sp-naming-tag {
+      align-self: flex-start; color: var(--c-gold); border: 1px solid var(--c-gold); background: var(--c-gold-soft);
+      font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; margin-bottom: 16px;
+    }
+    .sp-naming h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(30px, 3.4vw, 42px); line-height: 1.02; }
+    .sp-naming-price { font-family: var(--f-display); font-weight: 800; font-size: 28px; color: var(--c-red); margin-top: 8px; }
+    .sp-naming-term { color: rgba(255,255,255,0.65); font-size: 14px; margin-top: 2px; }
+    .sp-naming p.sp-naming-pitch { color: rgba(255,255,255,0.8); font-size: 16px; line-height: 1.65; margin-top: 18px; }
+    .sp-naming .sp-feat { border-top-color: rgba(255,255,255,0.14); margin-bottom: 28px; }
+    .sp-naming .sp-feat li::before { border-color: var(--c-gold); }
+    .sp-naming .btn-red { align-self: flex-start; }
+
+    /* Included in every package */
+    .sp-included {
+      margin-top: 28px; display: grid; grid-template-columns: auto 1fr; gap: 20px 40px; align-items: center;
+      background: var(--c-white); border-radius: 14px; padding: 26px 30px; border-left: 4px solid var(--c-red);
+      box-shadow: 0 8px 24px rgba(11,11,12,0.05);
+    }
+    .sp-included h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 22px; line-height: 1.1; }
+    .sp-included ul { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 24px; }
+    .sp-included li { font-size: 14px; line-height: 1.5; color: var(--c-grey-mid); }
+    .sp-included li strong { display: block; color: var(--c-black); font-size: 15px; margin-bottom: 2px; }
+
+    /* ---------- Compare table ---------- */
+    .sp-table-wrap { overflow-x: auto; margin-top: 36px; border-radius: 14px; box-shadow: 0 8px 24px rgba(11,11,12,0.06); }
+    .sp-table { width: 100%; min-width: 720px; border-collapse: collapse; background: var(--c-white); font-size: 15px; }
+    .sp-table th, .sp-table td { padding: 16px 18px; text-align: center; border-bottom: 1px solid rgba(11,11,12,0.07); }
+    .sp-table th:first-child, .sp-table td:first-child { text-align: left; font-weight: 600; }
+    .sp-table thead th {
+      font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 18px; letter-spacing: 0.3px;
+      background: var(--c-black); color: var(--c-white); vertical-align: bottom;
+    }
+    .sp-table thead th small { display: block; font-family: var(--f-body); font-weight: 600; text-transform: none; font-size: 13px; color: rgba(255,255,255,0.65); letter-spacing: 0; margin-top: 2px; }
+    .sp-table thead th.is-premier { background: var(--c-red); }
+    .sp-table thead th.is-naming { box-shadow: inset 0 -4px 0 var(--c-gold); }
+    .sp-table td { font-variant-numeric: tabular-nums; }
+    .sp-table tbody tr:nth-child(even) td { background: #FAFAF9; }
+    .sp-yes { color: var(--c-red); font-weight: 800; }
+    .sp-no { color: rgba(11,11,12,0.25); }
+
+    /* ---------- Gives back: community programmes ---------- */
+    .sp-gb-head { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 56px; align-items: end; }
+    .sp-gb-head > * { min-width: 0; }
+    .sp-gb-head .about-title { margin-bottom: 0; }
+    .sp-gb-intro { color: rgba(255,255,255,0.88); font-size: 17px; line-height: 1.7; }
+    .sp-prog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 48px; }
+    .sp-prog {
+      display: flex; flex-direction: column; min-width: 0; background: var(--c-white); color: var(--c-black);
+      border-radius: 14px; overflow: hidden; box-shadow: 0 16px 40px rgba(11,11,12,0.25);
+      transition: transform 0.25s var(--ease);
+    }
+    a.sp-prog:hover { transform: translateY(-4px); }
+    .sp-prog-media { position: relative; aspect-ratio: 4 / 3; background: var(--c-black); overflow: hidden; }
+    .sp-prog-media > img { width: 100%; height: 100%; object-fit: cover; object-position: center 55%; }
+    .sp-prog-body { padding: 22px 24px 26px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .sp-prog-when { color: var(--c-red); font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    .sp-prog h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 28px; line-height: 1.05; }
+    .sp-prog p { color: var(--c-grey-mid); font-size: 15px; line-height: 1.6; }
+    .sp-prog-link { margin-top: auto; padding-top: 10px; font-weight: 700; font-size: 14px; color: var(--c-red); }
+    .sp-gb-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px 32px; margin-top: 32px; }
+    .sp-gb-also { color: rgba(255,255,255,0.88); font-size: 15px; line-height: 1.6; max-width: 760px; }
+    .sp-gb-also strong { color: var(--c-white); }
+    .sp-charity-no { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+    /* ---------- Enquiry ---------- */
+    .sp-enquire-grid { display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: start; margin-top: 36px; }
+    .sp-enquire-grid > * { min-width: 0; }
+    .sp-contact {
+      position: sticky; top: calc(var(--header-h) + 24px);
+      background: var(--c-black); color: var(--c-white); border-radius: 14px; padding: 28px; border-top: 4px solid var(--c-red);
+    }
+    .sp-contact-label { color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; }
+    .sp-contact h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 30px; line-height: 1; margin: 8px 0 4px; }
+    .sp-contact-role { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px; }
+    .sp-contact a.sp-contact-line { display: block; color: var(--c-white); font-weight: 700; font-size: 15px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.12); overflow-wrap: anywhere; }
+    .sp-contact a.sp-contact-line:hover { color: #FF6B7F; }
+    .sp-contact-note { color: rgba(255,255,255,0.6); font-size: 13px; line-height: 1.6; margin-top: 14px; }
+    .option-cards.sp-pkg-options { grid-template-columns: 1fr 1fr; }
+    .sp-pkg-options .oc-tag ~ .oc-title { padding-right: 72px; }
+
+    /* ---------- FAQ ---------- */
+    .sp-faq { display: grid; gap: 12px; margin-top: 32px; max-width: 900px; }
+    .sp-faq details { background: var(--c-white); border-radius: 12px; box-shadow: 0 6px 18px rgba(11,11,12,0.05); }
+    .sp-faq summary {
+      cursor: pointer; list-style: none; padding: 20px 56px 20px 22px; position: relative;
+      font-weight: 700; font-size: 16px;
+    }
+    .sp-faq summary::-webkit-details-marker { display: none; }
+    .sp-faq summary::after {
+      content: "+"; position: absolute; right: 22px; top: 50%; transform: translateY(-50%);
+      font-family: var(--f-display); font-weight: 800; font-size: 26px; color: var(--c-red);
+    }
+    .sp-faq details[open] summary::after { content: "–"; }
+    .sp-faq details p { padding: 0 22px 22px; color: var(--c-grey-mid); font-size: 15px; line-height: 1.7; }
+
+    /* Content still to confirm — highlighted so it's easy to spot in review.
+       Remove the class once the wording is final. */
+    .tbc { background: #FFF1B8; color: #5C4400; border-radius: 3px; padding: 0 4px; font-weight: 600; }
+    .about .tbc, .sp-naming .tbc { background: rgba(255,241,184,0.92); }
+
+    .steps.sp-steps { grid-template-columns: repeat(4, 1fr); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1100px) {
+      .sp-venue-grid { grid-template-columns: 1fr 1fr; }
+      .sp-included { grid-template-columns: 1fr; }
+      .sp-included ul { grid-template-columns: 1fr 1fr; }
+      .sp-enquire-grid { grid-template-columns: 1fr; }
+      .sp-contact { position: static; }
+      .steps.sp-steps { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 1000px) {
+      .sp-price-grid { grid-template-columns: 1fr; max-width: 560px; }
+      .sp-naming { grid-template-columns: 1fr; }
+      .sp-naming .sp-media { min-height: 0; aspect-ratio: 16 / 9; }
+      .sp-split, .sp-gb-head { grid-template-columns: 1fr; gap: 36px; }
+      .sp-prog-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      .sp-stats { grid-template-columns: 1fr 1fr; }
+      .sp-stat:nth-child(3) { padding-left: 0; border-left: none; }
+      .sp-stat:nth-child(n+3) { padding-top: 18px; }
+    }
+    @media (max-width: 640px) {
+      .sp-prog-grid,
+      .sp-venue-grid, .sp-audience, .sp-included ul, .option-cards.sp-pkg-options { grid-template-columns: 1fr; }
+      .sp-naming-body { padding: 28px 22px 32px; }
+      .sp-naming .btn-red { align-self: stretch; }
+      .sp-term { width: 100%; }
+      .sp-term button { flex: 1; padding: 10px 8px; }
+      .btn-dark { width: 100%; }
+      .steps.sp-steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="sponsorship.html">Sponsorship</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="page-hero">
+      <div class="page-hero-media" aria-hidden="true">
+        <img src="images/Northwoodmain.jpg" alt="">
+      </div>
+      <div class="page-hero-inner">
+        <p class="sp-eyebrow">Trackside &amp; Facility Advertising</p>
+        <h1 class="page-hero-title">Want your business seen by <span class="hl">100,000+</span> people a year?</h1>
+        <p class="page-hero-sub">Put your brand on display every day at Staffordshire's leading athletics venue. Northwood is owned by a registered charity, so every pound of sponsorship goes back into keeping sport accessible for local people.</p>
+        <div class="page-hero-actions">
+          <a href="#packages" class="btn-red">View Packages</a>
+          <a href="#enquire" class="btn-outline-light">Make an Enquiry</a>
+        </div>
+      </div>
+      <div class="sp-stats">
+        <div class="sp-stat"><span class="sp-stat-num">100,000+</span><span class="sp-stat-label">Visitors through our gates each year</span></div>
+        <div class="sp-stat"><span class="sp-stat-num">750</span><span class="sp-stat-label">Seats in the grandstand</span></div>
+        <div class="sp-stat"><span class="sp-stat-num">400m</span><span class="sp-stat-label">National-standard athletics track</span></div>
+        <div class="sp-stat"><span class="sp-stat-num">7 days</span><span class="sp-stat-label">A week your board is on show</span></div>
+      </div>
+    </section>
+
+    <!-- ============ THE VENUE ============ -->
+    <section class="section find-us" id="venue">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Why Northwood</p>
+        <h2 class="section-title">One Venue. Four Audiences.</h2>
+        <p class="lede">Your board sits where people actually spend their time: on the track, at the pitch side, in the stand and through the doors of the sports hall and gym.</p>
+
+        <div class="sp-venue-grid">
+          <article class="sp-venue">
+            <div class="sp-media">
+              <img src="images/grandstand.jpg" alt="The 750-seat grandstand at Northwood Stadium, looking out over the track and pitch" loading="lazy" style="object-position: 68% center;">
+            </div>
+            <div class="sp-venue-body">
+              <h3>750-Seat Stand</h3>
+              <p>Regional athletics events, school sports days and festivals all year round.</p>
+            </div>
+          </article>
+          <article class="sp-venue">
+            <div class="sp-media"><img src="images/track-lanes.jpg" alt="Lane markings on the Northwood athletics track" loading="lazy"></div>
+            <div class="sp-venue-body">
+              <h3>National-Standard Track</h3>
+              <p>Home of City of Stoke AC, with athletes training here week in, week out.</p>
+            </div>
+          </article>
+          <article class="sp-venue">
+            <div class="sp-media"><img src="images/3g-pitch.jpg" alt="The floodlit 3G pitch at Northwood Stadium" loading="lazy" style="object-position: 70% center;"></div>
+            <div class="sp-venue-body">
+              <h3>FA-Accredited 3G Pitch</h3>
+              <p>Full-size and floodlit, with football leagues and fixtures every week.</p>
+            </div>
+          </article>
+          <article class="sp-venue">
+            <div class="sp-media"><!-- TEMPORARY PHOTO: replace with the photographer's sports hall shot --><img src="images/sports-hall.jpg" alt="The 1,600m² Northwood sports hall" loading="lazy" style="object-position: center 75%;"></div>
+            <div class="sp-venue-body">
+              <h3>Sports Hall, Squash &amp; Gym</h3>
+              <p>Indoor sport, members and casual visitors through the door daily.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHO SEES YOUR BOARD ============ -->
+    <section class="section" id="audience">
+      <div class="section-inner sp-split">
+        <div class="sp-copy">
+          <p class="section-eyebrow">— Who Sees Your Board</p>
+          <h2 class="section-title">Local People, Every Single Week</h2>
+          <p>Local <strong>families, schools, clubs and leagues</strong> use Northwood every week. On event days they're joined by visiting athletes and spectators from across Stoke-on-Trent, Staffordshire and beyond.</p>
+          <p>That makes a Northwood board one of the most direct ways to put a local business in front of the community it serves.</p>
+          <ul class="sp-audience">
+            <li>Families &amp; parents</li>
+            <li>Schools &amp; colleges</li>
+            <li>Football clubs &amp; leagues</li>
+            <li>Athletes &amp; coaches</li>
+            <li>Gym &amp; track members</li>
+            <li>Event-day spectators</li>
+          </ul>
+        </div>
+        <div class="sp-media">
+          <img src="images/trackside-board.jpg" alt="A Northwood advertising board on the trackside barrier, next to an FC Hanley board" loading="lazy" style="object-position: center 55%;">
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PACKAGES ============ -->
+    <section class="section find-us" id="packages">
+      <div class="section-inner">
+        <div class="sp-pkg-head">
+          <div>
+            <p class="section-eyebrow">— Choose Your Package</p>
+            <h2 class="section-title">Our Sponsorship Packages</h2>
+            <p class="lede">Every package includes board printing. Commit for two years and save 10%.</p>
+          </div>
+          <div class="sp-term" role="group" aria-label="Show prices for">
+            <button type="button" id="termYear" aria-pressed="true" data-term="1">1 year</button>
+            <button type="button" id="termTwo" aria-pressed="false" data-term="2">2 years <span class="save">· save 10%</span></button>
+          </div>
+        </div>
+
+        <div class="price-grid sp-price-grid">
+          <!-- Tier 1 -->
+          <div class="price-card">
+            <h3>Supporter</h3>
+            <p class="who">Get your name on the board</p>
+            <div class="price" data-price="400">£400</div>
+            <p class="per">per year</p>
+            <ul class="sp-feat">
+              <li>1 board, standard position <span>(track or 3G)</span></li>
+              <li>Announcement image on our socials</li>
+              <li>Featured in our Tuesday Sponsor Spotlight</li>
+              <li>Member of our partnership network</li>
+            </ul>
+            <a href="#enquire" class="btn-dark sp-card-btn" data-package="Supporter">Enquire</a>
+          </div>
+          <!-- Tier 2 -->
+          <div class="price-card">
+            <h3>Community Partner</h3>
+            <p class="who">More boards, more visibility</p>
+            <div class="price" data-price="750">£750</div>
+            <p class="per">per year</p>
+            <ul class="sp-feat">
+              <li>2 boards, standard positions <span>(track or 3G)</span></li>
+              <li>Announcement image on our socials</li>
+              <li>Tuesday Sponsor Spotlight twice a year</li>
+              <li>Member of our partnership network</li>
+              <li>Logo on marketing sent to our network</li>
+              <li>20 free gym or track passes <span>(worth £100)</span></li>
+            </ul>
+            <a href="#enquire" class="btn-dark sp-card-btn" data-package="Community Partner">Enquire</a>
+          </div>
+          <!-- Tier 3 -->
+          <div class="price-card featured">
+            <span class="badge">Limited to 6 partners</span>
+            <h3>Premier Partner</h3>
+            <p class="who">The best positions in the venue</p>
+            <div class="price" data-price="1800">£1,800</div>
+            <p class="per">per year</p>
+            <ul class="sp-feat">
+              <li>4 boards in premium positions</li>
+              <li>Video announcement on our socials</li>
+              <li>Tuesday Sponsor Spotlight every quarter</li>
+              <li>Your logo on all our marketing</li>
+              <li>50 free gym or track passes <span>(worth £250)</span></li>
+            </ul>
+            <a href="#enquire" class="btn-red sp-card-btn" data-package="Premier Partner">Enquire</a>
+          </div>
+        </div>
+
+        <!-- Top tier: Grandstand naming -->
+        <div class="sp-naming">
+          <div class="sp-media">
+            <!-- PHOTO TO COME: grandstand front-on, showing where the naming fascia would sit -->
+            <div class="sp-ph" role="img" aria-label="Photo to come: the grandstand, front-on">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span class="sp-ph-title">Grandstand, front-on</span>
+              <span class="sp-ph-spec">Straight-on view showing the roof fascia where the naming sign would go · landscape · min 2000px</span>
+            </div>
+          </div>
+          <div class="sp-naming-body">
+            <span class="sp-naming-tag">One partner only</span>
+            <h3>Grandstand Naming Partner</h3>
+            <p class="sp-naming-price">Price on application</p>
+            <p class="sp-naming-term">Minimum 2-year contract</p>
+            <p class="sp-naming-pitch">Put your name on the 750-seat grandstand, the landmark of the venue and the backdrop to every event-day photo.</p>
+            <ul class="sp-feat">
+              <li>Grandstand naming rights, signage included</li>
+              <li>Premium boards at all main entrances</li>
+              <li>Video launch post across our socials</li>
+              <li>Monthly Tuesday Sponsor Spotlight</li>
+              <li>Your logo beside ours on all marketing</li>
+              <li>100 free gym or track passes <span>(worth £500)</span></li>
+            </ul>
+            <a href="#enquire" class="btn-red" data-package="Grandstand Naming Partner">Talk to Us About Naming Rights</a>
+          </div>
+        </div>
+
+        <!-- Included in every package -->
+        <div class="sp-included">
+          <h3>Included in<br>every package</h3>
+          <ul>
+            <li><strong>Board printing</strong>Included in the price</li>
+            <li><strong>First refusal</strong>Keep your board positions when you renew</li>
+            <li><strong>10% off</strong>When you commit for two years</li>
+            <li><strong>Employee passes</strong>Valid for 12 months</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMPARE ============ -->
+    <section class="section" id="compare">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Side by Side</p>
+        <h2 class="section-title">Compare Packages</h2>
+        <div class="sp-table-wrap">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th scope="col">&nbsp;</th>
+                <th scope="col">Supporter<small>£400 / year</small></th>
+                <th scope="col">Community Partner<small>£750 / year</small></th>
+                <th scope="col" class="is-premier">Premier Partner<small>£1,800 / year</small></th>
+                <th scope="col" class="is-naming">Grandstand Naming<small>On application</small></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Advertising boards</th><td>1</td><td>2</td><td>4</td><td>Grandstand + main entrances</td></tr>
+              <tr><th scope="row">Board positions</th><td>Standard</td><td>Standard</td><td>Premium</td><td>Premium</td></tr>
+              <tr><th scope="row">Launch on our socials</th><td>Image</td><td>Image</td><td>Video</td><td>Video</td></tr>
+              <tr><th scope="row">Tuesday Sponsor Spotlight</th><td>Featured</td><td>Twice a year</td><td>Quarterly</td><td>Monthly</td></tr>
+              <tr><th scope="row">Your logo on our marketing</th><td class="sp-no">—</td><td>Network mailings</td><td>All marketing</td><td>Beside ours, all marketing</td></tr>
+              <tr><th scope="row">Free gym or track passes</th><td class="sp-no">—</td><td>20</td><td>50</td><td>100</td></tr>
+              <tr><th scope="row">Partnership network</th><td class="sp-yes">✓</td><td class="sp-yes">✓</td><td class="sp-yes">✓</td><td class="sp-yes">✓</td></tr>
+              <tr><th scope="row">Board printing included</th><td class="sp-yes">✓</td><td class="sp-yes">✓</td><td class="sp-yes">✓</td><td class="sp-yes">✓</td></tr>
+              <tr><th scope="row">Minimum term</th><td>1 year</td><td>1 year</td><td>1 year</td><td>2 years</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SPONSORSHIP THAT GIVES BACK ============ -->
+    <section class="section about" id="gives-back">
+      <img src="images/logored.png" alt="" class="about-mark" aria-hidden="true">
+      <div class="section-inner about-inner">
+        <div class="sp-gb-head">
+          <div>
+            <p class="about-label">— Sponsorship That Gives Back</p>
+            <h2 class="about-title">Your Sponsorship Keeps Community Sport Going</h2>
+          </div>
+          <p class="sp-gb-intro">Northwood Community Sports is wholly owned by City of Stoke Athletics and Community Sports, a registered charity. Sponsorship income goes straight back into the community programmes we run every week, keeping them free or low-cost for the people who need them most.</p>
+        </div>
+
+        <div class="sp-prog-grid">
+          <a class="sp-prog" href="youthclub.html">
+            <div class="sp-prog-media"><img src="images/5.png" alt="Two young people celebrating a goal at Northwood Youth Club" loading="lazy"></div>
+            <div class="sp-prog-body">
+              <span class="sp-prog-when">Mondays &amp; Fridays · 4–6pm · Free</span>
+              <h3>Youth Club</h3>
+              <p>Sport, games and youth work for local young people, delivered with Dizzy Heights.</p>
+              <span class="sp-prog-link">See the Youth Club →</span>
+            </div>
+          </a>
+          <div class="sp-prog">
+            <div class="sp-prog-media">
+              <img src="images/walking-netball.jpg" alt="The Northwood walking netball group in the sports hall" loading="lazy" style="object-position: center 55%;">
+            </div>
+            <div class="sp-prog-body">
+              <span class="sp-prog-when">Thursdays · 5:30–7:00pm</span>
+              <h3>Walking Netball</h3>
+              <p>A gentle, social version of netball for all ages and abilities, run with England Netball and Stoke City Foundation.</p>
+            </div>
+          </div>
+          <div class="sp-prog">
+            <div class="sp-prog-media">
+              <img src="images/track-social.jpg" alt="Runners from the Northwood track social lined up on the track in front of the grandstand" loading="lazy" style="object-position: center 62%;">
+            </div>
+            <div class="sp-prog-body">
+              <span class="sp-prog-when">Last Monday of the month · 6:30–8:30pm · Free</span>
+              <h3>Track Social</h3>
+              <p>Relaxed, social running on the track, open to every pace and every ability.</p>
+              <a class="sp-prog-link" href="tracksocial.html">See Track Social →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="sp-gb-foot">
+          <p class="sp-gb-also"><strong>Also at Northwood:</strong> Funetics junior athletics, Walking Football, Football Welcomes Refugees and Wednesday Night Football.</p>
+          <p class="sp-charity-no">City of Stoke Athletics and Community Sports Limited · Registered charity no. 1195927</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="section find-us" id="how">
+      <div class="section-inner">
+        <p class="section-eyebrow">— How It Works</p>
+        <h2 class="section-title">From Enquiry to Board in Four Steps</h2>
+        <ol class="steps sp-steps">
+          <li><strong>Send an enquiry</strong>Pick a package below, or tell us what you're after and we'll suggest one.</li>
+          <li><strong>Choose your positions</strong>We'll confirm availability and show you where your boards will sit.</li>
+          <li><strong>We print and install</strong>Send us your logo. Printing is included and we'll get your board up.</li>
+          <li><strong>We announce you</strong>Your launch post goes out on our socials, followed by your Tuesday Sponsor Spotlight.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ ENQUIRY FORM ============ -->
+    <section class="section" id="enquire">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Get Started</p>
+        <h2 class="section-title">Make a Sponsorship Enquiry</h2>
+        <p class="lede">Tell us a little about your business and we'll come back to you within <span class="tbc">2 working days</span>.</p>
+
+        <div class="sp-enquire-grid">
+          <div>
+            <!-- FORMSPREE: replace YOUR_FORM_ID with the sponsorship form's ID from formspree.io -->
+            <form class="booking-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+              <input type="hidden" name="_subject" value="New sponsorship enquiry">
+              <div class="hp-field" aria-hidden="true"><label>Leave this empty <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
+
+              <fieldset class="form-section">
+                <legend><span class="form-section-num">1</span>Your Business</legend>
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="sp-business">Business name <span class="req">*</span></label>
+                    <input type="text" id="sp-business" name="Business name" autocomplete="organization" required>
+                  </div>
+                  <div class="field">
+                    <label for="sp-website">Website or social page</label>
+                    <input type="text" id="sp-website" name="Website" placeholder="e.g. www.yourbusiness.co.uk">
+                  </div>
+                  <div class="field">
+                    <label for="sp-name">Your name <span class="req">*</span></label>
+                    <input type="text" id="sp-name" name="Contact name" autocomplete="name" required>
+                  </div>
+                  <div class="field">
+                    <label for="sp-phone">Phone number <span class="req">*</span></label>
+                    <input type="tel" id="sp-phone" name="Phone number" autocomplete="tel" required>
+                  </div>
+                  <div class="field full">
+                    <label for="sp-email">Email address <span class="req">*</span></label>
+                    <input type="email" id="sp-email" name="email" autocomplete="email" required>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="form-section">
+                <legend><span class="form-section-num">2</span>Package</legend>
+                <span class="group-label" id="sp-pkg-label">Which package are you interested in? <span class="req">*</span></span>
+                <div class="option-cards sp-pkg-options" data-require-one role="radiogroup" aria-labelledby="sp-pkg-label">
+                  <label class="option-card"><input type="radio" name="Package" value="Supporter" id="pkg-supporter"><span class="oc-title">Supporter</span><span class="oc-sub">1 board</span><span class="oc-price">£400 / year</span></label>
+                  <label class="option-card"><input type="radio" name="Package" value="Community Partner" id="pkg-community"><span class="oc-title">Community Partner</span><span class="oc-sub">2 boards + 20 passes</span><span class="oc-price">£750 / year</span></label>
+                  <label class="option-card"><input type="radio" name="Package" value="Premier Partner" id="pkg-premier"><span class="oc-tag">Limited</span><span class="oc-title">Premier Partner</span><span class="oc-sub">4 premium boards + 50 passes</span><span class="oc-price">£1,800 / year</span></label>
+                  <label class="option-card"><input type="radio" name="Package" value="Grandstand Naming Partner" id="pkg-naming"><span class="oc-title">Grandstand Naming</span><span class="oc-sub">Naming rights, 2-year minimum</span><span class="oc-price">Price on application</span></label>
+                  <label class="option-card"><input type="radio" name="Package" value="Not sure yet" id="pkg-unsure"><span class="oc-title">Not sure yet</span><span class="oc-sub">We'll help you choose</span></label>
+                </div>
+                <p class="group-error">Please choose a package, or pick "Not sure yet".</p>
+
+                <div class="form-grid" style="margin-top: 22px;">
+                  <div class="field full">
+                    <span class="group-label" id="sp-term-label">How long would you like to sponsor for?</span>
+                    <div class="choice-group" role="radiogroup" aria-labelledby="sp-term-label">
+                      <label class="choice"><input type="radio" name="Term" value="1 year">1 year</label>
+                      <label class="choice"><input type="radio" name="Term" value="2 years (10% off)">2 years (10% off)</label>
+                      <label class="choice"><input type="radio" name="Term" value="Not sure">Not sure</label>
+                    </div>
+                  </div>
+                  <div class="field full">
+                    <span class="group-label" id="sp-pos-label">Where would you like your board?</span>
+                    <div class="choice-group" aria-labelledby="sp-pos-label">
+                      <label class="choice"><input type="checkbox" name="Board location" value="Trackside">Trackside</label>
+                      <label class="choice"><input type="checkbox" name="Board location" value="3G pitch">3G pitch</label>
+                      <label class="choice"><input type="checkbox" name="Board location" value="No preference">No preference</label>
+                    </div>
+                  </div>
+                  <div class="field full">
+                    <label for="sp-msg">Anything else we should know?</label>
+                    <textarea id="sp-msg" name="Message" placeholder="e.g. your goals, the audience you want to reach, a start date"></textarea>
+                  </div>
+                </div>
+              </fieldset>
+
+              <div class="form-submit-row">
+                <button type="submit" class="btn-red">Send Enquiry</button>
+                <p class="form-error-summary" role="alert"></p>
+              </div>
+            </form>
+            <template class="form-success-template">
+              <div class="form-success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></div>
+              <h3>Thanks, We've Got It</h3>
+              <p>Tom from our partnerships team will be in touch shortly to talk through packages and board positions.</p>
+            </template>
+          </div>
+
+          <aside class="sp-contact" aria-label="Sponsorship contact">
+            <p class="sp-contact-label">Talk to a person</p>
+            <h3>Tom Saunders</h3>
+            <p class="sp-contact-role">Partnerships &amp; Sponsorship</p>
+            <a class="sp-contact-line" href="mailto:tom.saunders@northwoodstadium.co.uk">tom.saunders@northwoodstadium.co.uk</a>
+            <a class="sp-contact-line" href="tel:+447547438786">07547 438786</a>
+            <p class="sp-contact-note">Happy to meet at the stadium and walk you round the board positions before you decide.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="section find-us" id="faq">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Questions</p>
+        <h2 class="section-title">Sponsorship FAQs</h2>
+        <div class="sp-faq">
+          <details>
+            <summary>How big are the boards?</summary>
+            <p>Each board is <span class="tbc">[size, e.g. 2.4m × 0.6m]</span>, printed on <span class="tbc">[material]</span> and fixed along the track or 3G pitch-side barrier.</p>
+          </details>
+          <details>
+            <summary>Do I need to design my own board?</summary>
+            <p>Send us your logo and brand colours. Printing is included in every package, and <span class="tbc">we'll prepare the artwork for you at no extra cost</span>.</p>
+          </details>
+          <details>
+            <summary>How does the 2-year discount work?</summary>
+            <p>Commit for two years and you get 10% off. A Supporter package comes to £720 over two years instead of £800, a Community Partner package £1,350 instead of £1,500, and a Premier Partner package £3,240 instead of £3,600.</p>
+          </details>
+          <details>
+            <summary>What happens when my sponsorship ends?</summary>
+            <p>You get first refusal to keep your board positions when you renew, so nobody else can take your spot while you decide.</p>
+          </details>
+          <details>
+            <summary>How do the free gym and track passes work?</summary>
+            <p>Passes are for your employees and are valid for 12 months from the start of your sponsorship. Each pass can be used for <span class="tbc">[one gym or track session]</span>.</p>
+          </details>
+          <details>
+            <summary>Do prices include VAT?</summary>
+            <p><span class="tbc">[Confirm VAT position with the finance team]</span></p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="youthclub.html">Youth Club</a>
+          <a href="tracksocial.html">Track Social</a>
+          <a href="events.html">Events</a>
+          <a href="sponsorship.html">Sponsorship</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="subpage.js"></script>
+  <script>
+  (function () {
+    // ── Package prices: 1 year vs 2 years (10% off) ──────────────
+    const termBtns = document.querySelectorAll(".sp-term button");
+    const fmt = n => "£" + n.toLocaleString("en-GB");
+    function setTerm(term) {
+      termBtns.forEach(b => b.setAttribute("aria-pressed", b.dataset.term === term ? "true" : "false"));
+      document.querySelectorAll(".price[data-price]").forEach(el => {
+        const yearly = Number(el.dataset.price);
+        const per = el.nextElementSibling;
+        if (term === "2") {
+          const perYear = Math.round(yearly * 0.9);
+          el.textContent = fmt(perYear);
+          per.textContent = "per year on a 2-year deal (" + fmt(perYear * 2) + " total, save " + fmt(yearly * 2 - perYear * 2) + ")";
+        } else {
+          el.textContent = fmt(yearly);
+          per.textContent = "per year";
+        }
+      });
+    }
+    termBtns.forEach(b => b.addEventListener("click", () => setTerm(b.dataset.term)));
+
+    // ── "Enquire" buttons pre-select the package in the form ─────
+    document.querySelectorAll("[data-package]").forEach(link => {
+      link.addEventListener("click", () => {
+        const radio = document.querySelector('input[name="Package"][value="' + link.dataset.package + '"]');
+        if (radio) { radio.checked = true; radio.dispatchEvent(new Event("change", { bubbles: true })); }
+        const two = document.getElementById("termTwo");
+        if (two && two.getAttribute("aria-pressed") === "true") {
+          const t = document.querySelector('input[name="Term"][value^="2 years"]');
+          if (t) t.checked = true;
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
