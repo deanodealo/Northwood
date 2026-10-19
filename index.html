@@ -1241,11 +1241,13 @@
       return BRAND_ACCENTS.includes(h) ? h : (LEGACY_ACCENTS[h] || "#DA3832");
     }
 
-    // Youth Club is a permanent card, not a Firestore activity: registration
-    // is handled by a third party (eequ, linked from youthclub.html), so it
-    // must not go through activitybooking.html, and staff shouldn't be able
-    // to edit or disable it from Manage Activities. It always shows first.
-    // To change it, edit this block.
+    // Permanent cards: these are NOT Firestore activities, so staff can't
+    // edit or disable them from Manage Activities, and they don't go through
+    // activitybooking.html. They always show first, in this order, whatever
+    // Firestore returns. To change one, edit this block.
+    //  - Youth Club: registration is handled by a third party (eequ, linked
+    //    from youthclub.html).
+    //  - Track Social: free monthly event with its own page.
     const YOUTH_CLUB_CARD = `
           <div class="activity-feature" style="--accent:#377BBA">
             <div class="activity-feature-media"><img src="images/1.png" alt="Youth Club at Northwood" style="object-position: center bottom;"></div>
@@ -1256,15 +1258,28 @@
             </div>
           </div>
         `;
+    // The Track Social logo is a transparent wordmark, so it sits whole
+    // (contain, not cover) on a black panel rather than being cropped.
+    const TRACK_SOCIAL_CARD = `
+          <div class="activity-feature" style="--accent:#1A1818">
+            <div class="activity-feature-media" style="background:#1A1818; display:flex; align-items:center; justify-content:center; padding:32px;"><img src="images/track-social-logo.PNG" alt="Track Social at Northwood Stadium" style="object-fit:contain; height:auto; max-height:260px;"></div>
+            <div class="activity-feature-content">
+              <h3 class="activity-feature-title">Track Social</h3>
+              <p class="activity-feature-body">A free monthly community running event for all abilities, with music, food and a social after the run.</p>
+              <a href="tracksocial.html" class="activity-feature-link">Find out more &amp; register →</a>
+            </div>
+          </div>
+        `;
+    const PERMANENT_CARDS = YOUTH_CLUB_CARD + TRACK_SOCIAL_CARD;
     const MSG_STYLE = 'color:var(--c-grey-mid); font-family:var(--f-body);';
 
     function renderHomeActivities(activities) {
       if (!activities.length) {
-        // Nothing open in Firestore: Youth Club still shows on its own.
-        featuresEl.innerHTML = YOUTH_CLUB_CARD;
+        // Nothing open in Firestore: the permanent cards still show on their own.
+        featuresEl.innerHTML = PERMANENT_CARDS;
         return;
       }
-      featuresEl.innerHTML = YOUTH_CLUB_CARD + activities.map(a => {
+      featuresEl.innerHTML = PERMANENT_CARDS + activities.map(a => {
         const media = a.imageUrl ? `<img src="${a.imageUrl}" alt="${escAttr(a.name)}">` : "";
         return `
           <div class="activity-feature" style="--accent:${normalizeAccent(a.accentColor)}">
@@ -1290,18 +1305,18 @@
         renderHomeActivities(activities);
       }, err => {
         console.error("Activities listener error:", err);
-        featuresEl.innerHTML = YOUTH_CLUB_CARD + `<p style="${MSG_STYLE}">Couldn't load the other activities right now — please refresh the page.</p>`;
+        featuresEl.innerHTML = PERMANENT_CARDS + `<p style="${MSG_STYLE}">Couldn't load the other activities right now — please refresh the page.</p>`;
       });
     }
 
-    // Show Youth Club immediately, before Firestore responds.
-    featuresEl.innerHTML = YOUTH_CLUB_CARD + `<p style="${MSG_STYLE}">Loading activities…</p>`;
+    // Show the permanent cards immediately, before Firestore responds.
+    featuresEl.innerHTML = PERMANENT_CARDS + `<p style="${MSG_STYLE}">Loading activities…</p>`;
     try {
       startHomeActivitiesListener();
     } catch (err) {
-      // e.g. the Firebase scripts failed to load - Youth Club still shows.
+      // e.g. the Firebase scripts failed to load - permanent cards still show.
       console.error("Activities listener failed to start:", err);
-      featuresEl.innerHTML = YOUTH_CLUB_CARD + `<p style="${MSG_STYLE}">Couldn't load the other activities right now — please refresh the page.</p>`;
+      featuresEl.innerHTML = PERMANENT_CARDS + `<p style="${MSG_STYLE}">Couldn't load the other activities right now — please refresh the page.</p>`;
     }
   })();
   </script>
