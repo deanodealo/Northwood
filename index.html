@@ -1252,7 +1252,8 @@
     const LEGACY_ACCENTS = { "#2563EB": "#377BBA", "#1E3A8A": "#377BBA", "#7C3AED": "#377BBA", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
     function normalizeAccent(hex) {
       const h = String(hex || "").toUpperCase();
-      return BRAND_ACCENTS.includes(h) ? h : (LEGACY_ACCENTS[h] || "#DA3832");
+      if (LEGACY_ACCENTS[h]) return LEGACY_ACCENTS[h];
+      return /^#[0-9A-F]{6}$/.test(h) ? h : "#DA3832"; // any proper colour is allowed (extra + custom colours)
     }
 
     // Permanent cards: these are NOT Firestore activities, so staff can't
