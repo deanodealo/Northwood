@@ -23,6 +23,19 @@
   content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 120px);
 }
+/* Track graphic on every subpage hero, in the page's own accent colour.
+   Gym's accent is black, which would vanish on the dark hero, so Gym
+   gets a faint white one instead. See TRACK GRAPHIC in styles.css. */
+.page-hero::after {
+  content: ""; position: absolute; z-index: 1; pointer-events: none;
+  height: 125%; aspect-ratio: 924 / 1738;
+  top: 50%; right: -150px; transform: translateY(-50%);
+  background-color: var(--track-color, var(--accent)); opacity: 0.55;
+  -webkit-mask: url(images/track-graphic.svg) center / contain no-repeat;
+          mask: url(images/track-graphic.svg) center / contain no-repeat;
+}
+.theme-gym .page-hero::after { --track-color: #fff; opacity: 0.14; }
+@media (max-width: 900px) { .page-hero::after { right: -55%; opacity: 0.3; } .theme-gym .page-hero::after { opacity: 0.08; } }
 .page-hero-inner { position: relative; z-index: 2; max-width: var(--max-w); margin: 0 auto; }
 .page-hero-title {
   font-family: var(--f-display); font-weight: 800; text-transform: uppercase; color: var(--c-white);
