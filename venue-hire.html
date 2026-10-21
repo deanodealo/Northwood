@@ -46,7 +46,7 @@
     .vh-track rect { fill: none; stroke: currentColor; stroke-width: 26; }
     .vh-track-hero { right: -150px; top: -38%; height: 112%; width: auto; z-index: 1; opacity: 0.9; } /* ends above the stats row */
     .vh-track-lic { right: -260px; top: 50%; transform: translateY(-50%) rotate(90deg); height: 900px; width: auto; color: var(--c-white); opacity: 0.12; z-index: 0; }
-    .vh-track-cta { left: -230px; top: 50%; transform: translateY(-50%); height: 150%; width: auto; opacity: 1; }
+    .vh-track-cta { left: -230px; top: 50%; transform: translateY(-50%); height: 150%; --track-color: var(--c-red); opacity: 1; }
     .vh-track-cta.r { left: auto; right: -230px; }
     @media (max-width: 1000px) { .vh-track-hero { opacity: 0.35; } .vh-track-cta { opacity: 0.35; } }
 
@@ -364,7 +364,6 @@
 
     <!-- ============ THE NEXT CHAPTER: PREMISES LICENCE ============ -->
     <section class="section about" id="licence">
-      <svg class="vh-track vh-track-lic" viewBox="0 0 420 820" aria-hidden="true" focusable="false"><rect x="13" y="13" width="394" height="794" rx="197"/><rect x="47" y="47" width="326" height="726" rx="163"/><rect x="81" y="81" width="258" height="658" rx="129"/></svg>
       <div class="section-inner about-inner vh-lic-grid">
         <div>
           <p class="about-label">— The Next Chapter</p>
@@ -595,8 +594,8 @@
 
     <!-- ============ FINAL CALL TO ACTION ============ -->
     <section class="vh-cta" id="enquire">
-      <svg class="vh-track vh-track-cta" viewBox="0 0 420 820" aria-hidden="true" focusable="false"><rect x="13" y="13" width="394" height="794" rx="197"/><rect x="47" y="47" width="326" height="726" rx="163"/><rect x="81" y="81" width="258" height="658" rx="129"/></svg>
-      <svg class="vh-track vh-track-cta r" viewBox="0 0 420 820" aria-hidden="true" focusable="false"><rect x="13" y="13" width="394" height="794" rx="197"/><rect x="47" y="47" width="326" height="726" rx="163"/><rect x="81" y="81" width="258" height="658" rx="129"/></svg>
+      <div class="track-graphic vh-track-cta" aria-hidden="true"></div>
+      <div class="track-graphic vh-track-cta r" aria-hidden="true"></div>
       <div class="vh-cta-inner">
         <h2>Let's Plan <span>Your Event.</span></h2>
         <p>Whether it's a sports day for one school or a festival for thousands, our events team will help you shape it.</p>

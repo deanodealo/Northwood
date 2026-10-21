@@ -94,6 +94,27 @@
 .site-footer > * { position: relative; z-index: 1; }
 @media (max-width: 760px) { .site-footer::before { height: 760px; bottom: -560px; right: -30%; } }
 
+/* Bands: a faint white track turned on its side, cropped off the right
+   edge. Every .about band gets it automatically; other full-width bands
+   opt in with class="track-band" (add track-band--left to flip sides).
+   z-index -1 inside an isolated band = above the band's colour, below
+   its content, without touching the content's own positioning. */
+.about, .track-band { isolation: isolate; }
+.track-band { position: relative; overflow: hidden; }
+.about::after, .track-band::after {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  height: 860px; aspect-ratio: 924 / 1738;
+  top: 50%; right: -60px; transform: translateY(-50%) rotate(90deg);
+  background-color: var(--band-track-color, #fff); opacity: var(--band-track-opacity, 0.1);
+  -webkit-mask: url(images/track-graphic.svg) center / contain no-repeat;
+          mask: url(images/track-graphic.svg) center / contain no-repeat;
+}
+.track-band--left::after { right: auto; left: -60px; }
+@media (max-width: 760px) {
+  .about::after, .track-band::after { height: 560px; right: -170px; }
+  .track-band--left::after { left: -170px; }
+}
+
 /* ==========================================================================
    RESET / BASE
    ========================================================================== */
