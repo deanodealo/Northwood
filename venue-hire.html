@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events &amp; Venue Hire | Northwood Stadium</title>
+  <meta name="description" content="Host your event at Northwood Stadium, Stoke-on-Trent. Sports hall, 3G pitch and athletics track hire, licensed for boxing, live music and a bar until midnight.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subpage.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#0B0B0C">
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       EVENTS & VENUE HIRE PAGE
+       Built on the shared tokens/components in styles.css + subpage.css
+       (.page-hero, .section, .section-eyebrow, .section-title, .about band,
+       .price-card, .steps). Everything below is page-specific.
+
+       EVENT PHOTOS: each event card has a placeholder until the final
+       photos arrive. Swap the placeholder div for an <img> (see the comment
+       in each card). The event name sits underneath as live text.
+       ═══════════════════════════════════════════════════════════ */
+    /* Brand identity pack: this page uses COURT blue in place of TRACK red,
+       CHALK for the light sections and PITCH green for the "save" badges.
+       Overriding the shared tokens here keeps every component on-brand
+       without touching styles.css. */
+    /* Scoped to <main> so the header, footer and Call Now popup stay Northwood red */
+    main {
+      --c-red: #377BBA;        /* Court */
+      --c-red-dark: #1F4F7D;   /* Court, darkened for gradients and hovers */
+      --c-grey-light: #F3F0EB; /* Chalk */
+      --c-pitch: #3F7148;      /* Pitch */
+      --c-gold: #C9A227; --c-gold-soft: rgba(201,162,39,0.14);
+    }
+
+    /* ---------- Track graphic (brand pack "Brand Graphic") ---------- */
+    .vh-track { position: absolute; pointer-events: none; color: var(--c-red); }
+    .vh-track rect { fill: none; stroke: currentColor; stroke-width: 26; }
+    .vh-track-hero { right: -150px; top: -38%; height: 112%; width: auto; z-index: 1; opacity: 0.9; } /* ends above the stats row */
+    .vh-track-lic { right: -260px; top: 50%; transform: translateY(-50%) rotate(90deg); height: 900px; width: auto; color: var(--c-white); opacity: 0.12; z-index: 0; }
+    .vh-track-cta { left: -230px; top: 50%; transform: translateY(-50%); height: 150%; width: auto; opacity: 1; }
+    .vh-track-cta.r { left: auto; right: -230px; }
+    @media (max-width: 1000px) { .vh-track-hero { opacity: 0.35; } .vh-track-cta { opacity: 0.35; } }
+
+    /* ---------- Hero ---------- */
+    .vh-eyebrow {
+      display: inline-block; color: var(--c-white); background: var(--c-red);
+      font-weight: 700; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+      padding: 7px 12px; border-radius: 4px; margin-bottom: 22px;
+    }
+    .page-hero-title .hl { color: var(--c-red); }
+    .vh-stats {
+      position: relative; z-index: 2; max-width: var(--max-w); margin: 56px auto 0;
+      display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255,255,255,0.18);
+    }
+    .vh-stat { padding: 22px 20px 0 0; }
+    .vh-stat + .vh-stat { padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.18); }
+    .vh-stat-num { display: block; font-family: var(--f-display); font-weight: 800; color: var(--c-white); font-size: clamp(30px, 3.4vw, 44px); line-height: 1; font-variant-numeric: tabular-nums; }
+    .vh-stat-label { display: block; color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 8px; line-height: 1.4; }
+
+    /* ---------- Event gallery ---------- */
+    .vh-gallery-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px 40px; }
+    .vh-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+    .vh-filters button {
+      border: 1.5px solid rgba(11,11,12,0.14); background: var(--c-white); color: var(--c-black); cursor: pointer;
+      border-radius: 999px; padding: 9px 16px; font-family: var(--f-body); font-weight: 700; font-size: 14px;
+      transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+    }
+    .vh-filters button:hover { border-color: var(--c-black); }
+    .vh-filters button[aria-pressed="true"] { background: var(--c-black); border-color: var(--c-black); color: var(--c-white); }
+    .vh-ev-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 36px; list-style: none; }
+    .vh-ev { background: var(--c-white); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(11,11,12,0.07); display: flex; flex-direction: column; min-width: 0; }
+    .vh-ev-media { position: relative; aspect-ratio: 3 / 2; background: var(--c-black); overflow: hidden; border-bottom: 4px solid var(--c-red); }
+    .vh-ev-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
+    .vh-ph {
+      position: absolute; inset: 0;
+      background:
+        repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 14px, transparent 14px 28px),
+        linear-gradient(160deg, #26262A 0%, var(--c-black) 100%);
+      outline: 2px dashed rgba(255,255,255,0.22); outline-offset: -10px;
+    }
+    .vh-ph-label {
+      position: absolute; top: 18px; left: 18px; display: inline-flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    }
+    .vh-ph-label svg { width: 14px; height: 14px; color: var(--c-red); }
+    .vh-ev:hover .vh-ev-media img { transform: scale(1.04); }
+    .vh-ev-title { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 22px; line-height: 1.05; }
+    .vh-ev-body { padding: 16px 18px 20px; display: grid; gap: 6px; align-content: start; }
+    .vh-ev-tag { color: var(--c-red); font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
+    .vh-ev-body p { color: var(--c-grey-mid); font-size: 14px; line-height: 1.55; }
+    .vh-ev-body p strong { color: var(--c-black); }
+    .vh-ev[hidden] { display: none; }
+    .vh-hosts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-top: 40px; padding-top: 28px; border-top: 1px solid rgba(11,11,12,0.08); }
+    .vh-hosts-label { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 18px; margin-right: 6px; }
+    .vh-hosts span.vh-chip { border: 1.5px solid var(--c-red); border-radius: 6px; padding: 7px 12px; font-weight: 700; font-size: 13px; letter-spacing: 0.4px; text-transform: uppercase; }
+
+    /* ---------- Spaces ---------- */
+    .vh-space-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; }
+    .vh-space { background: var(--c-white); border-radius: 14px; overflow: hidden; box-shadow: 0 8px 24px rgba(11,11,12,0.06); display: flex; flex-direction: column; min-width: 0; }
+    .vh-space-media { aspect-ratio: 4 / 3; overflow: hidden; background: var(--c-black); }
+    .vh-space-media img { width: 100%; height: 100%; object-fit: cover; }
+    .vh-space-body { padding: 24px 24px 26px; border-top: 4px solid var(--c-red); display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .vh-space h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 26px; line-height: 1.05; }
+    .vh-space p { color: var(--c-grey-mid); font-size: 15px; line-height: 1.6; }
+    .vh-space .vh-from { color: var(--c-black); margin-top: auto; padding-top: 10px; font-family: var(--f-display); font-weight: 800; font-size: 24px; }
+    .vh-space .vh-from small { font-family: var(--f-body); font-weight: 600; font-size: 13px; color: var(--c-grey-mid); }
+    .vh-why { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 28px; }
+    .vh-why li { background: var(--c-white); border-radius: 10px; padding: 16px 18px; font-size: 14px; font-weight: 600; line-height: 1.45; border-left: 3px solid var(--c-red); }
+
+    /* ---------- Licence band ---------- */
+    .vh-lic-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 48px; align-items: center; }
+    .vh-lic-grid > * { min-width: 0; }
+    .vh-lic-grid p.vh-lic-copy { color: rgba(255,255,255,0.88); font-size: 17px; line-height: 1.7; max-width: 560px; }
+    .vh-lic-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .vh-lic-list li {
+      background: rgba(11,11,12,0.22); border-radius: 10px; padding: 18px 20px; color: var(--c-white);
+      font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 20px; letter-spacing: 0.3px; line-height: 1.1;
+    }
+    .vh-lic-list li small { display: block; font-family: var(--f-body); font-weight: 500; text-transform: none; letter-spacing: 0; font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 4px; }
+    .vh-lic-list li.wide { grid-column: 1 / -1; }
+
+    /* ---------- Packages ---------- */
+    .vh-tabs { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--c-white); border-radius: 999px; padding: 4px; box-shadow: inset 0 0 0 1.5px rgba(11,11,12,0.12); margin-top: 28px; }
+    .vh-tabs button { border: none; background: none; cursor: pointer; border-radius: 999px; padding: 11px 20px; font-family: var(--f-body); font-weight: 700; font-size: 14px; color: var(--c-grey-mid); transition: background 0.2s var(--ease), color 0.2s var(--ease); }
+    .vh-tabs button[aria-selected="true"] { background: var(--c-black); color: var(--c-white); }
+    .vh-panel { margin-top: 32px; }
+    .vh-group-title { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 22px; margin: 36px 0 4px; }
+    .vh-group-title:first-child { margin-top: 0; }
+    .vh-group-sub { color: var(--c-grey-mid); font-size: 15px; }
+    .vh-pkg-grid { display: grid; gap: 20px; margin-top: 20px; }
+    .vh-pkg-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .vh-pkg-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .vh-pkg-grid .price-card { padding: 26px 22px 24px; }
+    .vh-pkg-grid .price-card h3 { font-size: 22px; }
+    .vh-pkg-grid .price-card .who { margin-bottom: 16px; }
+    .vh-pkg-grid .price-card .price { font-size: 38px; }
+    .vh-pkg-grid .price-card .price small { font-size: 18px; font-weight: 700; }
+    .vh-pkg-grid .price-card .badge.save { background: var(--c-pitch); }
+    .vh-pkg-grid .price-card .badge.staff { background: var(--c-black); }
+    .vh-feat { list-style: none; display: grid; gap: 8px; margin: 18px 0 0; padding-top: 16px; border-top: 1px solid rgba(11,11,12,0.08); flex: 1; }
+    .vh-feat li { position: relative; padding-left: 22px; font-size: 14px; line-height: 1.5; }
+    .vh-feat li::before { content: ""; position: absolute; left: 0; top: 4px; width: 12px; height: 7px; border-left: 2.5px solid var(--c-red); border-bottom: 2.5px solid var(--c-red); transform: rotate(-45deg); }
+    .vh-note { font-size: 13px; color: var(--c-grey-mid); margin-top: 14px; line-height: 1.5; }
+    .vh-panel-note { margin-top: 24px; }
+
+    /* Full venue feature card */
+    .vh-full {
+      display: grid; grid-template-columns: 1.05fr 1fr; overflow: hidden;
+      background: var(--c-black); color: var(--c-white); border-radius: 16px; border: 2px solid var(--c-gold);
+    }
+    .vh-full > * { min-width: 0; }
+    .vh-full-media { min-height: 380px; position: relative; }
+    .vh-full-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; }
+    .vh-full-body { padding: 40px 40px 44px; display: flex; flex-direction: column; }
+    .vh-full-tag { align-self: flex-start; color: var(--c-gold); border: 1px solid var(--c-gold); background: var(--c-gold-soft); font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; margin-bottom: 16px; }
+    .vh-full h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(30px, 3.4vw, 42px); line-height: 1.02; }
+    .vh-full-price { font-family: var(--f-display); font-weight: 800; font-size: 28px; color: var(--c-red); margin-top: 8px; }
+    .vh-full-pitch { color: rgba(255,255,255,0.8); font-size: 16px; line-height: 1.65; margin-top: 14px; }
+    .vh-full .vh-feat { border-top-color: rgba(255,255,255,0.14); margin-bottom: 28px; }
+    .vh-full .vh-feat li { font-size: 15px; }
+    .vh-full .vh-feat li::before { border-color: var(--c-gold); }
+    .vh-full .btn-red { align-self: flex-start; }
+
+    /* Extras */
+    .vh-extras { margin-top: 32px; display: grid; grid-template-columns: 300px 1fr; gap: 24px 40px; background: var(--c-white); border-radius: 14px; padding: 28px 30px; border-left: 4px solid var(--c-red); box-shadow: 0 8px 24px rgba(11,11,12,0.05); }
+    .vh-extras > * { min-width: 0; }
+    .vh-extras h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 24px; line-height: 1.1; margin-bottom: 8px; }
+    .vh-extras p { color: var(--c-grey-mid); font-size: 14px; line-height: 1.6; }
+    .vh-extras ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; }
+    .vh-extras li { background: var(--c-grey-light); border-radius: 6px; padding: 9px 12px; font-size: 14px; font-weight: 600; }
+
+    /* Steps: four in a row */
+    .steps.vh-steps { grid-template-columns: repeat(4, 1fr); }
+
+    /* ---------- Final call to action ---------- */
+    .vh-cta { background: var(--c-black); color: var(--c-white); padding-block: 96px; padding-left: var(--pad); padding-right: var(--pad); text-align: center; position: relative; overflow: hidden; }
+    .vh-cta::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 120px); }
+    .vh-cta-inner { position: relative; max-width: 760px; margin: 0 auto; }
+    .vh-cta h2 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(36px, 5vw, 64px); line-height: 1; }
+    .vh-cta h2 span { color: var(--c-red); }
+    .vh-cta p { color: rgba(255,255,255,0.78); font-size: 17px; line-height: 1.65; margin: 18px auto 0; max-width: 560px; }
+    .vh-cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 32px; }
+    .vh-cta-contact { margin-top: 26px; font-size: 15px; color: rgba(255,255,255,0.7); }
+    .vh-cta-contact a { color: var(--c-white); font-weight: 700; }
+
+    /* Content still to confirm, highlighted for review */
+    .tbc { background: #FFF1B8; color: #5C4400; border-radius: 3px; padding: 0 4px; font-weight: 600; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1100px) {
+      .vh-ev-grid, .vh-pkg-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+      .vh-why { grid-template-columns: repeat(2, 1fr); }
+      .vh-extras { grid-template-columns: 1fr; }
+      .steps.vh-steps { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 1000px) {
+      .vh-space-grid, .vh-pkg-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+      .vh-lic-grid { grid-template-columns: 1fr; gap: 32px; }
+      .vh-full { grid-template-columns: 1fr; }
+      .vh-full-media { min-height: 0; aspect-ratio: 16 / 9; }
+    }
+    @media (max-width: 760px) {
+      .vh-stats { grid-template-columns: 1fr 1fr; }
+      .vh-stat:nth-child(3) { padding-left: 0; border-left: none; }
+      .vh-stat:nth-child(n+3) { padding-top: 18px; }
+    }
+    @media (max-width: 640px) {
+      .vh-ev-grid, .vh-space-grid, .vh-pkg-grid.cols-3, .vh-pkg-grid.cols-4, .vh-why, .vh-lic-list, .steps.vh-steps { grid-template-columns: 1fr; }
+      .vh-full-body { padding: 28px 22px 32px; }
+      .vh-full .btn-red { align-self: stretch; }
+      .vh-tabs { display: flex; border-radius: 14px; }
+      .vh-tabs button { flex: 1; border-radius: 10px; padding: 11px 10px; }
+      .vh-extras { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="sponsorship.html">Sponsorship</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="page-hero">
+      <div class="page-hero-media" aria-hidden="true">
+        <img src="images/Northwoodmain.jpg" alt="">
+      </div>
+      <svg class="vh-track vh-track-hero" viewBox="0 0 420 820" aria-hidden="true" focusable="false"><rect x="13" y="13" width="394" height="794" rx="197"/><rect x="47" y="47" width="326" height="726" rx="163"/><rect x="81" y="81" width="258" height="658" rx="129"/></svg>
+      <div class="page-hero-inner">
+        <p class="vh-eyebrow">Events &amp; Venue Hire</p>
+        <h1 class="page-hero-title">Your Event. <span class="hl">Our Stadium.</span></h1>
+        <p class="page-hero-sub">From national championships and school finals to cultural festivals, fitness races and licensed evening events. Hire the sports hall, 3G pitch or athletics track, or take over the whole venue.</p>
+        <div class="page-hero-actions">
+          <a href="#packages" class="btn-red">View Packages</a>
+          <a href="#enquire" class="btn-outline-light">Plan Your Event</a>
+        </div>
+      </div>
+      <div class="vh-stats">
+        <div class="vh-stat"><span class="vh-stat-num">50+</span><span class="vh-stat-label">Events hosted in summer 2026</span></div>
+        <div class="vh-stat"><span class="vh-stat-num">40,000+</span><span class="vh-stat-label">Visitors from May to August 2026</span></div>
+        <div class="vh-stat"><span class="vh-stat-num">750</span><span class="vh-stat-label">Seats in the grandstand</span></div>
+        <div class="vh-stat"><span class="vh-stat-num">3</span><span class="vh-stat-label">Spaces to hire, alone or together</span></div>
+      </div>
+    </section>
+
+    <!-- ============ WHAT WE'VE HOSTED ============ -->
+    <section class="section find-us" id="hosted">
+      <div class="section-inner">
+        <div class="vh-gallery-head">
+          <div>
+            <p class="section-eyebrow">— What We've Hosted</p>
+            <h2 class="section-title">We Can Do It All</h2>
+            <p class="lede">A few of the events that filled the stadium this year, alongside athletics meetings, football, community sessions and school sports days every week.</p>
+          </div>
+          <div class="vh-filters" role="group" aria-label="Filter events">
+            <button type="button" aria-pressed="true" data-filter="all">All events</button>
+            <button type="button" aria-pressed="false" data-filter="sport">Athletics &amp; Sport</button>
+            <button type="button" aria-pressed="false" data-filter="community">Community &amp; Culture</button>
+            <button type="button" aria-pressed="false" data-filter="fitness">Fitness &amp; Charity</button>
+          </div>
+        </div>
+
+        <ul class="vh-ev-grid">
+          <li class="vh-ev" data-cat="sport">
+            <div class="vh-ev-media"><img src="images/mason-trophy.jpg" alt="Mason Trophy at Northwood Stadium" loading="lazy"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Athletics &amp; Sport</span><h3 class="vh-ev-title">Mason Trophy</h3><p>Inter-county schools athletics, with young athletes from 10 counties.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="sport">
+            <div class="vh-ev-media"><img src="images/staffs-aaa.jpg" alt="Staffordshire AAA at Northwood Stadium" loading="lazy"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Athletics &amp; Sport</span><h3 class="vh-ev-title">Staffordshire AAA</h3><p>County athletics championships on our national-standard track.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="sport">
+            <div class="vh-ev-media"><img src="images/tug-of-war.jpg" alt="National Tug of War Championships at Northwood Stadium" loading="lazy"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Athletics &amp; Sport</span><h3 class="vh-ev-title">National Tug of War Championships</h3><p>A national championship on the infield, hosted with the Men's Forum of Our Lady of Perpetual Help.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="sport">
+            <div class="vh-ev-media"><img src="images/primary-city-final.jpg" alt="Primary School City Final at Northwood Stadium" loading="lazy"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Athletics &amp; Sport</span><h3 class="vh-ev-title">Primary School City Final</h3><p>Primary schools from across Stoke-on-Trent competing for the city title.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="sport">
+            <div class="vh-ev-media"><img src="images/fc-hanley.jpg" alt="FC Hanley Tournament at Northwood Stadium" loading="lazy"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Athletics &amp; Sport</span><h3 class="vh-ev-title">FC Hanley Tournament</h3><p>A youth football tournament across the 3G pitch.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="community">
+            <div class="vh-ev-media"><img src="images/youth-festival.jpg" alt="Youth Festival at Northwood Stadium" loading="lazy"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Community &amp; Culture</span><h3 class="vh-ev-title">Youth Festival</h3><p>Stoke's first ever Youth Festival, now a returning fixture.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="community">
+            <div class="vh-ev-media"><img src="images/igbo-new-yam.jpg" alt="Community leaders in traditional dress at the Igbo Union New Yam Festival in the Northwood sports hall" loading="lazy" style="object-position: center 25%;"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Community &amp; Culture</span><h3 class="vh-ev-title">Igbo Union New Yam Festival</h3><p>A cultural celebration in the sports hall.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="community">
+            <div class="vh-ev-media"><img src="images/tamil-sports-day.jpg" alt="The flag-raising opening ceremony of the Tamil Welfare Annual Sports Day on the Northwood track" loading="lazy"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Community &amp; Culture</span><h3 class="vh-ev-title">Tamil Welfare Annual Sports Day</h3><p>A community sports day on the track, complete with opening ceremony.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="fitness">
+            <div class="vh-ev-media"><img src="images/colour-dash.jpg" alt="Children covered in coloured powder running in the Dougie Mac Colour Dash" loading="lazy" style="object-position: center 10%;"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Fitness &amp; Charity</span><h3 class="vh-ev-title">Dougie Mac Colour Dash</h3><p>A colourful family fun run raising money for the Dougie Mac hospice.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="fitness">
+            <div class="vh-ev-media"><img src="images/deadly-dozen.jpg" alt="Deadly Dozen: Train anywhere. Race everywhere." loading="lazy"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Large Scale Fitness</span><h3 class="vh-ev-title">Deadly Dozen Gross</h3><p><strong>A world first.</strong> The first ever Deadly Dozen Gross fitness race.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="fitness">
+            <div class="vh-ev-media"><img src="images/conquer-super7.jpg" alt="Finishers with their medals under the Conquer Fitness arch at Northwood Stadium" loading="lazy" style="object-position: center 40%;"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Large Scale Fitness</span><h3 class="vh-ev-title">Conquer Fitness Super 7</h3><p>A fitness challenge race around the stadium.</p></div>
+          </li>
+          <li class="vh-ev" data-cat="fitness">
+            <div class="vh-ev-media"><img src="images/track-social.jpg" alt="Runners from the Northwood x Potters 'Arf Track Social on the track in front of the grandstand" loading="lazy" style="object-position: center 58%;"></div>
+            <div class="vh-ev-body"><span class="vh-ev-tag">Fitness &amp; Charity</span><h3 class="vh-ev-title">Northwood x Potters 'Arf Track Social</h3><p>A social evening on the track for runners of every pace.</p></div>
+          </li>
+        </ul>
+
+        <div class="vh-hosts">
+          <span class="vh-hosts-label">A stadium for everyone:</span>
+          <span class="vh-chip">Athletes</span><span class="vh-chip">Families</span><span class="vh-chip">Schools</span><span class="vh-chip">Community groups</span><span class="vh-chip">Fitness enthusiasts</span><span class="vh-chip">Event organisers</span><span class="vh-chip">Local businesses</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ THE NEXT CHAPTER: PREMISES LICENCE ============ -->
+    <section class="section about" id="licence">
+      <svg class="vh-track vh-track-lic" viewBox="0 0 420 820" aria-hidden="true" focusable="false"><rect x="13" y="13" width="394" height="794" rx="197"/><rect x="47" y="47" width="326" height="726" rx="163"/><rect x="81" y="81" width="258" height="658" rx="129"/></svg>
+      <div class="section-inner about-inner vh-lic-grid">
+        <div>
+          <p class="about-label">— The Next Chapter</p>
+          <h2 class="about-title">Now Fully Licensed</h2>
+          <p class="vh-lic-copy">We've secured our Full Premises Licence, covering boxing, live music and a bar until midnight, indoors and out. Few venues in the area can offer all three, and it opens Northwood up to a whole new kind of event.</p>
+        </div>
+        <ul class="vh-lic-list">
+          <li>Entertainment Events<small>Live music, performances and evening shows</small></li>
+          <li>Food &amp; Drink Festivals<small>Vendors, stalls and street food on site</small></li>
+          <li>Combat Sports Events<small>Licensed boxing in the sports hall</small></li>
+          <li>Licensed Bar<small>Serving until midnight</small></li>
+          <li class="wide">Community Celebrations<small>Festivals, awards nights, parties and cultural events</small></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ THE SPACES ============ -->
+    <section class="section" id="spaces">
+      <div class="section-inner">
+        <p class="section-eyebrow">— The Spaces</p>
+        <h2 class="section-title">Hire One, Two or All Three</h2>
+        <p class="lede">Indoor and outdoor spaces on one site, available by the hour, as a package, or as a bespoke full venue hire.</p>
+
+        <div class="vh-space-grid">
+          <article class="vh-space">
+            <div class="vh-space-media"><!-- TEMPORARY PHOTO: replace with the photographer's sports hall shot --><img src="images/sports-hall.jpg" alt="The 1,600m² Northwood sports hall, marked out for badminton, basketball and netball" loading="lazy"></div>
+            <div class="vh-space-body">
+              <h3>Sports Hall</h3>
+              <p>A flexible 1,600m² indoor space, hired in full or by the third. Home to tournaments, awards evenings, parties, cultural festivals and licensed boxing.</p>
+              <p class="vh-from">From £40 <small>per hour</small></p>
+            </div>
+          </article>
+          <article class="vh-space">
+            <div class="vh-space-media"><img src="images/3g-ball.jpg" alt="A football on the Northwood 3G pitch, with a goalkeeper waiting in goal" loading="lazy" style="object-position: 45% center;"></div>
+            <div class="vh-space-body">
+              <h3>3G Pitch</h3>
+              <p>All-weather and floodlit. Matches, tournaments, training and community festivals, day or night.</p>
+              <p class="vh-from">£120 <small>per hour</small></p>
+            </div>
+          </article>
+          <article class="vh-space">
+            <div class="vh-space-media"><img src="images/track-aerial.jpg" alt="Aerial view of Northwood Stadium during an athletics meeting, with the track, field, grandstand and spectators" loading="lazy" style="object-position: 52% center;"></div>
+            <div class="vh-space-body">
+              <h3>Track, Field &amp; Grandstand</h3>
+              <p>A national-standard athletics track with full field facilities, and a 750-seat grandstand for spectators on request.</p>
+              <p class="vh-from">From £80 <small>per hour</small></p>
+            </div>
+          </article>
+        </div>
+
+        <ul class="vh-why">
+          <li>Licensed for boxing, live music and alcohol until midnight</li>
+          <li>Indoor and outdoor spaces on one site</li>
+          <li>Flexible hire: by the hour, package or full venue</li>
+          <li>On-site car park and changing rooms</li>
+          <li>Gym and functional fitness space alongside</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ PACKAGES ============ -->
+    <section class="section find-us" id="packages">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Venue Hire Packages</p>
+        <h2 class="section-title">Pick the Package That Fits Your Event</h2>
+        <p class="lede">All prices are starting points for the core hire. Your final quote, including any extras, is confirmed at your pre-event meeting.</p>
+
+        <div class="vh-tabs" role="tablist" aria-label="Package type">
+          <button type="button" role="tab" id="tab-hall" aria-controls="panel-hall" aria-selected="true">Sports Hall</button>
+          <button type="button" role="tab" id="tab-outdoor" aria-controls="panel-outdoor" aria-selected="false">3G &amp; Track</button>
+          <button type="button" role="tab" id="tab-full" aria-controls="panel-full" aria-selected="false">Full Venue</button>
+        </div>
+
+        <!-- Sports Hall -->
+        <div class="vh-panel" id="panel-hall" role="tabpanel" aria-labelledby="tab-hall">
+          <h3 class="vh-group-title">Hall Hire</h3>
+          <p class="vh-group-sub">Book by the hour, or take a longer block and pay less per hour.</p>
+          <div class="vh-pkg-grid cols-4">
+            <div class="price-card">
+              <h3>Hourly Hire</h3>
+              <p class="who">Training, meetings and one-off bookings</p>
+              <div class="price">£40<small>/hr</small></div>
+              <p class="per">Third of hall · Full hall £120/hr</p>
+              <ul class="vh-feat"><li>No minimum booking</li><li>No bundled extras</li></ul>
+            </div>
+            <div class="price-card">
+              <span class="badge save">Save £100</span>
+              <h3>Sports &amp; Community</h3>
+              <p class="who">Tournaments, trials, sports days and community events</p>
+              <div class="price">£500</div>
+              <p class="per">5 hours · equivalent to £100/hr</p>
+              <ul class="vh-feat"><li>Full hall hire, 5 hours</li><li>Extra hour +£120</li></ul>
+            </div>
+            <div class="price-card">
+              <span class="badge save">Save £200</span>
+              <h3>Full Day</h3>
+              <p class="who">All-day tournaments, festivals, camps and training days</p>
+              <div class="price">£760</div>
+              <p class="per">8 hours · equivalent to £95/hr</p>
+              <ul class="vh-feat"><li>Full hall hire, 8 hours</li><li>Extra hour +£120</li></ul>
+            </div>
+            <div class="price-card">
+              <span class="badge save">Save £480</span>
+              <h3>Weekend</h3>
+              <p class="who">Two-day tournaments, competitions and conventions</p>
+              <div class="price">£1,440</div>
+              <p class="per">2 days, up to 8 hours a day · £90/hr</p>
+              <ul class="vh-feat"><li>Any two consecutive days</li><li>Extra hour +£120</li></ul>
+            </div>
+          </div>
+
+          <h3 class="vh-group-title">Event Packages</h3>
+          <p class="vh-group-sub">Built around the events we host most often.</p>
+          <div class="vh-pkg-grid cols-3">
+            <div class="price-card">
+              <h3>End of Season Awards Evening</h3>
+              <p class="who">Presentation evenings for local football clubs and sports teams</p>
+              <div class="price">£480</div>
+              <p class="per">4-hour evening block</p>
+              <ul class="vh-feat"><li>Full hall hire, 4 hours</li><li>Chairs, tables, PA and presentation extras on request</li></ul>
+            </div>
+            <div class="price-card">
+              <h3>Private &amp; Corporate</h3>
+              <p class="who">Parties, celebrations, corporate days and presentations</p>
+              <div class="price">£810</div>
+              <p class="per">6-hour block</p>
+              <ul class="vh-feat"><li>Full hall hire, 6 hours</li><li>1 security guard, 6 hours</li></ul>
+            </div>
+            <div class="price-card featured">
+              <span class="badge">Licensed events</span>
+              <h3>Full Production</h3>
+              <p class="who">Boxing, live music and licensed, spectated events</p>
+              <div class="price">£1,565</div>
+              <p class="per">6-hour block · bar until midnight</p>
+              <ul class="vh-feat"><li>Full hall hire, 6 hours</li><li>2 first aid responders</li><li>2 security guards</li><li>2 portaloos</li></ul>
+            </div>
+          </div>
+          <p class="vh-note vh-panel-note">Every hall package: extra hour +£120. Medical provision and security are required for all licensed or spectated events.</p>
+        </div>
+
+        <!-- 3G & Track -->
+        <div class="vh-panel" id="panel-outdoor" role="tabpanel" aria-labelledby="tab-outdoor" hidden>
+          <h3 class="vh-group-title">Outdoor Hire</h3>
+          <p class="vh-group-sub">By the hour, or as a staffed package for track &amp; field events.</p>
+          <div class="vh-pkg-grid cols-4">
+            <div class="price-card">
+              <h3>3G Pitch</h3>
+              <p class="who">Matches, tournaments, training and festivals</p>
+              <div class="price">£120<small>/hr</small></div>
+              <p class="per">Book by the hour</p>
+              <ul class="vh-feat"><li>All-weather 3G surface</li><li>Club training, fixtures and small-sided football</li></ul>
+            </div>
+            <div class="price-card">
+              <h3>Track &amp; Field</h3>
+              <p class="who">Training, coaching sessions and one-off bookings</p>
+              <div class="price">£80<small>/hr</small></div>
+              <p class="per">Book by the hour</p>
+              <ul class="vh-feat"><li>Athletics track and field facilities</li><li>Club training, coaching and time trials</li></ul>
+            </div>
+            <div class="price-card">
+              <span class="badge staff">Staff included</span>
+              <h3>Sports Day</h3>
+              <p class="who">School, club and corporate sports days</p>
+              <div class="price">£450</div>
+              <p class="per">6 hours · equivalent to £75/hr</p>
+              <ul class="vh-feat"><li>Track &amp; field hire, 6 hours</li><li>NCS staff member on site throughout</li></ul>
+            </div>
+            <div class="price-card">
+              <span class="badge staff">Staff included</span>
+              <h3>Athletics Meet</h3>
+              <p class="who">Full-day meets, competitions and open meetings</p>
+              <div class="price">£560</div>
+              <p class="per">8 hours · equivalent to £70/hr</p>
+              <ul class="vh-feat"><li>Track &amp; field hire, 8 hours</li><li>NCS staff member on site throughout</li></ul>
+            </div>
+          </div>
+          <p class="vh-note vh-panel-note">Grandstand seating for spectators is available on request. Events expecting 150+ spectators need 1 additional member of staff per 150, confirmed at your pre-event meeting.</p>
+        </div>
+
+        <!-- Full venue -->
+        <div class="vh-panel" id="panel-full" role="tabpanel" aria-labelledby="tab-full" hidden>
+          <div class="vh-full">
+            <div class="vh-full-media"><img src="images/track-social.jpg" alt="The Northwood track and grandstand on an event night" loading="lazy"></div>
+            <div class="vh-full-body">
+              <span class="vh-full-tag">The whole campus</span>
+              <h3>Bespoke Full Venue Hire</h3>
+              <p class="vh-full-price">Price on application</p>
+              <p class="vh-full-pitch">The sports hall, 3G pitch and athletics track &amp; field, built around your event and quoted individually.</p>
+              <ul class="vh-feat">
+                <li>Exclusive use of the sports hall, 3G pitch and track &amp; field</li>
+                <li>Ideal for multi-sport festivals, large tournaments and community events</li>
+                <li>Licensed for live music and a bar until midnight</li>
+                <li>Staffing, security, medical and facilities plan agreed with our team</li>
+              </ul>
+              <a href="#enquire" class="btn-red">Talk to Us About Your Event</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extras -->
+        <div class="vh-extras">
+          <div>
+            <h3>Optional Extras</h3>
+            <p>Add any of these to your booking. Tell us what you need when you enquire and we'll include it in your quote. Regular bookers can ask about discounted rates for repeat events.</p>
+          </div>
+          <ul>
+            <li>Additional chairs</li><li>Banquet chair upgrade</li><li>Folding tables</li><li>Security guards</li>
+            <li>Portaloos</li><li>Portable projector</li><li>PA system &amp; microphone</li><li>Decoration &amp; catering</li>
+            <li>First aid provision</li><li>Coffee van &amp; food vendors</li><li>Media &amp; filming</li><li>Licensed bar</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW BOOKING WORKS ============ -->
+    <section class="section" id="how">
+      <div class="section-inner">
+        <p class="section-eyebrow">— How Booking Works</p>
+        <h2 class="section-title">From First Enquiry to Event Day</h2>
+        <ol class="steps vh-steps">
+          <li><strong>Enquire</strong>Tell us about your event and we'll check availability and send our Event Booking Form.</li>
+          <li><strong>Pre-event meeting</strong>We meet to plan the details and confirm your final quote, including any extras.</li>
+          <li><strong>Secure your date</strong>A 10% non-refundable deposit locks in your booking.</li>
+          <li><strong>Final balance</strong>The balance is due 7 days before your event. Then it's over to us on the day.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CALL TO ACTION ============ -->
+    <section class="vh-cta" id="enquire">
+      <svg class="vh-track vh-track-cta" viewBox="0 0 420 820" aria-hidden="true" focusable="false"><rect x="13" y="13" width="394" height="794" rx="197"/><rect x="47" y="47" width="326" height="726" rx="163"/><rect x="81" y="81" width="258" height="658" rx="129"/></svg>
+      <svg class="vh-track vh-track-cta r" viewBox="0 0 420 820" aria-hidden="true" focusable="false"><rect x="13" y="13" width="394" height="794" rx="197"/><rect x="47" y="47" width="326" height="726" rx="163"/><rect x="81" y="81" width="258" height="658" rx="129"/></svg>
+      <div class="vh-cta-inner">
+        <h2>Let's Plan <span>Your Event.</span></h2>
+        <p>Whether it's a sports day for one school or a festival for thousands, our events team will help you shape it.</p>
+        <div class="vh-cta-actions">
+          <a href="events.html#event" class="btn-red">Start an Event Booking</a>
+          <a href="mailto:events@northwoodstadium.co.uk" class="btn-outline-light">Email the Events Team</a>
+        </div>
+        <p class="vh-cta-contact"><a href="mailto:events@northwoodstadium.co.uk">events@northwoodstadium.co.uk</a> · 07547 438786</p>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="gym.html">Gym</a>
+          <a href="track.html">Track</a>
+          <a href="youthclub.html">Youth Club</a>
+          <a href="tracksocial.html">Track Social</a>
+          <a href="venue-hire.html">Events &amp; Venue Hire</a>
+          <a href="sponsorship.html">Sponsorship</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
+          <a href="events.html">Event &amp; School Hire Bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <p class="footer-charity">Northwood Community Sports is wholly owned by City of Stoke Athletics and
+        Community Sports Limited, a registered charity (no. 1195927).</p>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="subpage.js"></script>
+  <script>
+  (function () {
+    // ── Event gallery filters ─────────────────────────────────────
+    const filterBtns = document.querySelectorAll(".vh-filters button");
+    const events = document.querySelectorAll(".vh-ev");
+    filterBtns.forEach(btn => btn.addEventListener("click", () => {
+      const f = btn.dataset.filter;
+      filterBtns.forEach(b => b.setAttribute("aria-pressed", b === btn ? "true" : "false"));
+      events.forEach(ev => { ev.hidden = !(f === "all" || ev.dataset.cat === f); });
+    }));
+
+    // ── Package tabs ──────────────────────────────────────────────
+    const tabs = [...document.querySelectorAll('.vh-tabs [role="tab"]')];
+    function select(tab) {
+      tabs.forEach(t => {
+        const on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+    }
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(t));
+      t.addEventListener("keydown", e => {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        const next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+        select(next); next.focus();
+      });
+    });
+    tabs.forEach((t, i) => { t.tabIndex = i === 0 ? 0 : -1; });
+  })();
+  </script>
+</body>
+</html>
