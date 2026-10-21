@@ -171,6 +171,9 @@
     /* Footer "Site by Dealo" credit logo — rounded to read as an app tile,
        matching the same rule added on index.html. */
     .footer-credit img { border-radius: 22%; }
+
+    /* Two buttons side by side (Gym: Explore + View Memberships) */
+    .facility-actions { display: flex; flex-wrap: wrap; gap: 12px; }
   </style>
 
   <main>
@@ -230,7 +233,10 @@
             <li>Friendly, inclusive environment</li>
             <li>Open extended hours, seven days a week</li>
           </ul>
-          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn btn-primary">View Memberships</a>
+          <div class="facility-actions">
+            <a href="gym.html" class="btn btn-primary">Explore the Gym</a>
+            <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn btn-black">View Memberships</a>
+          </div>
         </div>
       </div>
     </section>
@@ -303,6 +309,7 @@
           <a href="index.html#about">About Us</a>
           <a href="index.html#offer">Facilities</a>
           <a href="index.html#activities">Activities</a>
+          <a href="gym.html">Gym</a>
           <a href="youthclub.html">Youth Club</a>
           <a href="tracksocial.html">Track Social</a>
           <a href="events.html">Events</a>
