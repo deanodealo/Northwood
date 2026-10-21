@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Athletics Track | Northwood Stadium</title>
+  <meta name="description" content="National-standard 8-lane athletics track in Stoke-on-Trent with full field facilities and a 750-seat grandstand. Open to all from age 4: £5 casual use, memberships from £15 a month.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subpage.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#1A1818">
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       TRACK PAGE
+       Body carries .theme-track, so --accent is Track red from styles.css.
+       Built on styles.css + subpage.css (.page-hero, .section, .about,
+       .price-card). Everything below is page-specific.
+       ═══════════════════════════════════════════════════════════ */
+    :root { --ts-pink: #C00BBE; --ts-pink-hot: #FF2BF5; --ts-ink: #0E0B10; }
+
+    .tk-eyebrow { display: inline-block; color: var(--c-white); background: var(--c-red); font-weight: 700; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 7px 12px; border-radius: 4px; margin-bottom: 22px; }
+    .page-hero-title .hl { color: var(--c-red); }
+    .page-hero-media img { object-position: center 45%; }
+    .tk-stats { position: relative; z-index: 2; max-width: var(--max-w); margin: 56px auto 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255,255,255,0.18); }
+    .tk-stat { padding: 22px 20px 0 0; }
+    .tk-stat + .tk-stat { padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.18); }
+    .tk-stat-num { display: block; font-family: var(--f-display); font-weight: 800; color: var(--c-white); font-size: clamp(30px, 3.4vw, 44px); line-height: 1; font-variant-numeric: tabular-nums; }
+    .tk-stat-label { display: block; color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 8px; line-height: 1.4; }
+
+    /* Availability notice */
+    .tk-notice { display: flex; gap: 16px; align-items: flex-start; background: var(--c-white); border-left: 5px solid var(--c-red); border-radius: 12px; padding: 20px 24px; margin-top: 32px; box-shadow: 0 8px 22px rgba(26,24,24,0.06); max-width: 860px; }
+    .tk-notice svg { width: 26px; height: 26px; color: var(--c-red); flex-shrink: 0; margin-top: 2px; }
+    .tk-notice b { display: block; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 20px; margin-bottom: 2px; }
+    .tk-notice p { color: var(--c-grey-mid); font-size: 15px; line-height: 1.6; }
+
+    /* Facilities */
+    .tk-fac-wrap { display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px; align-items: stretch; margin-top: 40px; }
+    .tk-fac-wrap > * { min-width: 0; }
+    .tk-fac { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; }
+    .tk-fac li { background: var(--c-white); border-radius: 12px; padding: 18px 20px; box-shadow: 0 6px 18px rgba(26,24,24,0.05); border-top: 3px solid var(--c-red); }
+    .tk-fac b { display: block; font-family: var(--f-display); font-weight: 800; font-size: 34px; line-height: 1; color: var(--c-red); font-variant-numeric: tabular-nums; }
+    .tk-fac span { display: block; margin-top: 6px; font-weight: 700; font-size: 15px; line-height: 1.35; }
+    .tk-fac-photo { position: relative; border-radius: 14px; overflow: hidden; min-height: 420px; background: var(--c-black); }
+    .tk-fac-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .tk-fac-photo figcaption { position: absolute; left: 16px; bottom: 16px; background: var(--c-black); color: var(--c-white); font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; }
+
+    /* Photo strip */
+    .tk-strip { display: grid; grid-template-columns: 1fr 1.4fr 1.4fr; gap: 12px; margin-top: 12px; }
+    .tk-strip figure { margin: 0; border-radius: 12px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--c-black); }
+    .tk-strip img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Grandstand & events (dark band) */
+    .tk-stand { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center; }
+    .tk-stand > * { min-width: 0; }
+    .tk-stand-photo { border-radius: 14px; overflow: hidden; aspect-ratio: 3 / 2; }
+    .tk-stand-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .tk-stand p.tk-copy { color: rgba(255,255,255,0.85); font-size: 17px; line-height: 1.7; margin-bottom: 20px; }
+    .tk-stand-list { list-style: none; display: grid; gap: 10px; margin-bottom: 26px; }
+    .tk-stand-list li { background: rgba(26,24,24,0.25); border-radius: 10px; padding: 14px 18px; color: var(--c-white); font-weight: 600; font-size: 15px; }
+    .tk-stand-list li b { font-family: var(--f-display); font-weight: 800; font-size: 22px; margin-right: 8px; }
+    .tk-stand .btn-about { background: var(--c-white); color: var(--c-black); }
+
+    /* Use the track */
+    .tk-use { display: grid; grid-template-columns: 1fr 1.25fr; gap: 48px; align-items: start; }
+    .tk-use > * { min-width: 0; }
+    .tk-copy-dark p { color: var(--c-grey-mid); font-size: 17px; line-height: 1.7; margin-bottom: 16px; }
+    .tk-copy-dark p strong { color: var(--c-black); }
+    .tk-use-photo { border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 3; margin-top: 8px; }
+    .tk-use-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .tk-price-grid { grid-template-columns: 1fr 1fr; margin-top: 0; }
+    .tk-price-grid .price-card { padding: 28px 24px; }
+    .tk-price-grid .price .tk-from { font-family: var(--f-body); font-size: 16px; font-weight: 600; color: var(--c-grey-mid); vertical-align: middle; }
+    .tk-feat { list-style: none; display: grid; gap: 10px; margin: 18px 0 24px; padding-top: 16px; border-top: 1px solid rgba(26,24,24,0.08); flex: 1; }
+    .tk-feat li { position: relative; padding-left: 24px; font-size: 15px; line-height: 1.5; }
+    .tk-feat li::before { content: ""; position: absolute; left: 0; top: 5px; width: 12px; height: 7px; border-left: 2.5px solid var(--c-red); border-bottom: 2.5px solid var(--c-red); transform: rotate(-45deg); }
+    .tk-price-grid .btn-red, .tk-price-grid .btn-dark { width: 100%; }
+    .btn-dark { display: inline-flex; align-items: center; justify-content: center; background: var(--c-black); color: var(--c-white); border-radius: 6px; font-family: var(--f-display); font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.6px; padding: 15px 30px; transition: background 0.2s var(--ease); }
+    .btn-dark:hover { background: var(--c-red); }
+
+    /* Track Social banner */
+    .tk-ts { display: grid; grid-template-columns: 1.1fr 1fr; overflow: hidden; border-radius: 18px; background: var(--ts-ink); color: var(--c-white); border: 2px solid var(--ts-pink); }
+    .tk-ts > * { min-width: 0; }
+    .tk-ts-media { position: relative; min-height: 340px; }
+    .tk-ts-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .tk-ts-body { padding: 36px 40px 40px; display: flex; flex-direction: column; gap: 14px; justify-content: center; }
+    .tk-ts-logo { width: 200px; height: auto; margin: -16px 0 -8px -12px; }
+    .tk-ts-when { color: var(--ts-pink-hot); font-size: 13px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; }
+    .tk-ts-body p { color: rgba(255,255,255,0.82); font-size: 16px; line-height: 1.65; }
+    .btn-pink { align-self: flex-start; display: inline-flex; align-items: center; justify-content: center; background: var(--ts-pink); color: var(--c-white); font-family: var(--f-display); font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.6px; padding: 15px 30px; border-radius: 6px; transition: background 0.2s var(--ease); }
+    .btn-pink:hover { background: #A1009F; }
+
+    /* Final CTA */
+    .tk-cta { background: var(--c-red); color: var(--c-white); padding-block: 88px; padding-left: var(--pad); padding-right: var(--pad); text-align: center; }
+    .tk-cta h2 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(36px, 5vw, 60px); line-height: 1; }
+    .tk-cta p { color: rgba(255,255,255,0.9); font-size: 17px; line-height: 1.6; margin: 16px auto 0; max-width: 560px; }
+    .tk-cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 30px; }
+    .tk-cta .btn-dark:hover { background: #000; }
+
+    @media (max-width: 1000px) {
+      .tk-fac-wrap, .tk-stand, .tk-use, .tk-ts { grid-template-columns: 1fr; gap: 32px; }
+      .tk-fac-photo { min-height: 0; aspect-ratio: 16 / 10; }
+      .tk-ts-media { min-height: 0; aspect-ratio: 16 / 9; }
+    }
+    @media (max-width: 760px) {
+      .tk-stats { grid-template-columns: 1fr 1fr; }
+      .tk-stat:nth-child(3) { padding-left: 0; border-left: none; }
+      .tk-stat:nth-child(n+3) { padding-top: 18px; }
+      .tk-strip { grid-template-columns: 1fr 1fr; }
+      .tk-strip figure:first-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 560px) {
+      .tk-fac, .tk-price-grid { grid-template-columns: 1fr; }
+      .tk-ts-body { padding: 28px 22px 32px; }
+      .btn-pink, .btn-dark { width: 100%; }
+    }
+  </style>
+</head>
+<body class="theme-track">
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="sponsorship.html">Sponsorship</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="page-hero">
+      <div class="page-hero-media" aria-hidden="true"><img src="images/stand-view.jpg" alt=""></div>
+      <div class="page-hero-inner">
+        <p class="tk-eyebrow">The Track at Northwood</p>
+        <h1 class="page-hero-title">Run Where <span class="hl">Champions Train.</span></h1>
+        <p class="page-hero-sub">A national-standard athletics venue in the heart of Stoke-on-Trent, with an 8-lane track, full field facilities and a 750-seat grandstand. Open to everyone, from age 4.</p>
+        <div class="page-hero-actions">
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-red">Join the Track</a>
+          <a href="#facilities" class="btn-outline-light">See the Facilities</a>
+        </div>
+      </div>
+      <div class="tk-stats">
+        <div class="tk-stat"><span class="tk-stat-num">8</span><span class="tk-stat-label">Lane national-standard track</span></div>
+        <div class="tk-stat"><span class="tk-stat-num">750</span><span class="tk-stat-label">Seat grandstand</span></div>
+        <div class="tk-stat"><span class="tk-stat-num">3,000+</span><span class="tk-stat-label">Outdoor event capacity</span></div>
+        <div class="tk-stat"><span class="tk-stat-num">£5</span><span class="tk-stat-label">Casual use, any age from 4</span></div>
+      </div>
+    </section>
+
+    <!-- ============ FACILITIES ============ -->
+    <section class="section find-us" id="facilities">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Track &amp; Field</p>
+        <h2 class="section-title">National Athletics Standard Facilities</h2>
+        <p class="lede">Everything you need for track and field, from sprints and hurdles to jumps and throws, all on one site.</p>
+        <div class="tk-fac-wrap">
+          <ul class="tk-fac">
+            <li><b>8</b><span>Lane athletics track</span></li>
+            <li><b>1</b><span>Steeplechase water jump</span></li>
+            <li><b>4</b><span>Long jump pits</span></li>
+            <li><b>2</b><span>High jump beds</span></li>
+            <li><b>1</b><span>Pole vault bed</span></li>
+            <li><b>2</b><span>Throwing cages for discus and hammer</span></li>
+            <li><b>2</b><span>Shot put circles</span></li>
+            <li><b>✓</b><span>Full set of hurdles</span></li>
+          </ul>
+          <figure class="tk-fac-photo"><img src="images/lane-curve.jpg" alt="Lane lines curving around the bend of the Northwood track" loading="lazy"><figcaption>8 lanes</figcaption></figure>
+        </div>
+        <div class="tk-strip">
+          <figure><img src="images/stand-view.jpg" alt="The track and infield seen from the grandstand seats" loading="lazy" style="object-position: 50% 45%;"></figure>
+          <figure><img src="images/lane-marks.jpg" alt="Blue and yellow relay markings on a lane line" loading="lazy"></figure>
+          <figure><img src="images/high-knees.jpg" alt="An athlete doing high-knee drills on the track" loading="lazy" style="object-position: 40% 35%;"></figure>
+        </div>
+        <div class="tk-notice" role="note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <div>
+            <b>Tuesdays &amp; Thursdays, 5pm–8pm</b>
+            <p>The track isn't available for public use at these times, as it's hired by City of Stoke Athletics Club. It's open as usual the rest of the week.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GRANDSTAND & EVENTS ============ -->
+    <section class="section about" id="stand">
+      <div class="section-inner about-inner tk-stand">
+        <div class="tk-stand-photo"><img src="images/aerial.jpg" alt="Aerial view of Northwood Stadium: the track, grandstand, sports hall and pitches" loading="lazy"></div>
+        <div>
+          <p class="about-label">— Built for Big Days</p>
+          <h2 class="about-title">A Proper Stadium Setting</h2>
+          <p class="tk-copy">From county championships to school finals, our grandstand and facilities are ready for spectated events of every size.</p>
+          <ul class="tk-stand-list">
+            <li><b>750</b>seat grandstand</li>
+            <li><b>3,000+</b>outdoor event capacity</li>
+            <li>Changing rooms and toilets in the stand</li>
+          </ul>
+          <a href="venue-hire.html" class="btn-about">Hire the Track for Your Event</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ USE THE TRACK ============ -->
+    <section class="section" id="use">
+      <div class="section-inner tk-use">
+        <div class="tk-copy-dark">
+          <p class="section-eyebrow">— Use the Track</p>
+          <h2 class="section-title">Open to Everyone, From Age 4</h2>
+          <p>You don't need to be in a club to run here. Whether you're training for a race, getting back into running or bringing the kids down for a few laps, <strong>the track is open to anyone aged 4 and up</strong>.</p>
+          <p>Pay as you go, or take out a membership and train as often as you like.</p>
+          <div class="tk-use-photo"><img src="images/warm-up-line.jpg" alt="Runners of all ages warming up together on the Northwood track" loading="lazy"></div>
+        </div>
+        <div class="price-grid tk-price-grid">
+          <div class="price-card">
+            <h3>Casual Use</h3>
+            <p class="who">Turn up and run</p>
+            <div class="price">£5</div>
+            <p class="per">per visit</p>
+            <ul class="tk-feat"><li>No membership needed</li><li>Any age from 4</li><li>Run at your own pace</li></ul>
+            <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-dark">Get a Day Pass</a>
+          </div>
+          <div class="price-card featured">
+            <span class="badge">Best value</span>
+            <h3>Track Membership</h3>
+            <p class="who">Train as often as you like</p>
+            <div class="price"><small class="tk-from">from</small> £15</div>
+            <p class="per">per month</p>
+            <ul class="tk-feat"><li>Unlimited track access</li><li>Field facilities included</li><li>Ideal for regular training</li></ul>
+            <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-red">Join the Track</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TRACK SOCIAL ============ -->
+    <section class="section find-us" id="track-social">
+      <div class="section-inner">
+        <div class="tk-ts">
+          <div class="tk-ts-media"><img src="images/group.jpg" alt="A large group of Track Social runners in front of the grandstand" style="object-position: center 58%;"></div>
+          <div class="tk-ts-body">
+            <img src="images/track-social-logo.png" alt="Track Social" class="tk-ts-logo">
+            <span class="tk-ts-when">Last Monday of every month · 6:30–8:30pm · Free</span>
+            <p>Our free monthly community running event. A guest running club leads the session, with music, food and a social afterwards. All abilities welcome.</p>
+            <a href="tracksocial.html" class="btn-pink">Explore Track Social</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CALL TO ACTION ============ -->
+    <section class="tk-cta">
+      <h2>Ready to Run?</h2>
+      <p>Join online today, or call us and we'll help you get started.</p>
+      <div class="tk-cta-actions">
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-dark">Join the Track</a>
+        <a href="tel:+447547438786" class="btn-outline-light">Call 07547 438786</a>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="gym.html">Gym</a>
+          <a href="track.html">Track</a>
+          <a href="youthclub.html">Youth Club</a>
+          <a href="tracksocial.html">Track Social</a>
+          <a href="events.html">Events</a>
+          <a href="sponsorship.html">Sponsorship</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <p class="footer-charity">Northwood Community Sports is wholly owned by City of Stoke Athletics and
+        Community Sports Limited, a registered charity (no. 1195927).</p>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="subpage.js"></script>
+</body>
+</html>
