@@ -152,6 +152,7 @@
   padding: 0.9rem 1.1rem; border-radius: 8px; margin-bottom: 1rem;
 }
 .ab-unavailable.hidden { display: none; }
+.ab-block-offer { display: inline-block; margin: 0.4rem 0 0 0.4rem; font-family: var(--f-body); font-size: 0.85rem; font-weight: 600; color: #3F7148; background: #EAF3EC; border-radius: 999px; padding: 0.3rem 0.8rem; }
 .ab-empty {
   text-align: center;
   font-family: var(--f-body);
@@ -831,7 +832,27 @@ const auth = firebase.auth();
 
 const SQUARE_APP_ID      = "sq0idp-Eu6Tqih9lr9FWSjmWNJoeg";
 const SQUARE_LOCATION_ID = "LTXW0H1YBMZNY";
-const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctions.net/createSquarePayment";
+const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctions.net/createSquarePayment"; // old, no longer used by this page
+// All bookings now go through this function, which works out the price,
+// checks there's room, takes the card payment and saves the booking — see
+// createActivityBooking.js in the Firebase functions folder.
+const BOOKING_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctions.net/createActivityBooking";
+
+// Same pricing rule as pricing.js in the functions folder. This copy only
+// SHOWS the total; the server works it out again and charges its own figure
+// (a mismatch is refused). Block discount: booking at least
+// blockMinSessions sessions charges blockPrice per person per session.
+function calcActivityTotalPence(activity, people, sessionCount) {
+  const min = Number(activity.blockMinSessions);
+  const useBlock = Number.isInteger(min) && min >= 2 && activity.blockPrice != null && Number(activity.blockPrice) >= 0 && sessionCount >= min;
+  const perSessionPence = Math.round(Number(useBlock ? activity.blockPrice : activity.price) * 100);
+  return { totalPence: people * perSessionPence * sessionCount, perSessionPence, useBlock };
+}
+function blockOfferText(activity) {
+  const min = Number(activity.blockMinSessions);
+  if (!Number.isInteger(min) || min < 2 || activity.blockPrice == null) return "";
+  return `Book ${min}+ sessions for £${Number(activity.blockPrice).toFixed(2)} a session`;
+}
 
 // Flip to true once the booking confirmation email Cloud Function is live.
 // Until then the confirmation popup tells customers to note their booking
@@ -2025,6 +2046,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           <div class="ab-activity-meta">${activity.provider} · ${activity.venue}${activity.ageNote ? " · " + activity.ageNote : ""}</div>
           <div class="ab-activity-desc">${activity.description}</div>
           <div class="ab-price-tag">${activity.priceLabel}</div>
+          ${blockOfferText(activity) ? `<div class="ab-block-offer">${blockOfferText(activity)}</div>` : ""}
         </div>
 
         <div class="ab-section-label">Choose Session(s)</div>
@@ -2266,7 +2288,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       const kids = children.length + selectedFamilyMemberIds.size;
       const totalPeople = adults + kids;
       const sessionCount = selectedSessionIds.size;
-      const total = totalPeople * activity.price * sessionCount;
+      const calc = calcActivityTotalPence(activity, totalPeople, sessionCount);
+      const total = calc.totalPence / 100;
 
       if (totalPeople === 0) {
         summaryLine.innerHTML = "Select who's booking on above";
@@ -2278,7 +2301,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         if (kids) parts.push(`${kids} ${kids === 1 ? "child" : "children"}`);
         const sessionsLabel = `${sessionCount} ${sessionCount === 1 ? "session" : "sessions"}`;
         const totalLabel = isFreeActivity ? "Free" : `£${total.toFixed(2)}`;
-        summaryLine.innerHTML = `${parts.join(", ")} × ${sessionsLabel} — Total: <span>${totalLabel}</span>`;
+        const blockNote = (!isFreeActivity && calc.useBlock) ? ` <small style="display:block; font-weight:600; color:#3F7148;">Block rate applied: £${(calc.perSessionPence / 100).toFixed(2)} a session</small>` : "";
+        summaryLine.innerHTML = `${parts.join(", ")} × ${sessionsLabel} — Total: <span>${totalLabel}</span>${blockNote}`;
       }
     }
 
@@ -2477,7 +2501,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
 
       const attendeeCount = attendees.length;
       const selectedSessions = activity.sessions.filter(s => selectedSessionIds.has(s.id));
-      const totalAmount = attendeeCount * activity.price * selectedSessions.length;
+      const totalPence = calcActivityTotalPence(activity, attendeeCount, selectedSessions.length).totalPence;
+      let totalAmount = totalPence / 100;
 
       const effectivePaymentMethod = isFreeActivity ? "free" : (isStaffMode ? "venue" : paymentMethod);
       const effectivePaymentStatus = isFreeActivity
@@ -2490,19 +2515,12 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       submitBtn.textContent = "Processing...";
 
       try {
-        let squarePaymentId = null;
-        let squareReceiptUrl = null;
-
-        // A shared bookingGroupId ties the per-session docs together when
-        // more than one session was booked in a single go.
+        // One key per checkout: it's the booking group's id, Square's
+        // idempotency key, and stops a double-click booking twice.
         const bookingGroupId = generateIdempotencyKey();
-        // Short, human-friendly reference shown to the customer, saved on
-        // every booking doc, and sent to Square as the payment's reference —
-        // so staff can match a phone call, email or Square transaction to a
-        // booking, e.g. "NW-K3F9QZ".
-        const bookingRef = "NW-" + bookingGroupId.split("-")[1].slice(0, 6).toUpperCase().padEnd(6, "0");
 
-        // Only charge via Square if this is an online payment.
+        // Card details only — the amount charged is decided by the server.
+        let payment = null;
         if (effectivePaymentMethod === "online") {
           if (!card) {
             msg.textContent = "Payment system isn't ready yet. Please wait a moment and try again.";
@@ -2515,8 +2533,6 @@ const CONFIRMATION_EMAILS_ENABLED = true;
             msg.className = "form-message error";
             return;
           }
-
-          const amountPence = Math.round(totalAmount * 100);
           const payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
           const verificationResult = await payments.verifyBuyer(result.token, {
             amount: totalAmount.toFixed(2),
@@ -2529,124 +2545,40 @@ const CONFIRMATION_EMAILS_ENABLED = true;
             msg.className = "form-message error";
             return;
           }
-
-          const idempotencyKey = generateIdempotencyKey();
-          const response = await fetch(CHARGE_FUNCTION_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sourceId: result.token,
-              verificationToken: verificationResult.token,
-              registrationId: bookingRef,
-              idempotencyKey,
-              amountMoney: { amount: amountPence, currency: "GBP" },
-              bookingType: "activity",
-              description: `Northwood ${activity.name} - ${contactName} (${attendeeCount}) - ${selectedSessions.map(s => `${s.dow} ${s.date}`).join(", ")}`,
-              buyerEmail: contactEmail
-            })
-          });
-          const chargeResult = await response.json();
-          if (!response.ok || !chargeResult.success) {
-            msg.textContent = chargeResult.error || "Payment failed. Please try again.";
-            msg.className = "form-message error";
-            return;
-          }
-          squarePaymentId = chargeResult.paymentId;
-          // Only trust a proper https link (it comes from our own function,
-          // but it ends up as a clickable link for the customer).
-          squareReceiptUrl = /^https:\/\//.test(chargeResult.receiptUrl || "") ? chargeResult.receiptUrl : null;
+          payment = { sourceId: result.token, verificationToken: verificationResult.token };
         }
 
-        // Capacity-safe write: a transaction reads the live booked count for
-        // EVERY selected session (kept in small counter docs, since sessions
-        // themselves live in this file's config, not Firestore), checks each
-        // one can fit the WHOLE group (attendeeCount, not just 1), then
-        // writes one booking doc per session — all sessions succeed or none
-        // do. This protects against a staff desk booking and an online
-        // booking landing on the last spot(s) of any selected session at once.
-        const counterRefs = selectedSessions.map(s => db.collection("activitySessionCounts").doc(s.id));
+        // Signed in (staff or customer)? Send proof, so the server can
+        // trust staff mode and link the booking to the customer's account.
+        const headers = { "Content-Type": "application/json" };
+        if (auth.currentUser) headers.Authorization = "Bearer " + await auth.currentUser.getIdToken();
 
-        // One activityBookingGroups doc is written per checkout (regardless of
-        // how many sessions were selected) purely so the confirmation email
-        // Cloud Function has a single, reliable trigger per checkout instead
-        // of firing once per session doc. It's a snapshot/summary record —
-        // the per-session activityBookings docs above remain the source of
-        // truth for capacity and the admin dashboard.
-        const groupRef = db.collection("activityBookingGroups").doc(bookingGroupId);
-
-        await db.runTransaction(async (tx) => {
-          const counterDocs = await Promise.all(counterRefs.map(ref => tx.get(ref)));
-
-          const currentBookedById = {};
-          selectedSessions.forEach((s, i) => {
-            currentBookedById[s.id] = counterDocs[i].exists ? (counterDocs[i].data().booked || 0) : 0;
-          });
-
-          const fullSession = selectedSessions.find(s =>
-            s.capacity != null && (currentBookedById[s.id] + attendeeCount) > s.capacity
-          );
-          if (fullSession) {
-            throw new Error("FULL:" + fullSession.id);
-          }
-
-          selectedSessions.forEach((s, i) => {
-            tx.set(counterRefs[i], { booked: currentBookedById[s.id] + attendeeCount }, { merge: true });
-            // Named bookingDocRef (not bookingRef) so it doesn't shadow the
-            // NW-XXXXXX reference saved in the `bookingRef` field below.
-            const bookingDocRef = db.collection("activityBookings").doc();
-            tx.set(bookingDocRef, {
-              activityId: activity.id,
-              activityName: activity.name,
-              provider: activity.provider,
-              sessionId: s.id,
-              sessionDate: s.date,
-              sessionTime: s.time,
-              bookingGroupId: selectedSessions.length > 1 ? bookingGroupId : null,
-              bookingRef,
-              contactName,
-              contactEmail: contactEmail || null,
-              contactPhone,
-              contactPostcode: contactPostcode || null,
-              contactExtraFields,
-              attendees,
-              attendeeCount,
-              paymentMethod: effectivePaymentMethod,
-              paymentStatus: effectivePaymentStatus,
-              amount: attendeeCount * activity.price,
-              squarePaymentId: squarePaymentId || null,
-              squareReceiptUrl: squareReceiptUrl || null,
-              bookedBy: isStaffMode ? "staff" : "public",
-              staffEmail: isStaffMode ? auth.currentUser.email : null,
-              customerId: currentCustomer ? currentCustomer.uid : null,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-          });
-
-          tx.set(groupRef, {
+        const response = await fetch(BOOKING_FUNCTION_URL, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            idempotencyKey: bookingGroupId,
             activityId: activity.id,
-            activityName: activity.name,
-            provider: activity.provider,
-            sessions: selectedSessions.map(s => ({ id: s.id, date: s.date, dow: s.dow, time: s.time })),
-            contactName,
-            contactEmail: contactEmail || null,
-            contactPhone,
-            contactPostcode: contactPostcode || null,
-            contactExtraFields,
+            sessionIds: selectedSessions.map(s => s.id),
+            contact: { name: contactName, phone: contactPhone, email: contactEmail || null, postcode: contactPostcode || null, extraFields: contactExtraFields },
             attendees,
-            attendeeCount,
-            sessionCount: selectedSessions.length,
-            bookingRef,
             paymentMethod: effectivePaymentMethod,
-            paymentStatus: effectivePaymentStatus,
-            totalAmount,
-            squarePaymentId: squarePaymentId || null,
-            squareReceiptUrl: squareReceiptUrl || null,
-            bookedBy: isStaffMode ? "staff" : "public",
-            staffEmail: isStaffMode ? auth.currentUser.email : null,
-            customerId: currentCustomer ? currentCustomer.uid : null,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+            staffCollectState,
+            payment,
+            expectedTotalPence: totalPence
+          })
         });
+        let booked = {};
+        try { booked = await response.json(); } catch (e) { /* not JSON */ }
+        if (!response.ok || !booked.success) {
+          if (booked.code === "FULL") throw new Error("FULL:" + (booked.sessionId || ""));
+          const e = new Error(booked.code || "BOOKING_FAILED");
+          e.userMessage = booked.error || "Your booking couldn't be completed. Please try again.";
+          throw e;
+        }
+        const bookingRef = booked.bookingRef;
+        const squareReceiptUrl = /^https:\/\//.test(booked.receiptUrl || "") ? booked.receiptUrl : null;
+        totalAmount = Number(booked.totalAmount);
 
         // Persist any newly typed-in children that were ticked "save to my
         // account" — so next visit they show up in the saved-family picker
@@ -2704,8 +2636,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           sessions: selectedSessions,
           attendees,
           totalAmount,
-          paymentMethod: effectivePaymentMethod,
-          paymentStatus: effectivePaymentStatus,
+          paymentMethod: booked.paymentMethod,
+          paymentStatus: booked.paymentStatus,
           receiptUrl: squareReceiptUrl,
           contactEmail,
           isStaffMode
@@ -2724,7 +2656,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
             ? `Sorry, the ${fullSession.dow} ${fmtDate(fullSession.date)} session just filled up — please adjust your selection.`
             : "Sorry, one of your selected sessions just filled up — please adjust your selection.";
         } else {
-          msg.textContent = "An unexpected error occurred. Please try again or contact Northwood Stadium.";
+          msg.textContent = err.userMessage || "An unexpected error occurred. Please try again or contact Northwood Stadium.";
         }
         msg.className = "form-message error";
       } finally {

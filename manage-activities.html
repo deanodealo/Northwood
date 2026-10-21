@@ -394,6 +394,17 @@ input[type="date"], input[type="time"] {
           <input type="checkbox" id="fPayAtVenue" checked>
           <label for="fPayAtVenue">Allow customers to pay at the venue (not just online)</label>
         </div>
+        <div class="form-row">
+          <div>
+            <label>Block discount: minimum sessions (optional)</label>
+            <input type="number" id="fBlockMin" min="2" step="1" placeholder="e.g. 7">
+          </div>
+          <div>
+            <label>Block price per person, per session (£)</label>
+            <input type="number" id="fBlockPrice" min="0" step="0.01" placeholder="e.g. 6">
+          </div>
+        </div>
+        <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">Leave both blank for no discount. Example: 7 and £6 means anyone booking 7 or more sessions in one go pays £6 a session instead of the normal price, per person (2 children × 7 sessions = £84). The booking page shows the discount automatically and the payment system charges it.</p>
 
         <div class="ma-section-label">Colour Scheme</div>
         <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Pick the colour of the facility this activity runs in — Pitch green for 3G / football, Court blue for the sports hall, Gym black for the gym, Track red for athletics or anything else. Used for the activity's tab, booking card and home page card.</p>
@@ -947,6 +958,8 @@ const SEED_ACTIVITIES = [
   const fPrice = document.getElementById("fPrice");
   const fPriceLabel = document.getElementById("fPriceLabel");
   const fPayAtVenue = document.getElementById("fPayAtVenue");
+  const fBlockMin = document.getElementById("fBlockMin");
+  const fBlockPrice = document.getElementById("fBlockPrice");
   const slugPreview = document.getElementById("slugPreview");
   const colorSwatchesEl = document.getElementById("colorSwatches");
   const imageUploadArea = document.getElementById("imageUploadArea");
@@ -1235,6 +1248,7 @@ const SEED_ACTIVITIES = [
     fName.value = ""; fProvider.value = ""; fVenue.value = ""; fDescription.value = ""; fInfoPage.value = "";
     fAgeNote.value = ""; fStatus.value = "active"; fPrice.value = ""; fPriceLabel.value = "";
     fPayAtVenue.checked = true;
+    fBlockMin.value = ""; fBlockPrice.value = "";
     fAttendanceRegister.checked = false;
     slugPreview.textContent = "";
     formMsg.textContent = ""; formMsg.className = "form-message";
@@ -1271,6 +1285,8 @@ const SEED_ACTIVITIES = [
       fStatus.value = activity.status; fPrice.value = activity.price; fPriceLabel.value = activity.priceLabel;
       fPriceLabel.dataset.touched = "1";
       fPayAtVenue.checked = !!activity.payAtVenue;
+      fBlockMin.value = activity.blockMinSessions != null ? activity.blockMinSessions : "";
+      fBlockPrice.value = activity.blockPrice != null ? activity.blockPrice : "";
       fAttendanceRegister.checked = !!activity.attendanceRegister;
       currentAccent = activity.accentColor || ACCENT_PRESETS[0].hex;
       currentImageUrl = activity.imageUrl || null;
@@ -1340,6 +1356,24 @@ const SEED_ACTIVITIES = [
       formMsg.className = "form-message error";
       return;
     }
+    // Block discount: both blank = none; otherwise both needed, and the
+    // block price must actually be a discount.
+    const blockMinRaw = fBlockMin.value.trim(), blockPriceRaw = fBlockPrice.value.trim();
+    let blockMinSessions = null, blockPrice = null;
+    if (blockMinRaw || blockPriceRaw) {
+      blockMinSessions = Number(blockMinRaw);
+      blockPrice = Math.round(Number(blockPriceRaw) * 100) / 100;
+      if (!Number.isInteger(blockMinSessions) || blockMinSessions < 2 || !blockPriceRaw || isNaN(blockPrice) || blockPrice < 0) {
+        formMsg.textContent = "For a block discount, enter a minimum of 2 or more sessions and a block price — or leave both blank.";
+        formMsg.className = "form-message error";
+        return;
+      }
+      if (blockPrice >= price) {
+        formMsg.textContent = "The block price should be lower than the normal price per session.";
+        formMsg.className = "form-message error";
+        return;
+      }
+    }
     if (!currentSessions.length) {
       formMsg.textContent = "Add at least one session before saving.";
       formMsg.className = "form-message error";
@@ -1388,6 +1422,7 @@ const SEED_ACTIVITIES = [
         attendanceRegister: fAttendanceRegister.checked,
         price, priceLabel,
         payAtVenue: fPayAtVenue.checked,
+        blockMinSessions, blockPrice,
         accentColor: currentAccent,
         imageUrl: imageUrl || null,
         sessions: currentSessions,
