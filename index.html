@@ -1294,13 +1294,21 @@
       }
       featuresEl.innerHTML = PERMANENT_CARDS + activities.map(a => {
         const media = a.imageUrl ? `<img src="${a.imageUrl}" alt="${escAttr(a.name)}">` : "";
+        // Activities with their own page (the "More info page" set in Manage
+        // Activities, e.g. funetics.html) link there, and customers book
+        // from that page. Otherwise go straight to booking, opened on this
+        // activity's tab.
+        const hasPage = /^[A-Za-z0-9_-]+\.html(#[A-Za-z0-9_-]+)?$/.test(a.infoPage || "");
+        const link = hasPage
+          ? `<a href="${escAttr(a.infoPage)}" class="activity-feature-link">Find out more &amp; book →</a>`
+          : `<a href="activitybooking.html?activity=${encodeURIComponent(a.id)}" class="activity-feature-link">Click here to book your session →</a>`;
         return `
           <div class="activity-feature" style="--accent:${normalizeAccent(a.accentColor)}">
             <div class="activity-feature-media">${media}</div>
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">${a.name}</h3>
               <p class="activity-feature-body">${a.description || ""}</p>
-              <a href="activitybooking.html" class="activity-feature-link">Click here to book your session →</a>
+              ${link}
             </div>
           </div>
         `;

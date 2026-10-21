@@ -355,6 +355,11 @@ input[type="date"], input[type="time"] {
           <label>Description</label>
           <textarea id="fDescription" rows="3" placeholder="A sentence or two describing the activity"></textarea>
         </div>
+        <div class="form-row single">
+          <label>More info page (optional)</label>
+          <input type="text" id="fInfoPage" placeholder="e.g. funetics.html">
+        </div>
+        <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">If this activity has its own page on the website, enter its file name here. The homepage card will then say "Find out more &amp; book" and open that page, and customers book from there. Leave blank to send customers straight to the booking page.</p>
         <div class="form-row">
           <div>
             <label>Age Note (optional)</label>
@@ -935,6 +940,7 @@ const SEED_ACTIVITIES = [
   const fProvider = document.getElementById("fProvider");
   const fVenue = document.getElementById("fVenue");
   const fDescription = document.getElementById("fDescription");
+  const fInfoPage = document.getElementById("fInfoPage");
   const fAgeNote = document.getElementById("fAgeNote");
   const fStatus = document.getElementById("fStatus");
   const fAttendanceRegister = document.getElementById("fAttendanceRegister");
@@ -1226,7 +1232,7 @@ const SEED_ACTIVITIES = [
     pendingImageFile = null;
     bookedCountsForEdit = {};
     currentExtraFields = [];
-    fName.value = ""; fProvider.value = ""; fVenue.value = ""; fDescription.value = "";
+    fName.value = ""; fProvider.value = ""; fVenue.value = ""; fDescription.value = ""; fInfoPage.value = "";
     fAgeNote.value = ""; fStatus.value = "active"; fPrice.value = ""; fPriceLabel.value = "";
     fPayAtVenue.checked = true;
     fAttendanceRegister.checked = false;
@@ -1261,6 +1267,7 @@ const SEED_ACTIVITIES = [
       formTitle.textContent = `Edit "${activity.name}"`;
       fName.value = activity.name; fProvider.value = activity.provider; fVenue.value = activity.venue;
       fDescription.value = activity.description || ""; fAgeNote.value = activity.ageNote || "";
+      fInfoPage.value = activity.infoPage || "";
       fStatus.value = activity.status; fPrice.value = activity.price; fPriceLabel.value = activity.priceLabel;
       fPriceLabel.dataset.touched = "1";
       fPayAtVenue.checked = !!activity.payAtVenue;
@@ -1325,6 +1332,14 @@ const SEED_ACTIVITIES = [
       formMsg.className = "form-message error";
       return;
     }
+    // Only a page on this site (e.g. funetics.html) is allowed, so nothing
+    // odd can end up in the homepage link.
+    const infoPage = fInfoPage.value.trim().replace(/^\.?\//, "");
+    if (infoPage && !/^[A-Za-z0-9_-]+\.html(#[A-Za-z0-9_-]+)?$/.test(infoPage)) {
+      formMsg.textContent = "The more info page should be just a page name from this site, like funetics.html.";
+      formMsg.className = "form-message error";
+      return;
+    }
     if (!currentSessions.length) {
       formMsg.textContent = "Add at least one session before saving.";
       formMsg.className = "form-message error";
@@ -1367,6 +1382,7 @@ const SEED_ACTIVITIES = [
       const payload = {
         name, provider, venue,
         description: fDescription.value.trim(),
+        infoPage: infoPage || null,
         ageNote: fAgeNote.value.trim() || null,
         status: fStatus.value,
         attendanceRegister: fAttendanceRegister.checked,

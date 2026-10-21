@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Funetics Kids Athletics | Northwood Stadium</title>
+  <meta name="description" content="Funetics at Northwood Stadium: England Athletics kids athletics for ages 4 to 12. Running, jumping and throwing every Tuesday and Saturday in term time, £3.50 a session. Book online.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subpage.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#1A1818">
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       FUNETICS PAGE
+       Funetics has its own sub-brand on this page: purple, lilac, white
+       and pink, taken from the Funetics poster. The Northwood header and
+       footer keep their red. Inside <main>, --c-red is pointed at the
+       Funetics purple so shared pieces (.btn-red, .section-eyebrow) match.
+
+       BOOKING: every "Book" button points at activitybooking.html, the
+       site's own booking + Square payment page, with ?activity=funetics
+       to open the Funetics tab (see the DEVELOPER NOTE at the bottom).
+
+       PHOTO SLOTS: every <div class="fn-ph">…</div> is a placeholder for
+       the photographer's shots. Replace the whole div with
+         <img src="images/funetics-FILE.jpg" alt="…" loading="lazy">
+       inside the same parent; the parent already sets the size and crop.
+
+       PLACEHOLDER TEXT: anything in <span class="tbc"> still needs confirming.
+       ═══════════════════════════════════════════════════════════ */
+    :root {
+      --fn-purple: #742787;      /* sampled from the poster */
+      --fn-purple-deep: #521A60;
+      --fn-lilac: #AE72F9;       /* the lilac outline on the FUNETICS logo */
+      --fn-lilac-pale: #F3EAFE;
+      --fn-pink: #E8407A;        /* pink from the poster photo */
+      --fn-pink-pale: #FDE6EF;
+    }
+    main { --c-red: var(--fn-purple); --accent: var(--fn-purple); --accent-ink: var(--fn-purple); --accent-tint: var(--fn-lilac-pale); }
+    .tbc { background: #FFF1B8; color: #5C4400; border-radius: 3px; padding: 0 4px; font-weight: 600; }
+
+    /* ---------- Placeholder photo ---------- */
+    .fn-ph { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; text-align: center;
+      background: repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 14px, transparent 14px 28px), linear-gradient(160deg, var(--fn-purple) 0%, var(--fn-purple-deep) 100%);
+      outline: 2px dashed rgba(174,114,249,0.7); outline-offset: -10px; }
+    .fn-ph svg { width: 30px; height: 30px; color: var(--fn-lilac); }
+    .fn-ph b { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 19px; color: var(--c-white); }
+    .fn-ph span { font-size: 12px; color: rgba(255,255,255,0.7); max-width: 260px; line-height: 1.45; }
+
+    /* ---------- Hero ---------- */
+    .fn-hero { position: relative; overflow: hidden; background: var(--fn-purple); color: var(--c-white);
+      padding: calc(var(--header-h) + 60px) var(--pad) 80px; }
+    /* Track graphic (brand pack "Brand Graphic"), same shape as venue-hire.html, in Funetics lilac */
+    .fn-track { position: absolute; pointer-events: none; z-index: 0; color: var(--fn-lilac); left: 50%; top: 50%; width: 165%; height: auto; transform: translate(-42%, -50%); opacity: 0.5; }
+    .fn-hero-inner > div:first-child { position: relative; z-index: 2; }
+    .fn-track rect { fill: none; stroke: currentColor; stroke-width: 26; }
+    .fn-hero-inner { position: relative; z-index: 2; max-width: var(--max-w); margin: 0 auto; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+    .fn-hero-inner > * { min-width: 0; }
+    .fn-tag { display: inline-flex; align-items: center; gap: 8px; background: var(--c-white); color: var(--fn-purple); font-weight: 700; font-size: 12px; letter-spacing: 1.6px; text-transform: uppercase; padding: 7px 12px; border-radius: 4px; margin-bottom: 20px; }
+    .fn-logo { display: block; width: min(560px, 100%); height: auto; margin: 0 0 18px -10px; filter: drop-shadow(0 10px 24px rgba(40,8,50,0.35)); }
+    .fn-hero h1 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(28px, 3.4vw, 44px); line-height: 1.02; }
+    .fn-hero h1 span { color: #FF9CC0; }
+    .fn-hero-sub { color: rgba(255,255,255,0.88); font-size: clamp(16px, 1.6vw, 19px); line-height: 1.6; max-width: 540px; margin-top: 14px; }
+    .fn-hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
+    .btn-pink { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: var(--fn-pink); color: var(--c-white); border-radius: 6px;
+      font-family: var(--f-display); font-weight: 800; font-size: 19px; text-transform: uppercase; letter-spacing: 0.6px; padding: 16px 34px;
+      transition: background 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease); }
+    .btn-pink:hover { background: #CF2A63; transform: translateY(-2px); box-shadow: 0 10px 26px rgba(232,64,122,0.4); }
+    .fn-hero-photo { position: relative; aspect-ratio: 4 / 3.4; border-radius: 18px; overflow: hidden; border: 6px solid var(--c-white); box-shadow: 14px 14px 0 var(--fn-lilac); transform: rotate(1.5deg); }
+    .fn-hero-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .fn-price-badge { position: absolute; z-index: 3; left: -18px; bottom: -18px; background: var(--fn-pink); color: var(--c-white); border: 5px solid var(--c-white); border-radius: 50%; width: 132px; height: 132px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-8deg); box-shadow: 0 10px 26px rgba(0,0,0,0.25); }
+    .fn-price-badge b { font-family: var(--f-display); font-weight: 800; font-size: 40px; line-height: 1; }
+    .fn-price-badge span { font-family: var(--f-display); font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .fn-photo-wrap { position: relative; }
+    .fn-photo-wrap > .fn-hero-photo, .fn-photo-wrap > .fn-price-badge { z-index: 1; }
+    .fn-facts { position: relative; z-index: 2; max-width: var(--max-w); margin: 60px auto 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255,255,255,0.22); }
+    .fn-fact { padding: 20px 20px 0 0; }
+    .fn-fact + .fn-fact { padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.22); }
+    .fn-fact b { display: block; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.05; }
+    .fn-fact span { display: block; color: rgba(255,255,255,0.75); font-size: 14px; margin-top: 6px; line-height: 1.4; }
+
+    /* ---------- What is Funetics ---------- */
+    .fn-what { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: start; }
+    .fn-what > * { min-width: 0; }
+    .fn-copy p { color: var(--c-grey-mid); font-size: 17px; line-height: 1.75; margin-bottom: 16px; max-width: 620px; }
+    .fn-copy p strong { color: var(--c-black); }
+    .fn-vision { background: var(--fn-lilac-pale); border-left: 5px solid var(--fn-purple); border-radius: 0 12px 12px 0; padding: 22px 24px; margin-top: 8px; }
+    .fn-vision p { color: var(--fn-purple-deep); margin: 0; font-size: 16px; }
+    .fn-vision .fn-vision-label { font-weight: 700; font-size: 12px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--fn-purple); margin-bottom: 8px; }
+    .fn-benefits { list-style: none; display: grid; gap: 12px; }
+    .fn-benefits li { display: flex; gap: 14px; align-items: flex-start; background: var(--c-white); border-radius: 12px; padding: 18px 20px; box-shadow: 0 6px 20px rgba(82,26,96,0.07); }
+    .fn-benefits li i { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--fn-pink-pale); color: var(--fn-pink); display: grid; place-items: center; font-style: normal; font-weight: 800; }
+    .fn-benefits b { display: block; font-size: 16px; }
+    .fn-benefits span { display: block; color: var(--c-grey-mid); font-size: 14px; line-height: 1.5; margin-top: 2px; }
+
+    /* ---------- Run, jump, throw ---------- */
+    .fn-skills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
+    .fn-skill { background: var(--c-white); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(82,26,96,0.08); }
+    .fn-skill-media { position: relative; aspect-ratio: 4 / 3; background: var(--fn-purple); }
+    .fn-skill-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .fn-skill-body { padding: 22px 24px 26px; border-top: 5px solid var(--fn-lilac); }
+    .fn-skill:nth-child(2) .fn-skill-body { border-top-color: var(--fn-pink); }
+    .fn-skill:nth-child(3) .fn-skill-body { border-top-color: var(--fn-purple); }
+    .fn-skill h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 34px; line-height: 1; color: var(--fn-purple); }
+    .fn-skill p { color: var(--c-grey-mid); font-size: 15px; line-height: 1.6; margin-top: 8px; }
+
+    /* ---------- Sessions ---------- */
+    .fn-sessions-band { background: var(--fn-purple); color: var(--c-white); }
+    .fn-sessions-band .section-eyebrow, .fn-sessions-band .section-title { color: var(--c-white); }
+    .fn-sessions-band .lede { color: rgba(255,255,255,0.82); }
+    .fn-sessions { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+    .fn-session { background: var(--c-white); color: var(--c-black); border-radius: 18px; padding: 32px 32px 30px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+    .fn-session-day { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 44px; line-height: 1; color: var(--fn-purple); }
+    .fn-session-kind { display: inline-block; align-self: flex-start; margin-top: 10px; background: var(--fn-lilac-pale); color: var(--fn-purple); font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; }
+    .fn-session:nth-child(2) .fn-session-kind { background: var(--fn-pink-pale); color: #B4235A; }
+    .fn-session > p { color: var(--c-grey-mid); font-size: 15px; line-height: 1.65; margin-top: 16px; }
+    .fn-slots { list-style: none; display: grid; gap: 10px; margin: 20px 0 24px; }
+    .fn-slots li { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; border: 2px solid var(--fn-lilac-pale); border-radius: 12px; padding: 14px 16px; }
+    .fn-slots b { font-family: var(--f-display); font-weight: 800; font-size: 22px; text-transform: uppercase; }
+    .fn-slots small { display: block; color: var(--c-grey-mid); font-size: 13px; margin-top: 2px; }
+    .fn-age { background: var(--fn-purple); color: var(--c-white); font-weight: 700; font-size: 14px; padding: 6px 12px; border-radius: 999px; white-space: nowrap; }
+    .fn-session:nth-child(2) .fn-age { background: var(--fn-pink); }
+    .fn-session-foot { margin-top: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; padding-top: 18px; border-top: 1px solid rgba(26,24,24,0.08); }
+    .fn-session-price { font-family: var(--f-display); font-weight: 800; font-size: 30px; color: var(--c-black); }
+    .fn-session-price small { font-family: var(--f-body); font-size: 14px; color: var(--c-grey-mid); font-weight: 600; }
+    .fn-term-note { margin-top: 26px; color: rgba(255,255,255,0.8); font-size: 15px; }
+
+    /* ---------- Coaches ---------- */
+    .fn-coaches { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+    .fn-coach { display: grid; grid-template-columns: 200px 1fr; background: var(--c-white); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(82,26,96,0.08); }
+    .fn-coach > * { min-width: 0; }
+    .fn-coach-photo { position: relative; min-height: 240px; background: var(--fn-purple); }
+    .fn-coach-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .fn-coach-photo .fn-ph b { font-size: 16px; }
+    .fn-coach-body { padding: 26px 26px 24px; border-left: 5px solid var(--fn-pink); }
+    .fn-coach-body h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 32px; line-height: 1; }
+    .fn-coach-role { color: var(--fn-purple); font-weight: 700; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 6px; }
+    .fn-coach-body p { color: var(--c-grey-mid); font-size: 15px; line-height: 1.65; margin-top: 12px; }
+
+    /* ---------- Gallery ---------- */
+    .fn-gallery { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 200px; gap: 12px; margin-top: 36px; }
+    .fn-gallery figure { position: relative; margin: 0; border-radius: 12px; overflow: hidden; background: var(--fn-purple); }
+    .fn-gallery figure.big { grid-column: span 2; grid-row: span 2; }
+    .fn-gallery figure.wide { grid-column: span 2; }
+    .fn-gallery figure > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+    /* ---------- Book ---------- */
+    .fn-book > div { max-width: 760px; }
+    .fn-book > * { min-width: 0; }
+    .fn-steps { list-style: none; counter-reset: s; display: grid; gap: 14px; margin: 28px 0 30px; }
+    .fn-steps li { counter-increment: s; position: relative; padding: 18px 20px 18px 74px; background: var(--c-white); border-radius: 12px; box-shadow: 0 6px 18px rgba(82,26,96,0.06); }
+    .fn-steps li::before { content: counter(s); position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%;
+      background: var(--fn-pink); color: var(--c-white); font-family: var(--f-display); font-weight: 800; font-size: 20px; display: grid; place-items: center; }
+    .fn-steps b { display: block; font-size: 16px; }
+    .fn-steps span { display: block; color: var(--c-grey-mid); font-size: 14px; margin-top: 3px; line-height: 1.5; }
+    .fn-book-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .fn-link { font-weight: 700; color: var(--fn-purple); text-decoration: underline; }
+
+    /* ---------- FAQ ---------- */
+    .fn-faq { display: grid; gap: 10px; margin-top: 30px; max-width: 900px; }
+    .fn-faq details { background: var(--c-white); border-radius: 12px; box-shadow: 0 6px 18px rgba(82,26,96,0.06); }
+    .fn-faq summary { cursor: pointer; list-style: none; padding: 19px 56px 19px 22px; position: relative; font-weight: 700; font-size: 16px; }
+    .fn-faq summary::-webkit-details-marker { display: none; }
+    .fn-faq summary::after { content: "+"; position: absolute; right: 22px; top: 50%; transform: translateY(-50%); font-family: var(--f-display); font-weight: 800; font-size: 26px; color: var(--fn-pink); }
+    .fn-faq details[open] summary::after { content: "–"; }
+    .fn-faq details p { padding: 0 22px 20px; color: var(--c-grey-mid); line-height: 1.7; font-size: 15px; }
+    .fn-faq a { color: var(--fn-purple); font-weight: 700; text-decoration: underline; }
+
+    /* ---------- CTA ---------- */
+    .fn-cta { position: relative; overflow: hidden; background: var(--fn-pink); color: var(--c-white); text-align: center; }
+    .fn-cta .section-title { color: var(--c-white); }
+    .fn-cta p { color: rgba(255,255,255,0.92); max-width: 560px; margin: 12px auto 28px; font-size: 17px; line-height: 1.6; }
+    .fn-cta a.fn-mail { color: var(--c-white); font-weight: 700; text-decoration: underline; }
+    .fn-cta .fn-book-actions { justify-content: center; }
+    .btn-white { display: inline-flex; align-items: center; justify-content: center; background: var(--c-white); color: var(--fn-purple); border-radius: 6px;
+      font-family: var(--f-display); font-weight: 800; font-size: 19px; text-transform: uppercase; letter-spacing: 0.6px; padding: 16px 34px; transition: transform 0.2s var(--ease); }
+    .btn-white:hover { transform: translateY(-2px); }
+
+    @media (max-width: 1000px) {
+      .fn-track { opacity: 0.35; width: 150%; }
+      .fn-hero-inner, .fn-what { grid-template-columns: 1fr; gap: 40px; }
+      .fn-hero-photo { max-width: 560px; }
+      .fn-sessions, .fn-coaches { grid-template-columns: 1fr; }
+      .fn-skills { grid-template-columns: 1fr 1fr; }
+      .fn-gallery { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      .fn-facts { grid-template-columns: 1fr 1fr; }
+      .fn-fact:nth-child(3) { padding-left: 0; border-left: none; }
+      .fn-fact:nth-child(n+3) { padding-top: 16px; }
+      .fn-skills { grid-template-columns: 1fr; }
+      .fn-coach { grid-template-columns: 1fr; }
+      .fn-coach-photo { min-height: 260px; }
+      .fn-coach-body { border-left: none; border-top: 5px solid var(--fn-pink); }
+      .fn-gallery { grid-auto-rows: 160px; }
+      .fn-price-badge { width: 104px; height: 104px; left: -6px; bottom: -14px; }
+      .fn-price-badge b { font-size: 32px; }
+      .fn-price-badge span { font-size: 11px; }
+      .fn-price-badge { width: 112px; height: 112px; }
+      .btn-pink, .btn-white, .fn-book-actions .btn-red { width: 100%; }
+      .fn-session { padding: 26px 22px; }
+    }
+  </style>
+</head>
+<body class="theme-track">
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="sponsorship.html">Sponsorship</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="fn-hero">
+      
+      <div class="fn-hero-inner">
+        <div>
+          <p class="fn-tag">Designed by England Athletics</p>
+          <h2 class="fn-logo-wrap"><img src="images/funetics-logo.png" alt="Funetics" class="fn-logo" width="1000" height="261"></h2>
+          <h1>Train Like a <span>Champion!</span></h1>
+          <p class="fn-hero-sub">Fun, inclusive athletics for children aged 4 to 12. Weekly sessions at Northwood Stadium to learn running, jumping and throwing in a safe, supportive and super fun environment.</p>
+          <div class="fn-hero-actions">
+            <!-- BOOKING: the site's own booking + payment page -->
+            <a href="activitybooking.html?activity=funetics" class="btn-pink">Book Now</a>
+            <a href="#sessions" class="btn-outline-light">Session Times</a>
+          </div>
+        </div>
+        <div class="fn-photo-wrap">
+          <svg class="fn-track" viewBox="0 0 820 420" aria-hidden="true" focusable="false"><rect x="13" y="13" width="794" height="394" rx="197"/><rect x="47" y="47" width="726" height="326" rx="163"/><rect x="81" y="81" width="658" height="258" rx="129"/></svg>
+          <div class="fn-hero-photo">
+            <img src="images/funetics-hero-celebrate.jpg" alt="Funetics children celebrating with medals and certificates on the path beside the Northwood track" style="object-position: center 68%;">
+          </div>
+          <div class="fn-price-badge" aria-label="£3.50 per session"><b>£3.50</b><span>Per session</span></div>
+        </div>
+      </div>
+      <div class="fn-facts">
+        <div class="fn-fact"><b>£3.50</b><span>Per session, book online</span></div>
+        <div class="fn-fact"><b>Ages 4–12</b><span>Boys and girls, all abilities</span></div>
+        <div class="fn-fact"><b>Tue &amp; Sat</b><span>Two sessions a week</span></div>
+        <div class="fn-fact"><b>3 Nov – 19 Dec</b><span>Next term, every week until Christmas</span></div>
+      </div>
+    </section>
+
+    <!-- ============ WHAT IS FUNETICS ============ -->
+    <section class="section" id="what">
+      <div class="section-inner fn-what">
+        <div class="fn-copy">
+          <p class="section-eyebrow">— What Is Funetics?</p>
+          <h2 class="section-title">Fun First. Skills for Life.</h2>
+          <p>Created by <strong>England Athletics</strong>, funetics is a fun and inclusive kids athletics programme that helps 4 to 11-year-old children across the country learn, develop and practise <strong>running, jumping and throwing</strong> all year round, for a healthy, confident future.</p>
+          <p>Helping children have fun while getting active, funetics provides a safe, fun and nurturing environment for children to develop <strong>fundamental movement skills</strong> and the confidence to support them in different sports in the future.</p>
+          <div class="fn-vision">
+            <p class="fn-vision-label">England Athletics' vision</p>
+            <p>For every primary school aged child in the country to be able to access funetics sessions, learning the fundamental movement skills of running, throwing and jumping through a trackable, physical literacy-based course.</p>
+          </div>
+        </div>
+        <ul class="fn-benefits">
+          <li><i>✓</i><div><b>Builds confidence</b><span>Children try new things in a supportive group and see themselves improve.</span></div></li>
+          <li><i>✓</i><div><b>A base for every sport</b><span>Running, jumping and throwing sit underneath football, netball, rugby and more.</span></div></li>
+          <li><i>✓</i><div><b>Progress you can track</b><span>A structured England Athletics course, not just a run-around.</span></div></li>
+          <li><i>✓</i><div><b>Real athletics facilities</b><span>Sessions at Northwood Stadium, home to an 8-lane athletics track.</span></div></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ RUN, JUMP, THROW ============ -->
+    <section class="section find-us" id="skills">
+      <div class="section-inner">
+        <p class="section-eyebrow">— The Fundamentals</p>
+        <h2 class="section-title">Run. Jump. Throw.</h2>
+        <p class="lede">Every session is built around the three skills at the heart of athletics, taught through games and challenges children actually want to do.</p>
+        <div class="fn-skills">
+          <article class="fn-skill">
+            <div class="fn-skill-media"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Run</b><span>A child sprinting or racing, ideally mid-stride</span></div></div>
+            <div class="fn-skill-body"><h3>Run</h3><p>Speed, agility and balance through relays, races and chase games.</p></div>
+          </article>
+          <article class="fn-skill">
+            <div class="fn-skill-media"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Jump</b><span>A child mid-jump, hurdles or long jump</span></div></div>
+            <div class="fn-skill-body"><h3>Jump</h3><p>Hops, bounds and leaps that build power, coordination and landing control.</p></div>
+          </article>
+          <article class="fn-skill">
+            <div class="fn-skill-media"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Throw</b><span>A child throwing, e.g. foam javelin or ball</span></div></div>
+            <div class="fn-skill-body"><h3>Throw</h3><p>Safe, kid-sized throwing kit to learn technique and hand-eye coordination.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SESSIONS ============ -->
+    <section class="section fn-sessions-band" id="sessions">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Session Times</p>
+        <h2 class="section-title">Two Ways to Take Part</h2>
+        <p class="lede">Every Tuesday and Saturday during term time. This term runs from Tuesday 3 November to Saturday 19 December. Come to one or both.</p>
+        <div class="fn-sessions">
+          <article class="fn-session">
+            <h3 class="fn-session-day">Tuesdays</h3>
+            <span class="fn-session-kind">Fun &amp; games, all ages</span>
+            <p>A high-energy, games-based session for every age group together. Perfect for first-timers and children who just love to move.</p>
+            <ul class="fn-slots">
+              <li><div><b><span class="tbc">[time]</span></b><small>Sports Hall, Northwood Stadium</small></div><span class="fn-age">Ages 4–12</span></li>
+            </ul>
+            <div class="fn-session-foot">
+              <span class="fn-session-price">£3.50 <small>per session</small></span>
+              <a href="activitybooking.html?activity=funetics" class="btn-red">Book Tuesday</a>
+            </div>
+          </article>
+          <article class="fn-session">
+            <h3 class="fn-session-day">Saturdays</h3>
+            <span class="fn-session-kind">Technical development</span>
+            <p>More structured sessions focused on technique, split by age so every group is coached at the right level.</p>
+            <ul class="fn-slots">
+              <li><div><b>10:00–11:00am</b><small><span class="tbc">[venue: track or sports hall?]</span></small></div><span class="fn-age">Ages 4–7</span></li>
+              <li><div><b>11:00am–12:00pm</b><small><span class="tbc">[venue: track or sports hall?]</span></small></div><span class="fn-age">Ages 8+</span></li>
+            </ul>
+            <div class="fn-session-foot">
+              <span class="fn-session-price">£3.50 <small>per session</small></span>
+              <a href="activitybooking.html?activity=funetics" class="btn-red">Book Saturday</a>
+            </div>
+          </article>
+        </div>
+        <p class="fn-term-note"><b>This term:</b> Tuesdays 3 November to 15 December, and Saturdays 7 November to 19 December, our last Funetics session before Christmas. Live dates and spaces are shown on the booking page.</p>
+      </div>
+    </section>
+
+    <!-- ============ COACHES ============ -->
+    <section class="section" id="coaches">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Meet the Coaches</p>
+        <h2 class="section-title">Danny &amp; Zrian</h2>
+        <p class="lede">Our Funetics sessions are led by two of the Northwood coaching team, who know every child by name.</p>
+        <div class="fn-coaches">
+          <article class="fn-coach">
+            <div class="fn-coach-photo"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Danny</b><span>Head and shoulders, in Northwood kit</span></div></div>
+            <div class="fn-coach-body">
+              <h3>Danny</h3>
+              <p class="fn-coach-role">Funetics Coach</p>
+              <p><span class="tbc">[2–3 lines: coaching background, qualifications, favourite event to teach]</span></p>
+            </div>
+          </article>
+          <article class="fn-coach">
+            <div class="fn-coach-photo"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Zrian</b><span>Head and shoulders, in Northwood kit</span></div></div>
+            <div class="fn-coach-body">
+              <h3>Zrian</h3>
+              <p class="fn-coach-role">Funetics Coach</p>
+              <p><span class="tbc">[2–3 lines: coaching background, qualifications, favourite event to teach]</span></p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GALLERY ============ -->
+    <section class="section find-us" id="gallery">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Funetics at Northwood</p>
+        <h2 class="section-title">See It in Action</h2>
+        <div class="fn-gallery">
+          <figure class="big"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Group shot</b><span>The whole group celebrating, certificates or medals</span></div></figure>
+          <figure><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Coach and child</b><span>A coach demonstrating or high-fiving</span></div></figure>
+          <figure><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Saturday technical</b><span>Close-up of technique work</span></div></figure>
+          <figure><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Tuesday games</b><span>Children playing a game in the sports hall</span></div></figure>
+          <figure><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Parents</b><span>Parents watching from the side</span></div></figure>
+          <figure class="wide"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>On the track</b><span>Children racing on the track, stand behind</span></div></figure>
+          <figure class="wide"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Kit close-up</b><span>Hurdles, foam javelins, cones</span></div></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BOOK ============ -->
+    <section class="section" id="book">
+      <div class="section-inner fn-book">
+        <div>
+          <p class="section-eyebrow">— Book &amp; Pay Online</p>
+          <h2 class="section-title">Book in a Couple of Minutes</h2>
+          <p class="lede">Bookings and payments are all taken here on the Northwood website.</p>
+          <ol class="fn-steps">
+            <li><b>Pick your sessions</b><span>Choose Tuesdays, Saturdays or both, as many weeks as you like.</span></li>
+            <li><b>Add your child's details</b><span>Booking for brothers and sisters? Add them all in the same booking.</span></li>
+            <li><b>Pay securely online</b><span>£3.50 per child, per session. You'll get a confirmation, with an option to add the sessions to your calendar.</span></li>
+          </ol>
+          <div class="fn-book-actions">
+            <a href="activitybooking.html?activity=funetics" class="btn-pink">Book Funetics</a>
+            <a href="activitybooking.html#my-bookings" class="fn-link">Manage my bookings</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="section find-us" id="faq">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Parents' Questions</p>
+        <h2 class="section-title">Good to Know</h2>
+        <div class="fn-faq">
+          <details><summary>Does my child need any athletics experience?</summary><p>Not at all. Funetics is designed for complete beginners as well as children who already love sport.</p></details>
+          <details><summary>Which session should we choose?</summary><p>Tuesdays are fun, games-based sessions for all ages, a great place to start. Saturdays are more technical and split by age (4–7 and 8+), so they suit children who want to build on what they've learned. Plenty of children do both.</p></details>
+          <details><summary>What should they wear and bring?</summary><p>Comfortable sports clothes, trainers and a water bottle. On colder days, layers they can take off as they warm up. <span class="tbc">[confirm]</span></p></details>
+          <details><summary>Can parents stay and watch?</summary><p><span class="tbc">[confirm: stay and watch, or drop off and collect?]</span></p></details>
+          <details><summary>Do sessions run in the school holidays?</summary><p>Funetics runs during school term time. This term's last session is Saturday 19 December, and we'll be back in the new year. Keep an eye on our holiday camps for school-holiday activities. <span class="tbc">[link to holiday camp page if there is one]</span></p></details>
+          <details><summary>What if we can't make a session?</summary><p><span class="tbc">[cancellation / refund policy]</span></p></details>
+          <details><summary>Are the coaches DBS checked?</summary><p><span class="tbc">[confirm: DBS checked, England Athletics trained, first aid on site]</span></p></details>
+          <details><summary>I've got another question.</summary><p>Email us at <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> and we'll get back to you.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CTA ============ -->
+    <section class="section fn-cta">
+      <div class="section-inner">
+        <h2 class="section-title">Ready to Train Like a Champion?</h2>
+        <p>£3.50 a session, every Tuesday and Saturday from 3 November to 19 December. Book online, or email <a class="fn-mail" href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> with any questions.</p>
+        <div class="fn-book-actions">
+          <a href="activitybooking.html?activity=funetics" class="btn-white">Book Now</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!--
+    DEVELOPER NOTE (booking deep link)
+    The buttons link to activitybooking.html?activity=funetics so parents land
+    on the Funetics tab. Same two-line addition as on wnf.html, once
+    activeActivities has loaded and before renderTabs() runs:
+
+      const wanted = new URLSearchParams(location.search).get("activity");
+      if (wanted && activeActivities.some(a => a.id === wanted)) currentActivityId = wanted;
+
+    Use Funetics' real document id in the "activities" collection.
+  -->
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="gym.html">Gym</a>
+          <a href="track.html">Track</a>
+          <a href="youthclub.html">Youth Club</a>
+          <a href="tracksocial.html">Track Social</a>
+          <a href="venue-hire.html">Events &amp; Venue Hire</a>
+          <a href="sponsorship.html">Sponsorship</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
+          <a href="events.html">Event &amp; School Hire Bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <p class="footer-charity">Northwood Community Sports is wholly owned by City of Stoke Athletics and
+        Community Sports Limited, a registered charity (no. 1195927).</p>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="subpage.js"></script>
+</body>
+</html>

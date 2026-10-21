@@ -146,6 +146,12 @@
   margin-top: 0.1rem;
 }
 
+.ab-unavailable {
+  background: #FFF6E5; border-left: 4px solid #E0A100; color: #5C4400;
+  font-family: var(--f-body); font-size: 0.95rem; line-height: 1.5;
+  padding: 0.9rem 1.1rem; border-radius: 8px; margin-bottom: 1rem;
+}
+.ab-unavailable.hidden { display: none; }
 .ab-empty {
   text-align: center;
   font-family: var(--f-body);
@@ -566,6 +572,8 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
     <span>Signed in as <strong id="customerBannerName"></strong> — <a href="#" id="myBookingsLink" style="color:white; text-decoration:underline;">My bookings</a> · <a href="#" id="manageFamilyLink" style="color:white; text-decoration:underline;">Manage family</a></span>
     <button id="customerLogoutBtn">Log out</button>
   </div>
+
+  <div class="ab-unavailable hidden" id="activityUnavailable" role="status"></div>
 
   <div class="ab-tabs" id="activityTabs"></div>
 
@@ -1026,6 +1034,29 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   let squareInitGen = 0;
 
   const tabsEl = document.getElementById("activityTabs");
+
+  // Deep link from an activity's own page or homepage card, e.g.
+  // activitybooking.html?activity=funetics opens on the Funetics tab.
+  // Matches the activity's document id, or its name ("Funetics",
+  // "wednesday-night-football"), so links still work if it's recreated.
+  // Only applied on the first load, so it never yanks someone mid-booking.
+  const requestedActivity = (new URLSearchParams(location.search).get("activity") || "").trim().toLowerCase();
+  let requestedActivityHandled = !requestedActivity;
+  const toSlug = str => String(str || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  function applyRequestedActivity() {
+    if (requestedActivityHandled) return;
+    requestedActivityHandled = true;
+    const match = activeActivities.find(a => a.id.toLowerCase() === requestedActivity || toSlug(a.name) === toSlug(requestedActivity));
+    if (match) { currentActivityId = match.id; return; }
+    // Asked for an activity that isn't open (e.g. switched off between
+    // terms): say so, rather than silently showing a different activity.
+    const known = ACTIVITIES.find(a => a.id.toLowerCase() === requestedActivity || toSlug(a.name) === toSlug(requestedActivity));
+    const label = known ? known.name : "That activity";
+    const box = document.getElementById("activityUnavailable");
+    box.textContent = `${label} isn't taking bookings right now. Please check back soon, or email info@northwoodstadium.co.uk.` +
+      (activeActivities.length ? " You can still book the activities below." : "");
+    box.classList.remove("hidden");
+  }
   const panelEl = document.getElementById("activityPanel");
 
   // Tracks whether the visitor has started filling in the booking form for
@@ -1094,6 +1125,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           // either way since there's nothing mid-typed for an activity that
           // no longer exists in the list.
           currentActivityId = activeActivities.length ? activeActivities[0].id : null;
+          applyRequestedActivity();
           selectedSessionIds = new Set();
           renderTabs();
           renderPanel();

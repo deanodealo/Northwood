@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wednesday Night Football | Northwood Stadium</title>
+  <meta name="description" content="Wednesday Night Football at Northwood Stadium: structured, term-based indoor coaching for young players with FC Hanley and PCT Coaching. Book and pay online.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subpage.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#1A1818">
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       WEDNESDAY NIGHT FOOTBALL PAGE
+       Body uses .theme-court (indoor / sports hall blue). WNF's own navy,
+       taken from the WNF artwork, is used for the dark bands.
+       Inside <main> only, --c-red is pointed at court blue so the shared
+       .btn-red / .section-eyebrow pieces match the WNF branding. The
+       header and footer keep the Northwood red.
+
+       BOOKING: every "Book" button points at activitybooking.html, the
+       site's own booking + Square payment page. The ?activity=wnf part
+       pre-selects the WNF tab IF the booking page supports it. See the
+       DEVELOPER NOTE at the bottom of this file.
+
+       PLACEHOLDERS: anything in <span class="tbc"> still needs confirming.
+       ═══════════════════════════════════════════════════════════ */
+    :root { --wnf-navy: #133260; --wnf-navy-deep: #0B2148; }
+    main { --c-red: var(--c-court); }
+    .tbc { background: #FFF1B8; color: #5C4400; border-radius: 3px; padding: 0 4px; font-weight: 600; }
+
+    /* ---------- Hero ---------- */
+    .page-hero.wnf-hero { background: var(--wnf-navy-deep); }
+    .wnf-hero .page-hero-media img { object-position: center 62%; }
+    .wnf-hero .page-hero-media::after { background: linear-gradient(90deg, rgba(11,33,72,0.94) 0%, rgba(11,33,72,0.72) 50%, rgba(11,33,72,0.35) 100%) !important; }
+    .wnf-eyebrow { display: inline-block; color: var(--c-white); background: var(--c-court);
+      font-weight: 700; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 7px 12px; border-radius: 4px; margin-bottom: 22px; }
+    .wnf-hero .page-hero-title .hl { color: #8EC2F0; }
+    .wnf-partners { margin-top: 18px; color: rgba(255,255,255,0.75); font-size: 14px; letter-spacing: 0.4px; }
+    .wnf-partners b { color: var(--c-white); }
+    .wnf-stats { position: relative; z-index: 2; max-width: var(--max-w); margin: 52px auto 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255,255,255,0.18); }
+    .wnf-stat { padding: 22px 20px 0 0; }
+    .wnf-stat + .wnf-stat { padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.18); }
+    .wnf-stat .tbc { color: #5C4400; }
+    .wnf-stat b { display: block; font-family: var(--f-display); font-weight: 800; color: var(--c-white); text-transform: uppercase; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.05; }
+    .wnf-stat span { display: block; color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 8px; line-height: 1.4; }
+
+    /* ---------- Why we've launched this ---------- */
+    .wnf-why { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
+    .wnf-why > * { min-width: 0; }
+    .wnf-copy p { color: var(--c-grey-mid); font-size: 17px; line-height: 1.75; margin-bottom: 16px; max-width: 600px; }
+    .wnf-copy p strong { color: var(--c-black); }
+    .wnf-pull { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(24px, 2.6vw, 32px); line-height: 1.1;
+      border-left: 5px solid var(--c-court); padding-left: 20px; margin: 26px 0; color: var(--c-black) !important; max-width: 560px; }
+    .wnf-graphic { border-radius: 14px; overflow: hidden; box-shadow: 0 24px 60px rgba(11,33,72,0.25); aspect-ratio: 1 / 1; }
+    .wnf-graphic img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ---------- What makes this different ---------- */
+    .wnf-diff { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 40px; }
+    .wnf-card { background: var(--c-white); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(11,33,72,0.06); }
+    .wnf-card-media { aspect-ratio: 4 / 3; overflow: hidden; background: var(--wnf-navy); }
+    .wnf-card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
+    .wnf-card:hover .wnf-card-media img { transform: scale(1.04); }
+    .wnf-card-body { padding: 22px 22px 26px; border-top: 4px solid var(--c-court); }
+    .wnf-num { font-family: var(--f-display); font-weight: 800; color: var(--c-court); font-size: 15px; letter-spacing: 1.5px; }
+    .wnf-card h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 24px; line-height: 1.05; margin: 6px 0 10px; }
+    .wnf-card p { color: var(--c-grey-mid); font-size: 15px; line-height: 1.6; }
+
+    /* ---------- Gallery ---------- */
+    .wnf-gallery { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 220px; gap: 12px; margin-top: 36px; }
+    .wnf-gallery figure { margin: 0; border-radius: 10px; overflow: hidden; background: var(--wnf-navy); }
+    .wnf-gallery figure.wide { grid-column: span 2; }
+    .wnf-gallery figure.tall { grid-row: span 2; }
+    .wnf-gallery figure.wide.tall { grid-column: span 2; grid-row: span 2; }
+    .wnf-gallery img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ---------- Book & pay ---------- */
+    .wnf-book { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .wnf-book > * { min-width: 0; }
+    .wnf-steps { list-style: none; counter-reset: s; display: grid; gap: 14px; margin: 28px 0 30px; }
+    .wnf-steps li { counter-increment: s; position: relative; padding: 18px 20px 18px 74px; background: var(--c-white); border-radius: 12px; box-shadow: 0 6px 18px rgba(11,33,72,0.05); }
+    .wnf-steps li::before { content: counter(s); position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%;
+      background: var(--c-court); color: var(--c-white); font-family: var(--f-display); font-weight: 800; font-size: 20px; display: grid; place-items: center; }
+    .wnf-steps b { display: block; font-size: 16px; }
+    .wnf-steps span { display: block; color: var(--c-grey-mid); font-size: 14px; margin-top: 3px; line-height: 1.5; }
+    .wnf-book-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .wnf-link { font-weight: 700; color: var(--accent-ink); text-decoration: underline; }
+    .wnf-panel { background: var(--wnf-navy); color: var(--c-white); border-radius: 16px; padding: 34px 34px 30px; }
+    .wnf-panel h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 28px; margin-bottom: 18px; }
+    .wnf-panel dl { display: grid; gap: 0; }
+    .wnf-panel dl div { display: grid; grid-template-columns: 140px 1fr; gap: 16px; padding: 13px 0; border-top: 1px solid rgba(255,255,255,0.14); }
+    .wnf-panel dt { color: rgba(255,255,255,0.65); font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding-top: 2px; }
+    .wnf-panel dd { font-size: 16px; line-height: 1.5; }
+    .wnf-slots { list-style: none; display: grid; gap: 6px; }
+    .wnf-slots li { display: flex; gap: 12px; }
+    .wnf-slots b { min-width: 58px; color: #8EC2F0; }
+    .wnf-panel dd b { color: var(--c-white); }
+    .wnf-panel .tbc { background: rgba(255,241,184,0.92); }
+    .wnf-secure { display: flex; gap: 10px; align-items: center; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.75); font-size: 14px; line-height: 1.5; }
+    .wnf-secure svg { flex: none; width: 22px; height: 22px; color: #8EC2F0; }
+
+    /* ---------- Sustainable future band ---------- */
+    .wnf-future { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 56px; align-items: center; }
+    .wnf-future > * { min-width: 0; }
+    .wnf-future-photo { border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 5; max-width: 440px; box-shadow: 0 24px 60px rgba(11,33,72,0.35); }
+    .wnf-future-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .wnf-future p.wnf-band-copy { color: rgba(255,255,255,0.88); font-size: 17px; line-height: 1.75; max-width: 560px; margin-bottom: 18px; }
+    .wnf-big { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; color: var(--c-white); font-size: clamp(26px, 3vw, 38px); line-height: 1.05; margin: 8px 0 26px; }
+    .wnf-charity { color: rgba(255,255,255,0.65); font-size: 13px; margin-top: 22px; }
+
+    /* ---------- FAQ ---------- */
+    .wnf-faq { display: grid; gap: 10px; margin-top: 30px; max-width: 900px; }
+    .wnf-faq details { background: var(--c-white); border-radius: 12px; box-shadow: 0 6px 18px rgba(11,33,72,0.05); }
+    .wnf-faq summary { cursor: pointer; list-style: none; padding: 19px 56px 19px 22px; position: relative; font-weight: 700; font-size: 16px; }
+    .wnf-faq summary::-webkit-details-marker { display: none; }
+    .wnf-faq summary::after { content: "+"; position: absolute; right: 22px; top: 50%; transform: translateY(-50%); font-family: var(--f-display); font-weight: 800; font-size: 26px; color: var(--c-court); }
+    .wnf-faq details[open] summary::after { content: "–"; }
+    .wnf-faq details p { padding: 0 22px 20px; color: var(--c-grey-mid); line-height: 1.7; font-size: 15px; }
+    .wnf-faq a { color: var(--accent-ink); font-weight: 700; text-decoration: underline; }
+
+    /* ---------- Final CTA ---------- */
+    .wnf-cta { background: var(--wnf-navy-deep); color: var(--c-white); text-align: center; }
+    .wnf-cta .section-title { color: var(--c-white); }
+    .wnf-cta p { color: rgba(255,255,255,0.8); max-width: 560px; margin: 12px auto 28px; font-size: 17px; line-height: 1.6; }
+    .wnf-cta a.wnf-mail { color: #8EC2F0; font-weight: 700; text-decoration: underline; }
+    .wnf-cta .wnf-book-actions { justify-content: center; }
+
+    @media (max-width: 1100px) {
+      .wnf-diff { grid-template-columns: 1fr 1fr; }
+      .wnf-gallery { grid-template-columns: 1fr 1fr; }
+      .wnf-gallery figure.wide { grid-column: span 1; }
+    }
+    @media (max-width: 900px) {
+      .wnf-why, .wnf-book, .wnf-future { grid-template-columns: 1fr; gap: 36px; }
+      .wnf-graphic { max-width: 440px; }
+    }
+    @media (max-width: 760px) {
+      .wnf-stats { grid-template-columns: 1fr 1fr; }
+      .wnf-stat:nth-child(3) { padding-left: 0; border-left: none; }
+      .wnf-stat:nth-child(n+3) { padding-top: 16px; }
+      .wnf-gallery { grid-template-columns: 1fr 1fr; grid-auto-rows: 170px; }
+      .wnf-gallery figure.tall, .wnf-gallery figure.wide.tall { grid-row: span 1; }
+      .wnf-gallery figure:last-child { grid-column: span 2; }
+      .wnf-panel dl div { grid-template-columns: 1fr; gap: 4px; }
+      .wnf-book-actions .btn-red { width: 100%; }
+    }
+    @media (max-width: 560px) { .wnf-diff { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="theme-court">
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Northwood Stadium — home">
+        <img src="images/logoblack.png" alt="Northwood Stadium" class="logo-img">
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html#about">About Us</a>
+        <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
+        <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+        <a href="sponsorship.html">Sponsorship</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ CALL NOW POPUP ============ -->
+  <div class="call-modal-overlay" id="callModal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle" hidden>
+    <div class="call-modal">
+      <div class="call-modal-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></div>
+      <h3 id="callModalTitle">Call Us</h3>
+      <div class="call-modal-number">07547 438786</div>
+      <p class="call-modal-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+      <a class="call-modal-go" href="tel:+447547438786"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg> Call Now</a>
+      <button type="button" class="call-modal-cancel" id="callModalCancel">Cancel</button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="page-hero wnf-hero">
+      <div class="page-hero-media" aria-hidden="true">
+        <img src="images/wnf-hero-dribble.jpg" alt="">
+      </div>
+      <div class="page-hero-inner">
+        <p class="wnf-eyebrow">Wednesday Night Football</p>
+        <h1 class="page-hero-title">More Than a Session. <span class="hl">A Pathway.</span></h1>
+        <p class="page-hero-sub">Structured, term-based football coaching for young players, every Wednesday in the Northwood sports hall. Built around creativity, confidence and decision making, at a price every family can manage.</p>
+        <div class="page-hero-actions">
+          <!-- BOOKING: the site's own booking + payment page -->
+          <a href="activitybooking.html?activity=wnf" class="btn-red">Book &amp; Pay Online</a>
+          <a href="#why" class="btn-outline-light">Our Why</a>
+        </div>
+        <p class="wnf-partners">In partnership with <b>FC Hanley</b> and <b>PCT Coaching</b></p>
+      </div>
+      <div class="wnf-stats">
+        <div class="wnf-stat"><b>Wednesdays</b><span>5:00–8:00pm, in three age groups</span></div>
+        <div class="wnf-stat"><b>Indoor</b><span>Sports hall, whatever the weather</span></div>
+        <div class="wnf-stat"><b>Term-based</b><span>Structured coaching that builds week to week</span></div>
+        <div class="wnf-stat"><b>From £6</b><span>A session when you book the 7-week block</span></div>
+      </div>
+    </section>
+
+    <!-- ============ WHY WE'VE LAUNCHED THIS ============ -->
+    <section class="section" id="why">
+      <div class="section-inner wnf-why">
+        <div class="wnf-copy">
+          <p class="section-eyebrow">— Why We've Launched This</p>
+          <h2 class="section-title">Young Players Deserve Structured Development</h2>
+          <p>At Northwood, we believe young players deserve <strong>more than just sessions</strong>. They deserve structured development.</p>
+          <p>That's why we've brought Wednesday Night Football <strong>in-house</strong>, allowing us to reinvest directly back into the facility and the programmes we deliver.</p>
+          <p class="wnf-pull">This isn't just a session. It's part of something bigger.</p>
+        </div>
+        <div class="wnf-graphic"><img src="images/wnf-graphic.jpg" alt="Wednesday Night Football artwork with FC Hanley and PCT Coaching logos" loading="lazy"></div>
+      </div>
+    </section>
+
+    <!-- ============ WHAT MAKES THIS DIFFERENT ============ -->
+    <section class="section find-us" id="different">
+      <div class="section-inner">
+        <p class="section-eyebrow">— What Makes This Different</p>
+        <h2 class="section-title">A Clear Pathway for Young Players</h2>
+        <p class="lede">In partnership with FC Hanley and PCT Coaching, we're creating a clear pathway for young players to develop.</p>
+        <div class="wnf-diff">
+          <article class="wnf-card">
+            <div class="wnf-card-media"><img src="images/wnf-line-up.jpg" alt="Young players lined up with footballs, ready for a drill" loading="lazy"></div>
+            <div class="wnf-card-body"><span class="wnf-num">01</span><h3>Structured, Term-Based Coaching</h3><p>Sessions follow a plan across the whole term, so every week builds on the last.</p></div>
+          </article>
+          <article class="wnf-card">
+            <div class="wnf-card-media"><img src="images/wnf-one-v-one.jpg" alt="Two young players in a one-on-one, dribbling and defending" loading="lazy"></div>
+            <div class="wnf-card-body"><span class="wnf-num">02</span><h3>Creativity, Confidence &amp; Decision Making</h3><p>Players are encouraged to try things, take players on and make their own choices on the ball.</p></div>
+          </article>
+          <article class="wnf-card">
+            <div class="wnf-card-media"><img src="images/wnf-hall-lights.jpg" alt="A young player under the lights of the Northwood sports hall" loading="lazy"></div>
+            <div class="wnf-card-body"><span class="wnf-num">03</span><h3>Indoor, for Consistent Development</h3><p>No cancellations for rain or frozen pitches. Players train every week, all year round.</p></div>
+          </article>
+          <article class="wnf-card">
+            <div class="wnf-card-media"><img src="images/wnf-thumbs-up.jpg" alt="A young player giving a thumbs up with his foot on the ball" loading="lazy"></div>
+            <div class="wnf-card-body"><span class="wnf-num">04</span><h3>High-Level Coaching, Accessible Price</h3><p>Quality coaching from FC Hanley and PCT Coaching, priced so more families can take part.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GALLERY ============ -->
+    <section class="section" id="gallery">
+      <div class="section-inner">
+        <p class="section-eyebrow">— On a Wednesday Night</p>
+        <h2 class="section-title">See It in Action</h2>
+        <div class="wnf-gallery">
+          <figure class="wide tall"><img src="images/wnf-celebrate.jpg" alt="A young player celebrating with his arm in the air during a session" loading="lazy"></figure>
+          <figure class="tall"><img src="images/wnf-england.jpg" alt="A young player in an England shirt watching the session" loading="lazy"></figure>
+          <figure><img src="images/wnf-smiles.jpg" alt="Two young players smiling between drills" loading="lazy"></figure>
+          <figure><img src="images/wnf-kick.jpg" alt="A young player striking the ball in the sports hall" loading="lazy"></figure>
+          <figure class="wide"><img src="images/wnf-red-yellow.jpg" alt="Two young players waiting for their turn" loading="lazy" style="object-position: center 40%;"></figure>
+          <figure class="wide"><img src="images/wnf-group-wall.jpg" alt="A group of young players listening to the coach" loading="lazy" style="object-position: center 45%;"></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BOOK & PAY ONLINE ============ -->
+    <section class="section find-us" id="book">
+      <div class="section-inner wnf-book">
+        <div>
+          <p class="section-eyebrow">— Book &amp; Pay Online</p>
+          <h2 class="section-title">Book in a Couple of Minutes</h2>
+          <p class="lede">Bookings and payments are all taken here on the Northwood website. Live dates and spaces are shown on the booking page.</p>
+          <ol class="wnf-steps">
+            <li><b>Choose your sessions</b><span>Book the full 7-week block for £42 (£6 a session), or single Wednesdays at £6.50.</span></li>
+            <li><b>Add your player's details</b><span>Booking for more than one child? Add them all in the same booking.</span></li>
+            <li><b>Pay securely online</b><span>Card payment on the website. You'll get a confirmation, with an option to add the sessions to your calendar.</span></li>
+          </ol>
+          <div class="wnf-book-actions">
+            <a href="activitybooking.html?activity=wnf" class="btn-red">Book Wednesday Night Football</a>
+            <a href="activitybooking.html#my-bookings" class="wnf-link">Manage my bookings</a>
+          </div>
+        </div>
+        <aside class="wnf-panel" aria-label="Session details">
+          <h3>Session Details</h3>
+          <dl>
+            <div><dt>When</dt><dd>Wednesdays, 5:00–8:00pm</dd></div>
+            <div><dt>Where</dt><dd>Sports Hall, Northwood Stadium</dd></div>
+            <div><dt>Age groups</dt><dd><ul class="wnf-slots"><li><b>5–6pm</b>Ages 4–6</li><li><b>6–7pm</b>Ages 7–9</li><li><b>7–8pm</b>Ages 10+</li></ul></dd></div>
+            <div><dt>Next block</dt><dd>7 Wednesdays, 4 November to 16 December</dd></div>
+            <div><dt>Price</dt><dd>£6.50 per session<br><b>£42 for the 7-week block</b> (works out at £6 a session)</dd></div>
+            <div><dt>Coaching</dt><dd>FC Hanley &amp; PCT Coaching</dd></div>
+          </dl>
+          <p class="wnf-secure">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            Every booking goes straight to Northwood Community Sports and back into the facility.
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ A SUSTAINABLE FUTURE ============ -->
+    <section class="section about" id="future">
+      <div class="section-inner about-inner wnf-future">
+        <div class="wnf-future-photo"><img src="images/wnf-our-why.jpg" alt="Our Why: why we've launched Wednesday Night Football, what makes it different, and a sustainable future" loading="lazy"></div>
+        <div>
+          <p class="about-label">— A Sustainable Future</p>
+          <h2 class="about-title">Every Booking Gives Back</h2>
+          <p class="wnf-band-copy">Every booking made supports Northwood Community Sports, helping us improve facilities, expand opportunities and invest back into the local community.</p>
+          <p class="wnf-big">This isn't just a session.<br>It's part of something bigger.</p>
+          <a href="activitybooking.html?activity=wnf" class="btn-about">Book Your Player's Place</a>
+          <p class="wnf-charity">City of Stoke Athletics and Community Sports Limited · Registered charity no. 1195927</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="section" id="faq">
+      <div class="section-inner">
+        <p class="section-eyebrow">— Parents' Questions</p>
+        <h2 class="section-title">Good to Know</h2>
+        <div class="wnf-faq">
+          <details><summary>Does my child need to be in a team already?</summary><p>No. Wednesday Night Football is open to all abilities, whether your child plays for a club or is just starting out.</p></details>
+          <details><summary>What should they wear and bring?</summary><p>Comfortable sports kit, <strong>trainers only (no football boots of any kind)</strong>, shin pads and a water bottle.</p></details>
+          <details><summary>Can parents stay and watch?</summary><p>Yes. Parents are welcome to stay and watch from the viewing balcony.</p></details>
+          <details><summary>Do I have to book the whole term?</summary><p>No. You can book single sessions at £6.50, or book all 7 weeks of the block for £42, which works out at £6 a session. The next block runs every Wednesday from 4 November to 16 December.</p></details>
+          <details><summary>What if we miss a week?</summary><p><span class="tbc">[refund / transfer policy]</span></p></details>
+          <details><summary>Who are the coaches?</summary><p>Sessions are delivered by the FC Hanley and PCT Coaching team: Tanbir, Eva, Steve, Michelle, Jamie, Sean and Josh. <span class="tbc">[confirm: all coaches DBS checked and FA qualified, first aid on site]</span></p></details>
+          <details><summary>I've got another question.</summary><p>Email us at <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> and we'll get back to you.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CTA ============ -->
+    <section class="section wnf-cta">
+      <div class="section-inner">
+        <h2 class="section-title">Ready for Wednesday?</h2>
+        <p>Spaces are limited in every age group. Book the 7-week block from 4 November, or a single session, in a couple of minutes, or email <a class="wnf-mail" href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> with any questions.</p>
+        <div class="wnf-book-actions">
+          <a href="activitybooking.html?activity=wnf" class="btn-red">Book &amp; Pay Online</a>
+          <a href="#why" class="btn-outline-light">Read Our Why</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!--
+    DEVELOPER NOTE (booking deep link)
+    The buttons link to activitybooking.html?activity=wnf so parents land on
+    the WNF tab, not the first activity. activitybooking.html doesn't read that
+    yet. Suggested addition, once activeActivities has loaded and before
+    renderTabs() runs:
+
+      const wanted = new URLSearchParams(location.search).get("activity");
+      if (wanted && activeActivities.some(a => a.id === wanted)) currentActivityId = wanted;
+
+    Replace "wnf" with WNF's real document id in the "activities" collection.
+    Without the change the link still works; it just opens the default tab.
+  -->
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer" id="contact">
+    <div class="footer-inner-grid">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
+          <div class="footer-socials">
+            <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-4 3.87-4 1.12 0 2.29.2 2.29.2v2.5h-1.29c-1.27 0-1.67.79-1.67 1.6V12h2.84l-.45 2.89h-2.39v6.98A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/northwoodstadium" class="footer-social" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.97.24 2.43.4.55.2 1.05.5 1.46.9.4.4.7.9.9 1.46.17.46.36 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.04 1.17-.24 1.97-.4 2.43-.2.55-.5 1.05-.9 1.46-.4.4-.9.7-1.46.9-.46.17-1.26.36-2.43.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.04-1.97-.24-2.43-.4a4 4 0 0 1-1.46-.9 4 4 0 0 1-.9-1.46c-.17-.46-.36-1.26-.4-2.43C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.04-1.17.24-1.97.4-2.43.2-.55.5-1.05.9-1.46.4-.4.9-.7 1.46-.9.46-.17 1.26-.36 2.43-.4C8.42 2.21 8.8 2.2 12 2.2zm0 2.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.24a3.24 3.24 0 1 1 0-6.48 3.24 3.24 0 0 1 0 6.48zM17 5.4a1.16 1.16 0 1 0 0 2.32 1.16 1.16 0 0 0 0-2.32z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html#about">About Us</a>
+          <a href="index.html#offer">Facilities</a>
+          <a href="index.html#activities">Activities</a>
+          <a href="gym.html">Gym</a>
+          <a href="track.html">Track</a>
+          <a href="youthclub.html">Youth Club</a>
+          <a href="tracksocial.html">Track Social</a>
+          <a href="venue-hire.html">Events &amp; Venue Hire</a>
+          <a href="sponsorship.html">Sponsorship</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Book</h4>
+          <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
+          <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
+          <a href="events.html">Event &amp; School Hire Bookings</a>
+          <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
+          <a href="activitiesadmin.html">Staff Login</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Info</h4>
+          <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a>
+          <p class="footer-phone">07547 438786</p>
+          <a href="index.html#map">Keelings Road, Northwood, Stoke-on-Trent, ST1 6PA</a>
+          <p class="footer-hours">Mon–Fri 10:00–22:00<br>Sat–Sun 09:00–17:00</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Site Information</h4>
+          <a href="faq.html">FAQs</a>
+          <a href="conditions-of-hire.html">Conditions of Hire</a>
+          <a href="terms.html">Terms &amp; Conditions</a>
+          <a href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <p class="footer-charity">Northwood Community Sports is wholly owned by City of Stoke Athletics and
+        Community Sports Limited, a registered charity (no. 1195927).</p>
+
+      <div class="footer-bottom">
+        <span>© 2026 Northwood Community Sports. All rights reserved.</span>
+        <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
+          Site by <img src="images/dealo.PNG" alt="Dealo">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="subpage.js"></script>
+</body>
+</html>
