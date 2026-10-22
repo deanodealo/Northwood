@@ -245,6 +245,23 @@
 
 /* — session picker — */
 .session-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+
+/* ── Block-book offer (only when the activity has a block discount) ── */
+.block-book {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.9rem; flex-wrap: wrap;
+  margin: 0 0 1rem; padding: 0.9rem 1rem;
+  border: 1.5px dashed #3F7148; border-radius: 10px; background: #EAF3EC;
+}
+.block-book-text { font-family: var(--f-body); font-size: 0.85rem; color: #2F5536; line-height: 1.4; flex: 1 1 14rem; }
+.block-book-text strong { display: block; font-family: var(--f-display); font-size: 1.15rem; text-transform: uppercase; letter-spacing: 0.02em; color: #2F5536; }
+.block-book-btn {
+  flex: 0 0 auto; border: 0; border-radius: 8px; cursor: pointer;
+  background: #3F7148; color: #fff; padding: 0.7rem 1.1rem;
+  font-family: var(--f-body); font-size: 0.9rem; font-weight: 700;
+}
+.block-book-btn:hover { background: #2F5536; }
+.block-book.is-applied { border-style: solid; }
+.block-book.is-applied .block-book-btn { background: #fff; color: #3F7148; box-shadow: inset 0 0 0 1.5px #3F7148; }
 .session-option {
   border: 1.5px solid rgba(0,0,0,0.1);
   border-radius: 10px;
@@ -887,6 +904,32 @@ function blockOfferText(activity) {
   const min = Number(activity.blockMinSessions);
   if (!Number.isInteger(min) || min < 2 || activity.blockPrice == null) return "";
   return `Book ${min}+ sessions for £${Number(activity.blockPrice).toFixed(2)} a session`;
+}
+
+// The "block book" offer: every upcoming session that still has room,
+// at the block price. Only offered when the activity has a block
+// discount and there are enough open sessions to qualify for it.
+function blockBookOffer(activity, openSessions, isFull) {
+  const min = Number(activity.blockMinSessions);
+  if (!Number.isInteger(min) || min < 2 || activity.blockPrice == null) return null;
+  const blockPence = Math.round(Number(activity.blockPrice) * 100);
+  const normalPence = Math.round(Number(activity.price) * 100);
+  if (!(blockPence < normalPence)) return null;
+  const sessions = openSessions.filter(s => !isFull(s));
+  if (sessions.length < min) return null;
+  const n = sessions.length;
+  const days = [...new Set(sessions.map(s => s.dow).filter(Boolean))];
+  const dayWord = { Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday", Fri: "Friday", Sat: "Saturday", Sun: "Sunday" }[days[0]];
+  const short = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const range = n > 1 ? `${short(sessions[0].date)} – ${short(sessions[n - 1].date)}` : short(sessions[0].date);
+  return {
+    ids: sessions.map(s => s.id),
+    count: n,
+    label: days.length === 1 && dayWord ? `${n} ${dayWord}s` : `${n} sessions`,
+    range,
+    totalPence: blockPence * n,
+    savePence: (normalPence - blockPence) * n
+  };
 }
 
 // Flip to true once the booking confirmation email Cloud Function is live.
@@ -2036,6 +2079,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     if (!activity) { panelEl.innerHTML = ""; return; }
 
     const openSessions = activity.sessions.filter(s => !isSessionPast(s));
+    const blockOffer = blockBookOffer(activity, openSessions, sessionIsFull);
 
     const sessionsHtml = openSessions.length
       ? openSessions.map(s => {
@@ -2093,6 +2137,14 @@ const CONFIRMATION_EMAILS_ENABLED = true;
 
         <div class="ab-section-label">Choose Session(s)</div>
         <p style="font-family:var(--f-body); font-size:0.82rem; color:var(--c-grey-mid); margin:-0.6rem 0 0.9rem;">Select one or more sessions — you'll be booked (and charged) for each one you pick.</p>
+        ${blockOffer ? `
+          <div class="block-book" id="blockBook" data-ids="${escAttr(blockOffer.ids.join(","))}">
+            <div class="block-book-text">
+              <strong>Block book &amp; save £${(blockOffer.savePence / 100).toFixed(2)}</strong>
+              All ${blockOffer.label} (${blockOffer.range}) for £${(blockOffer.totalPence / 100).toFixed(2)} per person instead of £${((blockOffer.totalPence + blockOffer.savePence) / 100).toFixed(2)}.
+            </div>
+            <button type="button" class="block-book-btn" id="blockBookBtn">Block book all ${blockOffer.count}</button>
+          </div>` : ""}
         <div class="session-grid">${sessionsHtml}</div>
 
         <form id="bookingForm">
@@ -2166,23 +2218,48 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   function wireUpPanel(activity) {
     formDirty = false; // freshly rendered — nothing typed into this copy yet
     const isFreeActivity = activity.price === 0; // recomputed here — renderPanel()'s copy is out of scope in this function
+    function setSessionSelected(el, on) {
+      const sessionId = el.dataset.session;
+      const tag = el.querySelector(".session-option-tag");
+      if (on) selectedSessionIds.add(sessionId); else selectedSessionIds.delete(sessionId);
+      el.classList.toggle("selected", on);
+      if (tag) tag.textContent = on ? "✓ Selected" : "Available";
+    }
+
     panelEl.querySelectorAll(".session-option").forEach(el => {
       el.addEventListener("click", () => {
         if (el.classList.contains("full")) return;
-        const sessionId = el.dataset.session;
-        const tag = el.querySelector(".session-option-tag");
-        if (selectedSessionIds.has(sessionId)) {
-          selectedSessionIds.delete(sessionId);
-          el.classList.remove("selected");
-          if (tag) tag.textContent = "Available";
-        } else {
-          selectedSessionIds.add(sessionId);
-          el.classList.add("selected");
-          if (tag) tag.textContent = "✓ Selected";
-        }
+        setSessionSelected(el, !selectedSessionIds.has(el.dataset.session));
         updateSummary();
       });
     });
+
+    // Block book: tick every open session in one go. The block price is
+    // then applied automatically (here and on the server) because the
+    // session count meets the activity's block minimum.
+    const blockBookEl = document.getElementById("blockBook");
+    const blockBookBtn = document.getElementById("blockBookBtn");
+    const blockIds = blockBookEl ? blockBookEl.dataset.ids.split(",").filter(Boolean) : [];
+    function syncBlockBookState() {
+      if (!blockBookEl) return;
+      const applied = blockIds.length > 0 && blockIds.every(id => selectedSessionIds.has(id));
+      blockBookEl.classList.toggle("is-applied", applied);
+      blockBookBtn.textContent = applied ? "✓ All sessions selected" : `Block book all ${blockIds.length}`;
+    }
+    if (blockBookBtn) {
+      blockBookBtn.addEventListener("click", () => {
+        const wanted = new Set(blockIds);
+        panelEl.querySelectorAll(".session-option").forEach(el => {
+          if (el.classList.contains("full")) return;
+          setSessionSelected(el, wanted.has(el.dataset.session));
+        });
+        formDirty = true;
+        updateSummary();
+        // Bring the customer on to the "who's booking" part of the form.
+        const next = document.getElementById("bookingForm");
+        if (next) next.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
 
     let paymentMethod = "online";
     let staffCollectState = "unpaid";
@@ -2347,6 +2424,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         summaryLine.innerHTML = `${parts.join(", ")} × ${sessionsLabel} — Total: <span>${totalLabel}</span>${blockNote}`;
       }
       syncWalletTotal(calc.totalPence);
+      syncBlockBookState();
     }
 
     // Keep the Google Pay / Apple Pay sheet showing the same total as the
