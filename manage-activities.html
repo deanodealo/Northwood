@@ -1392,7 +1392,9 @@ const SEED_ACTIVITIES = [
     }
     // Only a page on this site (e.g. funetics.html) is allowed, so nothing
     // odd can end up in the homepage link.
-    const infoPage = fInfoPage.value.trim().replace(/^\.?\//, "");
+    // Lower-cased: GitHub Pages is case-sensitive and every page file is
+    // lower-case, so "WNF.html" would otherwise 404.
+    const infoPage = fInfoPage.value.trim().replace(/^\.?\//, "").toLowerCase();
     if (infoPage && !/^[A-Za-z0-9_-]+\.html(#[A-Za-z0-9_-]+)?$/.test(infoPage)) {
       formMsg.textContent = "The more info page should be just a page name from this site, like funetics.html.";
       formMsg.className = "form-message error";

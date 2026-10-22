@@ -1300,9 +1300,12 @@
         // Activities, e.g. funetics.html) link there, and customers book
         // from that page. Otherwise go straight to booking, opened on this
         // activity's tab.
-        const hasPage = /^[A-Za-z0-9_-]+\.html(#[A-Za-z0-9_-]+)?$/.test(a.infoPage || "");
+        // Lower-cased because page files are lower-case and GitHub Pages is
+        // case-sensitive (an older save may hold e.g. "WNF.html").
+        const infoPage = (a.infoPage || "").toLowerCase();
+        const hasPage = /^[a-z0-9_-]+\.html(#[a-z0-9_-]+)?$/.test(infoPage);
         const link = hasPage
-          ? `<a href="${escAttr(a.infoPage)}" class="activity-feature-link">Find out more &amp; book →</a>`
+          ? `<a href="${escAttr(infoPage)}" class="activity-feature-link">Find out more &amp; book →</a>`
           : `<a href="activitybooking.html?activity=${encodeURIComponent(a.id)}" class="activity-feature-link">Click here to book your session →</a>`;
         return `
           <div class="activity-feature" style="--accent:${normalizeAccent(a.accentColor)}">
