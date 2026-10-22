@@ -906,31 +906,42 @@ const IS_PREVIEW_HOST = /\.github\.io$|^localhost$|^127\.0\.0\.1$/.test(location
 
 // Same pricing rule as pricing.js in the functions folder. This copy only
 // SHOWS the total; the server works it out again and charges its own figure
-// (a mismatch is refused). Block discount: booking at least
-// blockMinSessions sessions charges blockPrice per person per session.
-function calcActivityTotalPence(activity, people, sessionCount) {
-  const min = Number(activity.blockMinSessions);
-  const useBlock = Number.isInteger(min) && min >= 2 && activity.blockPrice != null && Number(activity.blockPrice) >= 0 && sessionCount >= min;
-  const perSessionPence = Math.round(Number(useBlock ? activity.blockPrice : activity.price) * 100);
-  return { totalPence: people * perSessionPence * sessionCount, perSessionPence, useBlock };
+// (a mismatch is refused).
+//
+// BLOCK DISCOUNT: blockPrice per person per session applies only when the
+// booking covers EVERY upcoming session of the activity (today onwards),
+// and there are at least 2 of them. A full session can't be picked, so
+// once any upcoming session is full, nobody can get the block rate.
+function localTodayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-function blockOfferText(activity) {
-  const min = Number(activity.blockMinSessions);
-  if (!Number.isInteger(min) || min < 2 || activity.blockPrice == null) return "";
-  return `Book ${min}+ sessions for £${Number(activity.blockPrice).toFixed(2)} a session`;
+function hasBlockPrice(activity) {
+  return activity.blockPrice != null && activity.blockPrice !== "" && Number(activity.blockPrice) >= 0 &&
+    Number(activity.blockPrice) < Number(activity.price);
+}
+function coversEveryUpcomingSession(activity, selectedIds) {
+  const picked = new Set(selectedIds);
+  const today = localTodayIso();
+  const upcoming = (activity.sessions || []).filter(s => s.date >= today);
+  return upcoming.length >= 2 && upcoming.every(s => picked.has(s.id));
+}
+function calcActivityTotalPence(activity, people, selectedIds) {
+  const ids = [...selectedIds];
+  const useBlock = hasBlockPrice(activity) && coversEveryUpcomingSession(activity, ids);
+  const perSessionPence = Math.round(Number(useBlock ? activity.blockPrice : activity.price) * 100);
+  return { totalPence: people * perSessionPence * ids.length, perSessionPence, useBlock };
 }
 
-// The "block book" offer: every upcoming session that still has room,
-// at the block price. Only offered when the activity has a block
-// discount and there are enough open sessions to qualify for it.
+// The "block book" offer: every upcoming session, at the block price.
+// Only offered when the activity has a block price, there are at least 2
+// upcoming sessions, and NONE of them is full (a block is all the dates).
 function blockBookOffer(activity, openSessions, isFull) {
-  const min = Number(activity.blockMinSessions);
-  if (!Number.isInteger(min) || min < 2 || activity.blockPrice == null) return null;
+  if (!hasBlockPrice(activity)) return null;
   const blockPence = Math.round(Number(activity.blockPrice) * 100);
   const normalPence = Math.round(Number(activity.price) * 100);
-  if (!(blockPence < normalPence)) return null;
-  const sessions = openSessions.filter(s => !isFull(s));
-  if (sessions.length < min) return null;
+  if (openSessions.length < 2 || openSessions.some(isFull)) return null;
+  const sessions = openSessions;
   const n = sessions.length;
   const days = [...new Set(sessions.map(s => s.dow).filter(Boolean))];
   const dayWord = { Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday", Fri: "Friday", Sat: "Saturday", Sun: "Sunday" }[days[0]];
@@ -2268,7 +2279,6 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           <div class="ab-activity-meta">${activity.provider} · ${activity.venue}${activity.ageNote ? " · " + activity.ageNote : ""}</div>
           <div class="ab-activity-desc">${activity.description}</div>
           <div class="ab-price-tag">${activity.priceLabel}</div>
-          ${blockOfferText(activity) ? `<div class="ab-block-offer">${blockOfferText(activity)}</div>` : ""}
         </div>
 
         ${pickerHtml}
@@ -2559,7 +2569,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       const kids = children.length + selectedFamilyMemberIds.size;
       const totalPeople = adults + kids;
       const sessionCount = selectedSessionIds.size;
-      const calc = calcActivityTotalPence(activity, totalPeople, sessionCount);
+      const calc = calcActivityTotalPence(activity, totalPeople, selectedSessionIds);
       const total = calc.totalPence / 100;
 
       if (totalPeople === 0) {
@@ -2882,7 +2892,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
 
       const attendeeCount = attendees.length;
       const selectedSessions = activity.sessions.filter(s => selectedSessionIds.has(s.id));
-      const totalPence = calcActivityTotalPence(activity, attendeeCount, selectedSessions.length).totalPence;
+      const totalPence = calcActivityTotalPence(activity, attendeeCount, selectedSessions.map(s => s.id)).totalPence;
       let totalAmount = totalPence / 100;
 
       const effectivePaymentMethod = isFreeActivity ? "free" : (isStaffMode ? "venue" : paymentMethod);

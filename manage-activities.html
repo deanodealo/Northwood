@@ -404,15 +404,12 @@ input[type="date"], input[type="time"] {
         </div>
         <div class="form-row">
           <div>
-            <label>Block discount: minimum sessions (optional)</label>
-            <input type="number" id="fBlockMin" min="2" step="1" placeholder="e.g. 7">
-          </div>
-          <div>
-            <label>Block price per person, per session (£)</label>
+            <label>Block price per person, per session (£) (optional)</label>
             <input type="number" id="fBlockPrice" min="0" step="0.01" placeholder="e.g. 6">
           </div>
+          <div></div>
         </div>
-        <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">Leave both blank for no discount. Example: 7 and £6 means anyone booking 7 or more sessions in one go pays £6 a session instead of the normal price, per person (2 children × 7 sessions = £84). The booking page shows the discount automatically and the payment system charges it.</p>
+        <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">Leave blank for no block discount. A block is <strong>every upcoming session</strong> on the list below: customers who book all of them in one go pay this price per session instead of the normal price, per person (e.g. 7 sessions at £6 = £42 each). The booking page shows a "Block book &amp; save" button for it. If any upcoming session is full, the block offer is withdrawn.</p>
 
         <div class="ma-section-label">Colour Scheme</div>
         <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Pick the colour of the facility this activity runs in — Pitch green for 3G / football, Court blue for the sports hall, Gym black for the gym, Track red for athletics or anything else. Activities with their own branding (like Funetics) can use an extra colour or a custom one. Used for the activity's tab, booking card and home page card.</p>
@@ -987,7 +984,6 @@ const SEED_ACTIVITIES = [
   const fPrice = document.getElementById("fPrice");
   const fPriceLabel = document.getElementById("fPriceLabel");
   const fPayAtVenue = document.getElementById("fPayAtVenue");
-  const fBlockMin = document.getElementById("fBlockMin");
   const fBlockPrice = document.getElementById("fBlockPrice");
   const slugPreview = document.getElementById("slugPreview");
   const colorSwatchesEl = document.getElementById("colorSwatches");
@@ -1290,7 +1286,7 @@ const SEED_ACTIVITIES = [
     fName.value = ""; fProvider.value = ""; fVenue.value = ""; fDescription.value = ""; fInfoPage.value = "";
     fAgeNote.value = ""; fStatus.value = "active"; fPrice.value = ""; fPriceLabel.value = "";
     fPayAtVenue.checked = true;
-    fBlockMin.value = ""; fBlockPrice.value = "";
+    fBlockPrice.value = "";
     fAttendanceRegister.checked = false;
     slugPreview.textContent = "";
     formMsg.textContent = ""; formMsg.className = "form-message";
@@ -1327,7 +1323,6 @@ const SEED_ACTIVITIES = [
       fStatus.value = activity.status; fPrice.value = activity.price; fPriceLabel.value = activity.priceLabel;
       fPriceLabel.dataset.touched = "1";
       fPayAtVenue.checked = !!activity.payAtVenue;
-      fBlockMin.value = activity.blockMinSessions != null ? activity.blockMinSessions : "";
       fBlockPrice.value = activity.blockPrice != null ? activity.blockPrice : "";
       fAttendanceRegister.checked = !!activity.attendanceRegister;
       currentAccent = activity.accentColor || ACCENT_PRESETS[0].hex;
@@ -1400,15 +1395,16 @@ const SEED_ACTIVITIES = [
       formMsg.className = "form-message error";
       return;
     }
-    // Block discount: both blank = none; otherwise both needed, and the
-    // block price must actually be a discount.
-    const blockMinRaw = fBlockMin.value.trim(), blockPriceRaw = fBlockPrice.value.trim();
-    let blockMinSessions = null, blockPrice = null;
-    if (blockMinRaw || blockPriceRaw) {
-      blockMinSessions = Number(blockMinRaw);
+    // Block discount: blank = none. It applies when every upcoming session
+    // is booked (see pricing.js); the price must actually be a discount.
+    // blockMinSessions is no longer used and is cleared on save.
+    const blockPriceRaw = fBlockPrice.value.trim();
+    const blockMinSessions = null;
+    let blockPrice = null;
+    if (blockPriceRaw) {
       blockPrice = Math.round(Number(blockPriceRaw) * 100) / 100;
-      if (!Number.isInteger(blockMinSessions) || blockMinSessions < 2 || !blockPriceRaw || isNaN(blockPrice) || blockPrice < 0) {
-        formMsg.textContent = "For a block discount, enter a minimum of 2 or more sessions and a block price — or leave both blank.";
+      if (isNaN(blockPrice) || blockPrice < 0) {
+        formMsg.textContent = "Enter a valid block price, or leave it blank for no block discount.";
         formMsg.className = "form-message error";
         return;
       }
