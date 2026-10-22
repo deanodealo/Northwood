@@ -2356,7 +2356,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         walletPaymentRequest.update({
           total: totalPence > 0
             ? { amount: (totalPence / 100).toFixed(2), label: "Northwood Stadium" }
-            : { amount: "0.00", label: "Northwood Stadium", pending: true }
+            : { amount: "1.00", label: "Northwood Stadium", pending: true }
         });
       } catch (e) { /* request already torn down by a re-render */ }
     }
@@ -2456,6 +2456,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     async function initWallets(myGen) {
       const walletWrap = document.getElementById("walletButtons");
       const divider = document.getElementById("walletDivider");
+      console.info("[wallets] Setting up Google Pay / Apple Pay…");
       if (!walletWrap) return;
       const isStale = () => myGen !== squareInitGen || !walletWrap.isConnected;
 
@@ -2463,14 +2464,23 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       googlePay = null; applePay = null; walletPaymentRequest = null;
       if (isStale()) return;
 
-      const payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
-      const request = payments.paymentRequest({
-        countryCode: "GB",
-        currencyCode: "GBP",
-        total: { amount: "0.00", label: "Northwood Stadium", pending: true }
-      });
+      let payments, request;
+      try {
+        payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
+        // Square won't accept a £0.00 total, so start at £1.00 marked
+        // "pending"; updateSummary() swaps in the real total straight away.
+        request = payments.paymentRequest({
+          countryCode: "GB",
+          currencyCode: "GBP",
+          total: { amount: "1.00", label: "Northwood Stadium", pending: true }
+        });
+      } catch (err) {
+        console.warn("[wallets] Couldn't create the payment request:", err);
+        return;
+      }
       walletPaymentRequest = request;
       updateSummary(); // push the current total into the request
+      console.info("[wallets] Payment request ready; preview host:", IS_PREVIEW_HOST);
 
       // Apple Pay first (Apple's guidelines put it above other wallets).
       try {
@@ -2485,6 +2495,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         applePay = ap;
       } catch (err) {
         if (isStale()) return;
+        console.info("[wallets] Apple Pay not available here:", err && err.message);
         if (IS_PREVIEW_HOST) {
           const btn = document.createElement("button");
           btn.type = "button";
@@ -2510,7 +2521,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         googlePay = gp;
       } catch (err) {
         if (isStale()) return;
-        console.info("Google Pay not available here:", err && err.message);
+        console.info("[wallets] Google Pay not available here:", err && err.message);
         const holder = document.getElementById("google-pay-button");
         if (holder) holder.remove();
       }
