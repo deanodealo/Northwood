@@ -1294,8 +1294,36 @@
         featuresEl.innerHTML = PERMANENT_CARDS;
         return;
       }
-      featuresEl.innerHTML = PERMANENT_CARDS + activities.map(a => {
-        const media = a.imageUrl ? `<img src="${a.imageUrl}" alt="${escAttr(a.name)}">` : "";
+      // Activities that share a More info page (e.g. WNF set up as one
+      // activity per age group, all pointing at wnf.html) show as ONE card.
+      // The first one created supplies the image and description, and the
+      // title is the part of their names they have in common ("WNF").
+      const pageOf = a => {
+        const p = (a.infoPage || "").toLowerCase();
+        return /^[a-z0-9_-]+\.html(#[a-z0-9_-]+)?$/.test(p) ? p.replace(/#.*$/, "") : "";
+      };
+      const commonTitle = members => {
+        if (members.length === 1) return members[0].name;
+        const words = members.map(m => String(m.name || "").trim().split(/\s+/));
+        const common = [];
+        for (let i = 0; i < words[0].length; i++) {
+          if (words.every(w => w[i] && w[i].toLowerCase() === words[0][i].toLowerCase())) common.push(words[0][i]);
+          else break;
+        }
+        return common.join(" ").replace(/[\s\-–—:(·|]+$/, "").replace(/[\s\-–—:(·|]*\b(ages?|age group|group)$/i, "").replace(/[\s\-–—:(·|]+$/, "") || members[0].name;
+      };
+      const seenPages = new Set();
+      const cards = [];
+      activities.forEach(a => {
+        const page = pageOf(a);
+        if (!page) { cards.push({ a, title: a.name }); return; }
+        if (seenPages.has(page)) return;
+        seenPages.add(page);
+        cards.push({ a, title: commonTitle(activities.filter(x => pageOf(x) === page)) });
+      });
+
+      featuresEl.innerHTML = PERMANENT_CARDS + cards.map(({ a, title }) => {
+        const media = a.imageUrl ? `<img src="${a.imageUrl}" alt="${escAttr(title)}">` : "";
         // Activities with their own page (the "More info page" set in Manage
         // Activities, e.g. funetics.html) link there, and customers book
         // from that page. Otherwise go straight to booking, opened on this
@@ -1311,7 +1339,7 @@
           <div class="activity-feature" style="--accent:${normalizeAccent(a.accentColor)}">
             <div class="activity-feature-media">${media}</div>
             <div class="activity-feature-content">
-              <h3 class="activity-feature-title">${a.name}</h3>
+              <h3 class="activity-feature-title">${title}</h3>
               <p class="activity-feature-body">${a.description || ""}</p>
               ${link}
             </div>

@@ -246,6 +246,20 @@
 /* — session picker — */
 .session-grid { display: flex; flex-direction: column; gap: 0.6rem; }
 
+/* ── Age-group picker (activities sharing a More info page) ── */
+.ab-group-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 0.6rem; margin-bottom: 1.5rem; }
+.ab-group-option {
+  text-align: left; cursor: pointer; padding: 0.8rem 0.95rem;
+  border: 1.5px solid rgba(0,0,0,0.12); border-radius: 10px; background: white; color: var(--c-black);
+  transition: border-color 0.15s, background 0.15s;
+}
+.ab-group-option b { display: block; font-family: var(--f-display); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.02em; }
+.ab-group-option span { display: block; font-family: var(--f-body); font-size: 0.8rem; color: var(--c-grey-mid); margin-top: 0.15rem; }
+.ab-group-option:hover { border-color: var(--tab-accent, var(--c-red)); }
+.ab-group-option.active { background: var(--tab-accent, var(--c-red)); border-color: var(--tab-accent, var(--c-red)); color: white; }
+.ab-group-option.active span { color: rgba(255,255,255,0.85); }
+.ab-group-hint { font-family: var(--f-body); font-size: 0.9rem; color: var(--c-grey-mid); margin: -0.5rem 0 0.5rem; }
+
 /* ── Block-book offer (only when the activity has a block discount) ── */
 .block-book {
   display: flex; align-items: center; justify-content: space-between; gap: 0.9rem; flex-wrap: wrap;
@@ -1147,11 +1161,67 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   const requestedActivity = (new URLSearchParams(location.search).get("activity") || "").trim().toLowerCase();
   let requestedActivityHandled = !requestedActivity;
   const toSlug = str => String(str || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  // Optional &age=7-9 picks one age group of a grouped activity (below).
+  const requestedAge = toSlug(new URLSearchParams(location.search).get("age") || "");
+
+  // ── Activity groups ─────────────────────────────────────────
+  // Activities that share a More info page (e.g. WNF set up as one
+  // activity per age group, all pointing at wnf.html) show as ONE tab.
+  // Inside it the customer picks their group first (labelled by each
+  // activity's Age Note), then books that activity as normal — so
+  // capacity, price, block discount and register stay per age group.
+  // While `pendingGroupKey` is set, the tab is open but no group is
+  // chosen yet, so only the picker shows.
+  let pendingGroupKey = null;
+  function groupKeyOf(a) {
+    const p = String(a.infoPage || "").toLowerCase().replace(/#.*$/, "");
+    return /^[a-z0-9_-]+\.html$/.test(p) ? "page:" + p : "id:" + a.id;
+  }
+  function firstOpenSession(a) {
+    const sessions = a.sessions || [];
+    return sessions.find(s => !isSessionPast(s)) || sessions[0] || null;
+  }
+  function startMinutes(a) {
+    const s = firstOpenSession(a);
+    const t = s && parseSessionTimes(s.time);
+    return t ? t.start.h * 60 + t.start.min : 24 * 60;
+  }
+  function groupMembers(a) {
+    const key = groupKeyOf(a);
+    return activeActivities
+      .filter(x => groupKeyOf(x) === key)
+      .sort((x, y) => startMinutes(x) - startMinutes(y) || String(x.name).localeCompare(String(y.name)));
+  }
+  // "WNF" from "WNF", "WNF", "WNF" — or the shared start of differing names.
+  function groupTitle(members) {
+    if (members.length === 1) return members[0].name;
+    const words = members.map(m => String(m.name || "").trim().split(/\s+/));
+    const common = [];
+    for (let i = 0; i < words[0].length; i++) {
+      if (words.every(w => w[i] && w[i].toLowerCase() === words[0][i].toLowerCase())) common.push(words[0][i]);
+      else break;
+    }
+    return common.join(" ").replace(/[\s\-–—:(·|]+$/, "").replace(/[\s\-–—:(·|]*\b(ages?|age group|group)$/i, "").replace(/[\s\-–—:(·|]+$/, "") || members[0].name;
+  }
+
   function applyRequestedActivity() {
     if (requestedActivityHandled) return;
     requestedActivityHandled = true;
     const match = activeActivities.find(a => a.id.toLowerCase() === requestedActivity || toSlug(a.name) === toSlug(requestedActivity));
-    if (match) { currentActivityId = match.id; return; }
+    if (match) {
+      const members = groupMembers(match);
+      if (members.length > 1) {
+        // A grouped activity: open on the requested age group if given
+        // (&age=7-9 matches "Ages 7–9"), otherwise let them choose.
+        const byAge = requestedAge && members.find(m => toSlug(m.ageNote || m.name).includes(requestedAge));
+        currentActivityId = (byAge || members[0]).id;
+        pendingGroupKey = byAge ? null : groupKeyOf(match);
+      } else {
+        currentActivityId = match.id;
+        pendingGroupKey = null;
+      }
+      return;
+    }
     // Asked for an activity that isn't open (e.g. switched off between
     // terms): say so, rather than silently showing a different activity.
     const known = ACTIVITIES.find(a => a.id.toLowerCase() === requestedActivity || toSlug(a.name) === toSlug(requestedActivity));
@@ -1229,6 +1299,13 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           // either way since there's nothing mid-typed for an activity that
           // no longer exists in the list.
           currentActivityId = activeActivities.length ? activeActivities[0].id : null;
+          pendingGroupKey = null;
+          if (currentActivityId && groupMembers(activeActivities[0]).length > 1) {
+            // First tab is a grouped activity: open its picker rather than
+            // quietly choosing an age group for them.
+            pendingGroupKey = groupKeyOf(activeActivities[0]);
+            currentActivityId = groupMembers(activeActivities[0])[0].id;
+          }
           applyRequestedActivity();
           selectedSessionIds = new Set();
           renderTabs();
@@ -1841,18 +1918,36 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       panelEl.innerHTML = '<div class="ab-empty">No activities are open for booking right now — check back soon.</div>';
       return;
     }
-    tabsEl.innerHTML = activeActivities.map(a => `
-      <button class="ab-tab${a.id === currentActivityId ? " active" : ""}"
+    // One tab per group (a group is usually a single activity).
+    const groups = [];
+    const seen = new Set();
+    activeActivities.forEach(a => {
+      const key = groupKeyOf(a);
+      if (seen.has(key)) return;
+      seen.add(key);
+      groups.push({ key, members: groupMembers(a) });
+    });
+    const current = activeActivities.find(a => a.id === currentActivityId);
+    const currentKey = pendingGroupKey || (current ? groupKeyOf(current) : null);
+
+    tabsEl.innerHTML = groups.map(g => {
+      const a = g.members[0];
+      return `
+      <button class="ab-tab${g.key === currentKey ? " active" : ""}"
               style="--tab-accent:${a.accentColor}"
-              data-activity="${a.id}">
-        ${a.name}
+              data-group="${escAttr(g.key)}">
+        ${groupTitle(g.members)}
         <span class="ab-tab-provider">${a.provider}</span>
       </button>
-    `).join("");
+    `;
+    }).join("");
 
     tabsEl.querySelectorAll(".ab-tab").forEach(btn => {
       btn.addEventListener("click", () => {
-        currentActivityId = btn.dataset.activity;
+        const g = groups.find(x => x.key === btn.dataset.group);
+        if (!g) return;
+        currentActivityId = g.members[0].id;
+        pendingGroupKey = g.members.length > 1 ? g.key : null;
         selectedSessionIds = new Set();
         renderTabs();
         renderPanel();
@@ -2078,6 +2173,47 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     const activity = activeActivities.find(a => a.id === currentActivityId);
     if (!activity) { panelEl.innerHTML = ""; return; }
 
+    // Grouped activity (e.g. WNF age groups): show the group picker, and
+    // until a group is chosen show only that.
+    const members = groupMembers(activity);
+    const isGrouped = members.length > 1;
+    const choosing = isGrouped && pendingGroupKey === groupKeyOf(activity);
+    const allHaveAgeNotes = members.every(m => m.ageNote);
+    const pickerHtml = isGrouped ? `
+      <div class="ab-section-label">${allHaveAgeNotes ? "Choose Age Group" : "Choose Group"}</div>
+      <div class="ab-group-options">
+        ${members.map(m => {
+          const s = firstOpenSession(m);
+          const when = s ? `${s.dow ? escAttr(s.dow) + "s · " : ""}${escAttr(s.time || "")}` : "No sessions scheduled";
+          const isActive = !choosing && m.id === activity.id;
+          return `
+            <button type="button" class="ab-group-option${isActive ? " active" : ""}" data-member="${escAttr(m.id)}" style="--tab-accent:${m.accentColor}">
+              <b>${escAttr(m.ageNote || m.name)}</b>
+              <span>${when}</span>
+            </button>`;
+        }).join("")}
+      </div>
+    ` : "";
+
+    if (choosing) {
+      const first = members[0];
+      panelEl.innerHTML = `
+        <div class="ab-card" style="--activity-accent:${first.accentColor}">
+          ${first.imageUrl ? `<img class="ab-card-image" src="${first.imageUrl}" alt="${escAttr(groupTitle(members))}">` : ""}
+          <div class="ab-activity-head">
+            <div class="ab-activity-name">${groupTitle(members)}</div>
+            <div class="ab-activity-meta">${first.provider} · ${first.venue}</div>
+            ${first.description ? `<div class="ab-activity-desc">${first.description}</div>` : ""}
+          </div>
+          ${pickerHtml}
+          <p class="ab-group-hint">Pick ${allHaveAgeNotes ? "an age group" : "a group"} to see its sessions and book.</p>
+        </div>
+      `;
+      formDirty = false; // nothing to type into yet
+      wireGroupPicker();
+      return;
+    }
+
     const openSessions = activity.sessions.filter(s => !isSessionPast(s));
     const blockOffer = blockBookOffer(activity, openSessions, sessionIsFull);
 
@@ -2134,6 +2270,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           <div class="ab-price-tag">${activity.priceLabel}</div>
           ${blockOfferText(activity) ? `<div class="ab-block-offer">${blockOfferText(activity)}</div>` : ""}
         </div>
+
+        ${pickerHtml}
 
         <div class="ab-section-label">Choose Session(s)</div>
         <p style="font-family:var(--f-body); font-size:0.82rem; color:var(--c-grey-mid); margin:-0.6rem 0 0.9rem;">Select one or more sessions — you'll be booked (and charged) for each one you pick.</p>
@@ -2211,7 +2349,21 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       </div>
     `;
 
+    wireGroupPicker();
     wireUpPanel(activity);
+  }
+
+  function wireGroupPicker() {
+    panelEl.querySelectorAll(".ab-group-option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.member === currentActivityId && !pendingGroupKey) return;
+        currentActivityId = btn.dataset.member;
+        pendingGroupKey = null;
+        selectedSessionIds = new Set();
+        renderTabs();
+        renderPanel();
+      });
+    });
   }
 
   // ── Panel interactivity ─────────────────────────────────────

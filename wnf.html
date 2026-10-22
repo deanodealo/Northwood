@@ -102,6 +102,8 @@
     .wnf-slots { list-style: none; display: grid; gap: 6px; }
     .wnf-slots li { display: flex; gap: 12px; }
     .wnf-slots b { min-width: 58px; color: #8EC2F0; }
+    .wnf-slots a { display: flex; gap: 12px; color: inherit; text-decoration: none; }
+    .wnf-slots a:hover { text-decoration: underline; }
     .wnf-panel dd b { color: var(--c-white); }
     .wnf-panel .tbc { background: rgba(255,241,184,0.92); }
     .wnf-secure { display: flex; gap: 10px; align-items: center; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.75); font-size: 14px; line-height: 1.5; }
@@ -300,7 +302,7 @@
           <dl>
             <div><dt>When</dt><dd>Wednesdays, 5:00–8:00pm</dd></div>
             <div><dt>Where</dt><dd>Sports Hall, Northwood Stadium</dd></div>
-            <div><dt>Age groups</dt><dd><ul class="wnf-slots"><li><b>5–6pm</b>Ages 4–6</li><li><b>6–7pm</b>Ages 7–9</li><li><b>7–8pm</b>Ages 10+</li></ul></dd></div>
+            <div><dt>Age groups</dt><dd><ul class="wnf-slots"><li><a href="activitybooking.html?activity=wnf&amp;age=4-6"><b>5–6pm</b>Ages 4–6</a></li><li><a href="activitybooking.html?activity=wnf&amp;age=7-9"><b>6–7pm</b>Ages 7–9</a></li><li><a href="activitybooking.html?activity=wnf&amp;age=10"><b>7–8pm</b>Ages 10+</a></li></ul></dd></div>
             <div><dt>Next block</dt><dd>7 Wednesdays, 4 November to 16 December</dd></div>
             <div><dt>Price</dt><dd>£6.50 per session<br><b>£42 for the 7-week block</b> (works out at £6 a session)</dd></div>
             <div><dt>Coaching</dt><dd>FC Hanley &amp; PCT Coaching</dd></div>
@@ -361,16 +363,13 @@
 
   <!--
     DEVELOPER NOTE (booking deep link)
-    The buttons link to activitybooking.html?activity=wnf so parents land on
-    the WNF tab, not the first activity. activitybooking.html doesn't read that
-    yet. Suggested addition, once activeActivities has loaded and before
-    renderTabs() runs:
-
-      const wanted = new URLSearchParams(location.search).get("activity");
-      if (wanted && activeActivities.some(a => a.id === wanted)) currentActivityId = wanted;
-
-    Replace "wnf" with WNF's real document id in the "activities" collection.
-    Without the change the link still works; it just opens the default tab.
+    The Book buttons link to activitybooking.html?activity=wnf, which opens
+    the WNF tab. WNF is set up as one activity per age group in Manage
+    Activities, all with "More info page" = wnf.html and the group in
+    "Age Note" (e.g. "Ages 7–9"). The booking page shows them as one WNF tab
+    and asks for the age group first. The age group list above adds
+    &age=4-6 / 7-9 / 10, which opens that group directly (matched against
+    the Age Note).
   -->
 
   <!-- ============ FOOTER ============ -->
