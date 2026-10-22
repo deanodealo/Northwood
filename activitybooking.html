@@ -363,6 +363,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 #google-pay-button { min-height: 44px; }
 #apple-pay-button {
   -webkit-appearance: -apple-pay-button;
+  appearance: -apple-pay-button; /* Safari-only value; other browsers ignore it */
   -apple-pay-button-type: plain;
   -apple-pay-button-style: black;
   height: 44px; width: 100%; border-radius: 8px; cursor: pointer;
