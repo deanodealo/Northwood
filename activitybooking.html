@@ -357,6 +357,35 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 }
 .staff-collect-btn.active { background: var(--c-black); border-color: var(--c-black); color: white; }
 
+/* ── Digital wallets (Google Pay / Apple Pay) ── */
+.wallet-buttons { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.9rem; }
+.wallet-buttons:empty, .wallet-buttons.hidden { display: none; }
+#google-pay-button { min-height: 44px; }
+#apple-pay-button {
+  -webkit-appearance: -apple-pay-button;
+  -apple-pay-button-type: plain;
+  -apple-pay-button-style: black;
+  height: 44px; width: 100%; border-radius: 8px; cursor: pointer;
+}
+/* Preview-only stand-in shown before the DNS cutover (see initWallets). */
+.apple-pay-preview {
+  height: 44px; width: 100%; border: 0; border-radius: 8px; cursor: pointer;
+  background: #000; color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size: 1.05rem; font-weight: 600; letter-spacing: 0.01em;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.apple-pay-preview small {
+  font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  background: rgba(255,255,255,0.18); padding: 0.15rem 0.4rem; border-radius: 4px;
+}
+.wallet-divider {
+  display: flex; align-items: center; gap: 0.75rem; margin: 0.25rem 0 0.9rem;
+  font-family: var(--f-body); font-size: 0.78rem; color: var(--c-grey-mid);
+}
+.wallet-divider::before, .wallet-divider::after { content: ""; flex: 1; height: 1px; background: rgba(0,0,0,0.12); }
+.wallet-divider.hidden { display: none; }
+
 #card-container {
   padding: 0.9rem;
   border: 1.5px solid rgba(0,0,0,0.1);
@@ -838,6 +867,11 @@ const CHARGE_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctio
 // createActivityBooking.js in the Firebase functions folder.
 const BOOKING_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctions.net/createActivityBooking";
 
+// True on the github.io preview address (and locally). Used only to show a
+// labelled Apple Pay preview button until the DNS cutover — on
+// northwoodstadium.co.uk this is false and the preview never appears.
+const IS_PREVIEW_HOST = /\.github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
+
 // Same pricing rule as pricing.js in the functions folder. This copy only
 // SHOWS the total; the server works it out again and charges its own figure
 // (a mismatch is refused). Block discount: booking at least
@@ -1054,6 +1088,10 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   // resolving), and Square's card setup is async — without this, both
   // setups finished and attached TWO card forms to the new panel.
   let squareInitGen = 0;
+  // Digital wallets — like `card`, recreated on every panel render.
+  let walletPaymentRequest = null; // Square PaymentRequest (holds the live total)
+  let googlePay = null;
+  let applePay = null;
 
   const tabsEl = document.getElementById("activityTabs");
 
@@ -2035,6 +2073,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         ${activity.payAtVenue ? '<button type="button" class="pay-method-btn" data-method="venue">Pay at venue</button>' : ""}
       </div>
       <div id="squareBlock">
+        <div class="wallet-buttons" id="walletButtons"></div>
+        <div class="wallet-divider hidden" id="walletDivider">or pay by card</div>
         <div id="card-container"></div>
       </div>
     `;
@@ -2305,6 +2345,20 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         const blockNote = (!isFreeActivity && calc.useBlock) ? ` <small style="display:block; font-weight:600; color:#3F7148;">Block rate applied: £${(calc.perSessionPence / 100).toFixed(2)} a session</small>` : "";
         summaryLine.innerHTML = `${parts.join(", ")} × ${sessionsLabel} — Total: <span>${totalLabel}</span>${blockNote}`;
       }
+      syncWalletTotal(calc.totalPence);
+    }
+
+    // Keep the Google Pay / Apple Pay sheet showing the same total as the
+    // summary line. "pending" until there's something to charge.
+    function syncWalletTotal(totalPence) {
+      if (!walletPaymentRequest) return;
+      try {
+        walletPaymentRequest.update({
+          total: totalPence > 0
+            ? { amount: (totalPence / 100).toFixed(2), label: "Northwood Stadium" }
+            : { amount: "0.00", label: "Northwood Stadium", pending: true }
+        });
+      } catch (e) { /* request already torn down by a re-render */ }
     }
 
     selfCheckbox.addEventListener("change", () => {
@@ -2383,14 +2437,98 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         console.error("Square init error:", err);
         msg.textContent = "Payment system could not be initialised. Please refresh.";
         msg.className = "form-message error";
+        return;
       }
+      initWallets(myGen);
+    }
+
+    // ── Google Pay / Apple Pay ────────────────────────────────
+    // Both are optional extras on top of the card form: if either can't
+    // run on this device/browser it simply doesn't appear, and the card
+    // form still works. Square handles the wallet sheet and returns a
+    // token exactly like card.tokenize(), so the server is unchanged.
+    //
+    // Apple Pay only shows once the domain is verified with Square
+    // (/.well-known/apple-developer-merchantid-domain-association on
+    // northwoodstadium.co.uk), and only in Safari on Apple devices. Until
+    // the DNS cutover, a clearly-labelled preview button is shown on the
+    // github.io address instead so Northwood can see where it'll sit.
+    async function initWallets(myGen) {
+      const walletWrap = document.getElementById("walletButtons");
+      const divider = document.getElementById("walletDivider");
+      if (!walletWrap) return;
+      const isStale = () => myGen !== squareInitGen || !walletWrap.isConnected;
+
+      for (const w of [googlePay, applePay]) { if (w) { try { await w.destroy(); } catch (e) {} } }
+      googlePay = null; applePay = null; walletPaymentRequest = null;
+      if (isStale()) return;
+
+      const payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
+      const request = payments.paymentRequest({
+        countryCode: "GB",
+        currencyCode: "GBP",
+        total: { amount: "0.00", label: "Northwood Stadium", pending: true }
+      });
+      walletPaymentRequest = request;
+      updateSummary(); // push the current total into the request
+
+      // Apple Pay first (Apple's guidelines put it above other wallets).
+      try {
+        const ap = await payments.applePay(request);
+        if (isStale()) return;
+        const btn = document.createElement("div");
+        btn.id = "apple-pay-button";
+        btn.setAttribute("role", "button");
+        btn.setAttribute("aria-label", "Pay with Apple Pay");
+        btn.addEventListener("click", () => handleBooking(ap));
+        walletWrap.appendChild(btn);
+        applePay = ap;
+      } catch (err) {
+        if (isStale()) return;
+        if (IS_PREVIEW_HOST) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "apple-pay-preview";
+          btn.innerHTML = `Apple Pay <small>Preview</small>`;
+          btn.addEventListener("click", () => {
+            msg.textContent = "Apple Pay preview — this switches on once the site moves to northwoodstadium.co.uk. Customers will see it in Safari on iPhone, iPad and Mac.";
+            msg.className = "form-message";
+          });
+          walletWrap.appendChild(btn);
+        }
+      }
+
+      try {
+        const gp = await payments.googlePay(request);
+        if (isStale()) { try { await gp.destroy(); } catch (e) {} return; }
+        const holder = document.createElement("div");
+        holder.id = "google-pay-button";
+        walletWrap.appendChild(holder);
+        await gp.attach(holder, { buttonColor: "black", buttonSizeMode: "fill", buttonType: "long" });
+        if (isStale()) { try { await gp.destroy(); } catch (e) {} return; }
+        holder.addEventListener("click", () => handleBooking(gp));
+        googlePay = gp;
+      } catch (err) {
+        if (isStale()) return;
+        console.info("Google Pay not available here:", err && err.message);
+        const holder = document.getElementById("google-pay-button");
+        if (holder) holder.remove();
+      }
+
+      if (divider) divider.classList.toggle("hidden", !walletWrap.children.length);
     }
 
     function generateIdempotencyKey() {
       return `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
     }
 
-    submitBtn.addEventListener("click", async () => {
+    submitBtn.addEventListener("click", () => handleBooking(null));
+
+    // `wallet` is the Square Google Pay / Apple Pay instance whose button
+    // was tapped, or null for the normal "Book & Pay" (card) button.
+    // NOTE: for wallets there must be no `await` before wallet.tokenize() —
+    // Apple Pay only opens its sheet if called directly from the tap.
+    async function handleBooking(wallet) {
       msg.textContent = ""; msg.className = "form-message";
 
       const contactName = document.getElementById("contactName").value.trim();
@@ -2522,7 +2660,22 @@ const CONFIRMATION_EMAILS_ENABLED = true;
 
         // Card details only — the amount charged is decided by the server.
         let payment = null;
-        if (effectivePaymentMethod === "online") {
+        if (effectivePaymentMethod === "online" && wallet) {
+          // Make sure the sheet shows exactly what we're about to charge.
+          syncWalletTotal(totalPence);
+          const result = await wallet.tokenize();
+          if (result.status !== "OK") {
+            // Customer closed the sheet — not an error worth shouting about.
+            if (result.status !== "Cancel") {
+              msg.textContent = result.errors ? result.errors.map(e => e.message).join(", ") : "Payment couldn't be completed. Please try again or pay by card.";
+              msg.className = "form-message error";
+            }
+            return;
+          }
+          // Wallet payments are already authenticated on the device
+          // (Face ID / fingerprint / PIN), so Square doesn't need verifyBuyer.
+          payment = { sourceId: result.token, verificationToken: null };
+        } else if (effectivePaymentMethod === "online") {
           if (!card) {
             msg.textContent = "Payment system isn't ready yet. Please wait a moment and try again.";
             msg.className = "form-message error";
@@ -2664,7 +2817,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         submitBtn.disabled = false;
         submitBtn.textContent = (isStaffMode || isFreeActivity) ? "Confirm Booking" : "Book & Pay";
       }
-    });
+    }
   }
 
   panelEl.innerHTML = '<div class="ab-empty">Loading activities…</div>';
