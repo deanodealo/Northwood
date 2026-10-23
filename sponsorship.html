@@ -31,6 +31,15 @@
        inside the same parent — the parent already sets the size and crop.
        ═══════════════════════════════════════════════════════════ */
     :root { --c-gold: #C9A227; --c-gold-soft: rgba(201,162,39,0.14); }
+    /* Brand identity pack: this page uses PITCH green in place of TRACK red.
+       Scoped to <main> so the Northwood header, footer and logo stay red. */
+    main {
+      --c-red: #3F7148;          /* Pitch */
+      --c-red-dark: #2C5233;     /* Pitch, darkened for hovers */
+      --accent: #3F7148;
+      --accent-ink: #34603C;
+      --accent-tint: #EEF3EF;
+    }
 
     /* ---------- Hero extras ---------- */
     .sp-eyebrow {
@@ -38,7 +47,7 @@
       font-weight: 700; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
       padding: 7px 12px; border-radius: 4px; margin-bottom: 22px;
     }
-    .page-hero-title .hl { color: var(--c-red); }
+    .page-hero-title .hl { color: #7DBB89; } /* lighter pitch green, readable on the dark hero */
     .sp-stats {
       position: relative; z-index: 2; max-width: var(--max-w); margin: 56px auto 0;
       display: grid; grid-template-columns: repeat(4, 1fr);
@@ -104,7 +113,7 @@
     }
     .sp-term button[aria-pressed="true"] { background: var(--c-black); color: var(--c-white); }
     .sp-term .save { color: var(--c-red); }
-    .sp-term button[aria-pressed="true"] .save { color: #FF6B7F; }
+    .sp-term button[aria-pressed="true"] .save { color: #8FC79A; }
 
     .sp-price-grid { grid-template-columns: repeat(3, 1fr); align-items: stretch; }
     .sp-price-grid .price-card { padding: 30px 26px; }
@@ -139,7 +148,7 @@
       font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; margin-bottom: 16px;
     }
     .sp-naming h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(30px, 3.4vw, 42px); line-height: 1.02; }
-    .sp-naming-price { font-family: var(--f-display); font-weight: 800; font-size: 28px; color: var(--c-red); margin-top: 8px; }
+    .sp-naming-price { font-family: var(--f-display); font-weight: 800; font-size: 28px; color: #7DBB89; margin-top: 8px; }
     .sp-naming-term { color: rgba(255,255,255,0.65); font-size: 14px; margin-top: 2px; }
     .sp-naming p.sp-naming-pitch { color: rgba(255,255,255,0.8); font-size: 16px; line-height: 1.65; margin-top: 18px; }
     .sp-naming .sp-feat { border-top-color: rgba(255,255,255,0.14); margin-bottom: 28px; }
@@ -209,7 +218,7 @@
     .sp-contact h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 30px; line-height: 1; margin: 8px 0 4px; }
     .sp-contact-role { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px; }
     .sp-contact a.sp-contact-line { display: block; color: var(--c-white); font-weight: 700; font-size: 15px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.12); overflow-wrap: anywhere; }
-    .sp-contact a.sp-contact-line:hover { color: #FF6B7F; }
+    .sp-contact a.sp-contact-line:hover { color: #8FC79A; }
     .sp-contact-note { color: rgba(255,255,255,0.6); font-size: 13px; line-height: 1.6; margin-top: 14px; }
     .option-cards.sp-pkg-options { grid-template-columns: 1fr 1fr; }
     .sp-pkg-options .oc-tag ~ .oc-title { padding-right: 72px; }
@@ -326,9 +335,9 @@
         <img src="images/Northwoodmain.jpg" alt="">
       </div>
       <div class="page-hero-inner">
-        <p class="sp-eyebrow">Trackside &amp; Facility Advertising</p>
-        <h1 class="page-hero-title">Want your business seen by <span class="hl">100,000+</span> people a year?</h1>
-        <p class="page-hero-sub">Put your brand on display every day at Staffordshire's leading athletics venue. Northwood is owned by a registered charity, so every pound of sponsorship goes back into keeping sport accessible for local people.</p>
+        <p class="sp-eyebrow">Sponsorship &amp; Partnerships</p>
+        <h1 class="page-hero-title">Back Your Community. <span class="hl">Be Seen Doing It.</span></h1>
+        <p class="page-hero-sub">Partner with Northwood Stadium and put your brand in front of more than 100,000 visitors a year, while helping keep sport open to everyone in Stoke-on-Trent. Northwood is owned by a registered charity, so every pound of sponsorship goes straight back into the community.</p>
         <div class="page-hero-actions">
           <a href="#packages" class="btn-red">View Packages</a>
           <a href="#enquire" class="btn-outline-light">Make an Enquiry</a>
@@ -370,14 +379,14 @@
             <div class="sp-media"><img src="images/3g-pitch.jpg" alt="The floodlit 3G pitch at Northwood Stadium" loading="lazy" style="object-position: 70% center;"></div>
             <div class="sp-venue-body">
               <h3>FA-Accredited 3G Pitch</h3>
-              <p>Full-size and floodlit, with football leagues and fixtures every week.</p>
+              <p>Full-size and floodlit. A wide range of grassroots teams train here through the week, with FC Hanley junior and senior fixtures every weekend.</p>
             </div>
           </article>
           <article class="sp-venue">
             <div class="sp-media"><!-- TEMPORARY PHOTO: replace with the photographer's sports hall shot --><img src="images/sports-hall.jpg" alt="The 1,600m² Northwood sports hall" loading="lazy" style="object-position: center 75%;"></div>
             <div class="sp-venue-body">
               <h3>Sports Hall, Squash &amp; Gym</h3>
-              <p>Indoor sport, members and casual visitors through the door daily.</p>
+              <p>Home to regional netball league fixtures and large-scale events, plus members and casual visitors through the door daily.</p>
             </div>
           </article>
         </div>
@@ -414,7 +423,7 @@
           <div>
             <p class="section-eyebrow">— Choose Your Package</p>
             <h2 class="section-title">Our Sponsorship Packages</h2>
-            <p class="lede">Every package includes board printing. Commit for two years and save 10%.</p>
+            <p class="lede">Every package includes board printing. Commit for two years and save 10% on Supporter and Community Partner packages.</p>
           </div>
           <div class="sp-term" role="group" aria-label="Show prices for">
             <button type="button" id="termYear" aria-pressed="true" data-term="1">1 year</button>
@@ -458,7 +467,7 @@
             <span class="badge">Limited to 6 partners</span>
             <h3>Premier Partner</h3>
             <p class="who">The best positions in the venue</p>
-            <div class="price" data-price="1800">£1,800</div>
+            <div class="price" data-price="1800" data-no-discount>£1,800</div>
             <p class="per">per year</p>
             <ul class="sp-feat">
               <li>4 boards in premium positions</li>
@@ -505,7 +514,7 @@
           <ul>
             <li><strong>Board printing</strong>Included in the price</li>
             <li><strong>First refusal</strong>Keep your board positions when you renew</li>
-            <li><strong>10% off</strong>When you commit for two years</li>
+            <li><strong>10% off</strong>Supporter &amp; Community Partner, when you commit for two years</li>
             <li><strong>Employee passes</strong>Valid for 12 months</li>
           </ul>
         </div>
@@ -667,7 +676,7 @@
                     <span class="group-label" id="sp-term-label">How long would you like to sponsor for?</span>
                     <div class="choice-group" role="radiogroup" aria-labelledby="sp-term-label">
                       <label class="choice"><input type="radio" name="Term" value="1 year">1 year</label>
-                      <label class="choice"><input type="radio" name="Term" value="2 years (10% off)">2 years (10% off)</label>
+                      <label class="choice"><input type="radio" name="Term" value="2 years (10% off Supporter &amp; Community Partner)">2 years (10% off Supporter &amp; Community Partner)</label>
                       <label class="choice"><input type="radio" name="Term" value="Not sure">Not sure</label>
                     </div>
                   </div>
@@ -726,7 +735,7 @@
           </details>
           <details>
             <summary>How does the 2-year discount work?</summary>
-            <p>Commit for two years and you get 10% off. A Supporter package comes to £720 over two years instead of £800, a Community Partner package £1,350 instead of £1,500, and a Premier Partner package £3,240 instead of £3,600.</p>
+            <p>Commit to a Supporter or Community Partner package for two years and you get 10% off. A Supporter package comes to £720 over two years instead of £800, and a Community Partner package £1,350 instead of £1,500. The 2-year discount doesn't apply to Premier Partner, which is limited to six partners and stays at £1,800 a year.</p>
           </details>
           <details>
             <summary>What happens when my sponsorship ends?</summary>
@@ -821,7 +830,7 @@
   <script src="subpage.js"></script>
   <script>
   (function () {
-    // ── Package prices: 1 year vs 2 years (10% off) ──────────────
+    // ── Package prices: 1 year vs 2 years (10% off, not Premier) ─
     const termBtns = document.querySelectorAll(".sp-term button");
     const fmt = n => "£" + n.toLocaleString("en-GB");
     function setTerm(term) {
@@ -829,7 +838,11 @@
       document.querySelectorAll(".price[data-price]").forEach(el => {
         const yearly = Number(el.dataset.price);
         const per = el.nextElementSibling;
-        if (term === "2") {
+        // Premier Partner has no 2-year discount (data-no-discount)
+        if (term === "2" && el.hasAttribute("data-no-discount")) {
+          el.textContent = fmt(yearly);
+          per.textContent = "per year · no 2-year discount on this package";
+        } else if (term === "2") {
           const perYear = Math.round(yearly * 0.9);
           el.textContent = fmt(perYear);
           per.textContent = "per year on a 2-year deal (" + fmt(perYear * 2) + " total, save " + fmt(yearly * 2 - perYear * 2) + ")";
