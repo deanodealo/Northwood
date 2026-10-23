@@ -55,6 +55,9 @@
   transition: all 0.15s;
 }
 .ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+a.ab-staff-link { text-decoration: none; display: inline-block; }
+.ab-staff-link[aria-current="page"] { color: white; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.1); }
+.ab-topbar-nav { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .ab-staff-link.is-active { background: var(--c-red); border-color: var(--c-red); color: white; }
 
 .ab-wrap { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
@@ -589,7 +592,8 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 
 <div class="ab-topbar">
   <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
-  <div style="display:flex; gap:0.75rem; align-items:center;">
+  <!-- Public header: shown to customers and visitors -->
+  <div class="ab-topbar-nav" id="publicNav">
     <button class="ab-staff-link" id="accountBtn">My Account</button>
     <button type="button" class="call-now-btn" id="callNowBtn" aria-label="Call Northwood Stadium" aria-haspopup="dialog">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg>
@@ -597,6 +601,14 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
     <!-- Staff Login moved to the footer (less prominent to the public).
          Button kept, hidden, because the page's staff login code uses it. -->
     <button class="ab-staff-link hidden" id="staffLoginBtn">Staff Login</button>
+  </div>
+  <!-- Staff header: replaces the public one once a staff login is confirmed -->
+  <div class="ab-topbar-nav hidden" id="staffNav">
+    <a href="activitybooking.html" class="ab-staff-link" aria-current="page">Booking Page</a>
+    <a href="activitiesadmin.html" class="ab-staff-link">Bookings Admin</a>
+    <a href="manage-activities.html" class="ab-staff-link">Manage Activities</a>
+    <a href="page-content.html" class="ab-staff-link">Page Content</a>
+    <button type="button" class="ab-staff-link" id="staffLogoutBtn">Log out</button>
   </div>
 </div>
 
@@ -622,12 +634,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   </div>
 
   <div class="ab-staff-banner hidden" id="staffBanner">
-    <span><strong>Staff Mode is ON</strong> — bookings made now will be recorded as taken at the venue.</span>
-    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-      <a href="manage-activities.html" class="ab-staff-link">Manage Activities</a>
-      <a href="activitiesadmin.html" class="ab-staff-link">Bookings Admin</a>
-      <button id="staffLogoutBtn">Log out</button>
-    </div>
+    <span><strong>Staff Mode is ON</strong> — you're logged in as staff, and bookings made now will be recorded as taken at the venue.</span>
   </div>
 
   <div class="ab-staff-banner hidden" id="customerBanner" style="background:var(--c-red);">
@@ -1357,6 +1364,14 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   const staffLoginBtn = document.getElementById("staffLoginBtn");
   const staffBanner = document.getElementById("staffBanner");
   const staffLogoutBtn = document.getElementById("staffLogoutBtn");
+  const publicNav = document.getElementById("publicNav");
+  const staffNav = document.getElementById("staffNav");
+  // Staff get the same header as the other staff pages; everyone else
+  // gets the public one (My Account + Call).
+  function showStaffHeader(on) {
+    staffNav.classList.toggle("hidden", !on);
+    publicNav.classList.toggle("hidden", on);
+  }
   const staffModalOverlay = document.getElementById("staffModalOverlay");
   const staffModalCancel = document.getElementById("staffModalCancel");
   const staffModalSubmit = document.getElementById("staffModalSubmit");
@@ -1862,6 +1877,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       myBookingsOverlay.classList.add("hidden");
       staffBanner.classList.add("hidden");
       customerBanner.classList.add("hidden");
+      showStaffHeader(false);
       staffLoginBtn.classList.remove("is-active");
       staffLoginBtn.textContent = "Staff Login";
       accountBtn.textContent = "My Account";
@@ -1887,6 +1903,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       currentCustomer = null;
       staffBanner.classList.remove("hidden");
       customerBanner.classList.add("hidden");
+      showStaffHeader(true);
       staffLoginBtn.classList.add("is-active");
       staffLoginBtn.textContent = "Staff: Logged In";
       accountBtn.style.display = "";
@@ -1910,6 +1927,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
 
     staffBanner.classList.add("hidden");
     customerBanner.classList.remove("hidden");
+    showStaffHeader(false);
     customerBannerName.textContent = currentCustomer.name;
     // Arrived from the "My Bookings" link on the home/facilities pages'
     // red account bar — open the list straight away, then clear the hash

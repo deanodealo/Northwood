@@ -234,7 +234,7 @@
     @media (max-width: 560px) { .ts-gallery { grid-template-columns: 1fr; } .ts-gallery figure:first-child { aspect-ratio: 4 / 3; } }
   </style>
 </head>
-<body>
+<body data-live-page="tracksocial">
 
   <!-- ============ HEADER / NAV ============ -->
   <header class="site-header" id="siteHeader">
@@ -296,8 +296,8 @@
         <h1>One Track. <span>One Community.</span></h1>
         <p class="ts-hero-sub">Free monthly running events bringing Stoke-on-Trent together.</p>
         <div class="ts-hero-actions">
-          <!-- REGISTER LINK: point this at the next Track Social registration page -->
-          <a href="#next" class="btn-pink">Register for Free</a>
+          <!-- REGISTER LINK: set by staff on page-content.html -->
+          <a href="#next" class="btn-pink" data-ts-register="hero">Register for Free</a>
           <a href="#what" class="btn-outline-light">What Is Track Social?</a>
         </div>
       </div>
@@ -372,10 +372,8 @@
     </section>
 
     <!-- ============ 4. OUR NEXT TRACK SOCIAL ============
-         STAFF: update this block each month. Only the text inside the
-         <span>/<dd> tags and the two links need changing.
-         Track Socials run on the last Monday of the month:
-         2026: 26 Oct · 30 Nov · 28 Dec -->
+         Filled in live from Staff > Page Content (live-content.js).
+         The text below only shows if that can't load. -->
     <section class="section ts-section" id="next">
       <div class="section-inner">
         <p class="ts-eyebrow">— Our Next Track Social</p>
@@ -390,14 +388,13 @@
           <div class="ts-next-body">
             <h3>October Track Social</h3>
             <dl class="ts-next-list">
-              <div><dt>Guest running club</dt><dd>Just Run Club</dd></div>
+              <div><dt>Guest running club</dt><dd data-live="tsGuest">Just Run Club</dd></div>
               <div><dt>Entry</dt><dd>Free, all abilities welcome</dd></div>
-              <div><dt>Special activities</dt><dd><span class="tbc">[DJ / entertainment]</span></dd></div>
-              <div><dt>Food, drink &amp; fitness partners</dt><dd><span class="tbc">[partners]</span></dd></div>
+              <div hidden><dt>Special activities</dt><dd data-live="tsActivities"></dd></div>
+              <div hidden><dt>Food, drink &amp; fitness partners</dt><dd data-live="tsPartners"></dd></div>
             </dl>
             <div class="ts-next-actions">
-              <!-- REGISTER LINK: paste this month's registration link here (and in the hero + Get Involved buttons) -->
-              <a href="#" class="btn-pink">Register for Free</a>
+              <a href="#" class="btn-pink" data-ts-register="next" hidden>Register for Free</a>
               <a href="#faq" class="btn-ghost-pink">Questions?</a>
             </div>
             <p class="ts-next-note">Northwood Stadium, Keelings Road, Stoke-on-Trent ST1 6PA</p>
@@ -507,7 +504,7 @@
             <span class="ts-inv-num">01</span>
             <h3>Join Our Next Track Social</h3>
             <p>Individuals, friends and families are all welcome, whatever your experience or fitness level.</p>
-            <a href="#" class="btn-pink">Register for Free</a>
+            <a href="#next" class="btn-pink" data-ts-register="involved">Register for Free</a>
           </div>
           <div class="ts-inv">
             <span class="ts-inv-num">02</span>
@@ -609,5 +606,6 @@
   </footer>
 
   <script src="subpage.js"></script>
+  <script src="live-content.js" defer></script>
 </body>
 </html>

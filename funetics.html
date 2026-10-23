@@ -211,7 +211,7 @@
     }
   </style>
 </head>
-<body class="theme-track">
+<body class="theme-track" data-live-page="funetics">
 
   <!-- ============ HEADER / NAV ============ -->
   <header class="site-header" id="siteHeader">
@@ -282,14 +282,14 @@
           <div class="fn-hero-photo">
             <img src="images/funetics-hero-celebrate.jpg" alt="Funetics children celebrating with medals and certificates on the path beside the Northwood track" style="object-position: center 68%;">
           </div>
-          <div class="fn-price-badge" aria-label="£3.50 per session"><b>£3.50</b><span>Per session</span></div>
+          <div class="fn-price-badge" aria-label="Price per session"><b data-live="fnPrice">£3.50</b><span>Per session</span></div>
         </div>
       </div>
       <div class="fn-facts">
-        <div class="fn-fact"><b>£3.50</b><span>Per session, book online</span></div>
+        <div class="fn-fact"><b data-live="fnPrice">£3.50</b><span>Per session, book online</span></div>
         <div class="fn-fact"><b>Ages 4–12</b><span>Boys and girls, all abilities</span></div>
         <div class="fn-fact"><b>Tue &amp; Sat</b><span>Two sessions a week</span></div>
-        <div class="fn-fact"><b>3 Nov – 19 Dec</b><span>Next term, every week until Christmas</span></div>
+        <div class="fn-fact" data-live="fnFact"><b>3 Nov – 19 Dec</b><span>Next term, every week until Christmas</span></div>
       </div>
     </section>
 
@@ -343,7 +343,7 @@
       <div class="section-inner">
         <p class="section-eyebrow">— Session Times</p>
         <h2 class="section-title">Two Ways to Take Part</h2>
-        <p class="lede">Every Tuesday and Saturday during term time. This term runs from Tuesday 3 November to Saturday 19 December. Come to one or both.</p>
+        <p class="lede">Every Tuesday and Saturday during term time. <span data-live="fnTerm">This term runs from Tuesday 3 November to Saturday 19 December.</span> Come to one or both.</p>
         <div class="fn-sessions">
           <article class="fn-session">
             <h3 class="fn-session-day">Tuesdays</h3>
@@ -353,7 +353,7 @@
               <li><div><b>6:00–7:00pm</b><small>Sports Hall, Northwood Stadium</small></div><span class="fn-age">Ages 4–12</span></li>
             </ul>
             <div class="fn-session-foot">
-              <span class="fn-session-price">£3.50 <small>per session</small></span>
+              <span class="fn-session-price"><span data-live="fnPrice">£3.50</span> <small>per session</small></span>
               <a href="activitybooking.html?activity=funetics" class="btn-red">Book Tuesday</a>
             </div>
           </article>
@@ -366,12 +366,12 @@
               <li><div><b>11:00am–12:00pm</b><small>Athletics track (sports hall if wet)</small></div><span class="fn-age">Ages 8+</span></li>
             </ul>
             <div class="fn-session-foot">
-              <span class="fn-session-price">£3.50 <small>per session</small></span>
+              <span class="fn-session-price"><span data-live="fnPrice">£3.50</span> <small>per session</small></span>
               <a href="activitybooking.html?activity=funetics" class="btn-red">Book Saturday</a>
             </div>
           </article>
         </div>
-        <p class="fn-term-note"><b>This term:</b> Tuesdays 3 November to 15 December, and Saturdays 7 November to 19 December, our last Funetics session before Christmas. Live dates and spaces are shown on the booking page.</p>
+        <p class="fn-term-note" data-live="fnTermNote"><b>This term:</b> Tuesdays 3 November to 15 December, and Saturdays 7 November to 19 December, our last Funetics session before Christmas. Live dates and spaces are shown on the booking page.</p>
       </div>
     </section>
 
@@ -429,7 +429,7 @@
           <ol class="fn-steps">
             <li><b>Pick your sessions</b><span>Choose Tuesdays, Saturdays or both, as many weeks as you like.</span></li>
             <li><b>Add your child's details</b><span>Booking for brothers and sisters? Add them all in the same booking.</span></li>
-            <li><b>Pay securely online</b><span>£3.50 per child, per session. You'll get a confirmation, with an option to add the sessions to your calendar.</span></li>
+            <li><b>Pay securely online</b><span><span data-live="fnPrice">£3.50</span> per child, per session. You'll get a confirmation, with an option to add the sessions to your calendar.</span></li>
           </ol>
           <div class="fn-book-actions">
             <a href="activitybooking.html?activity=funetics" class="btn-pink">Book Funetics</a>
@@ -449,7 +449,7 @@
           <details><summary>Which session should we choose?</summary><p>Tuesdays are fun, games-based sessions for all ages, a great place to start. Saturdays are more technical and split by age (4–7 and 8+), so they suit children who want to build on what they've learned. Plenty of children do both.</p></details>
           <details><summary>What should they wear and bring?</summary><p>Comfortable sports clothes, trainers and a water bottle. On colder days, layers they can take off as they warm up. <span class="tbc">[confirm]</span></p></details>
           <details><summary>Can parents stay and watch?</summary><p><span class="tbc">[confirm: stay and watch, or drop off and collect?]</span></p></details>
-          <details><summary>Do sessions run in the school holidays?</summary><p>Funetics runs during school term time. This term's last session is Saturday 19 December, and we'll be back in the new year. Keep an eye on our holiday camps for school-holiday activities. <span class="tbc">[link to holiday camp page if there is one]</span></p></details>
+          <details><summary>Do sessions run in the school holidays?</summary><p>Funetics runs during school term time. <span data-live="fnLast">This term's last session is Saturday 19 December, and we'll be back in the new year.</span> Keep an eye on our holiday camps for school-holiday activities. <span class="tbc">[link to holiday camp page if there is one]</span></p></details>
           <details><summary>What if we can't make a session?</summary><p><span class="tbc">[cancellation / refund policy]</span></p></details>
           <details><summary>Are the coaches DBS checked?</summary><p><span class="tbc">[confirm: DBS checked, England Athletics trained, first aid on site]</span></p></details>
           <details><summary>I've got another question.</summary><p>Email us at <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> and we'll get back to you.</p></details>
@@ -461,7 +461,7 @@
     <section class="section fn-cta track-band track-band--left">
       <div class="section-inner">
         <h2 class="section-title">Ready to Train Like a Champion?</h2>
-        <p>£3.50 a session, every Tuesday and Saturday from 3 November to 19 December. Book online, or email <a class="fn-mail" href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> with any questions.</p>
+        <p><span data-live="fnPrice">£3.50</span> a session, every Tuesday and Saturday <span data-live="fnCtaDates">from 3 November to 19 December.</span> Book online, or email <a class="fn-mail" href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> with any questions.</p>
         <div class="fn-book-actions">
           <a href="activitybooking.html?activity=funetics" class="btn-white">Book Now</a>
         </div>
@@ -554,5 +554,6 @@
   </footer>
 
   <script src="subpage.js"></script>
+  <script src="live-content.js" defer></script>
 </body>
 </html>

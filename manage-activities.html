@@ -62,6 +62,7 @@
   display: inline-block;
 }
 .ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+.ab-staff-link[aria-current="page"] { color: white; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.1); }
 
 .ma-wrap { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
 @media (max-width: 600px) { .ma-wrap { padding: 2rem 1.1rem 4rem; } }
@@ -304,6 +305,8 @@ input[type="date"], input[type="time"] {
   <div class="ab-topbar-nav">
     <a href="activitybooking.html" class="ab-staff-link">Booking Page</a>
     <a href="activitiesadmin.html" class="ab-staff-link">Bookings Admin</a>
+    <a href="manage-activities.html" class="ab-staff-link" aria-current="page">Manage Activities</a>
+    <a href="page-content.html" class="ab-staff-link">Page Content</a>
     <button class="ab-staff-link hidden" id="staffLogoutBtn">Log out</button>
   </div>
 </div>

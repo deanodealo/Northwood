@@ -89,6 +89,8 @@
     .gm-strip img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
     .gm-strip figure:hover img { transform: scale(1.04); }
     @media (max-width: 560px) { .gm-strip figure { aspect-ratio: 1 / 1; } }
+    .gm-timetables { display: grid; gap: 8px; margin-top: 4px; }
+    .gm-timetables .gm-timetable { margin-top: 0; }
     .gm-timetable { display: flex; align-items: center; gap: 16px; background: var(--c-chalk); border-left: 4px solid var(--c-red); border-radius: 0 10px 10px 0; padding: 14px 18px; margin-top: 4px; }
     .gm-tt-day { flex: none; background: var(--c-black); color: var(--c-white); font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 15px; letter-spacing: 0.5px; padding: 8px 12px; border-radius: 6px; }
     .gm-timetable b { display: block; font-size: 16px; }
@@ -186,7 +188,7 @@
     }
   </style>
 </head>
-<body class="theme-gym">
+<body class="theme-gym" data-live-page="gym">
 
   <!-- ============ HEADER / NAV ============ -->
   <header class="site-header" id="siteHeader">
@@ -350,9 +352,12 @@
               <span class="gm-kicker">Train together</span>
               <h3>Fitness Classes</h3>
               <p>Coach-led group sessions for every fitness level. Train alongside others, stay motivated and learn new skills with someone guiding you through every round.</p>
-              <div class="gm-timetable">
-                <span class="gm-tt-day">Mon &amp; Tue</span>
-                <div><b>Circuit Training with Lorraine</b><span>6:00–7:00pm · Functional fitness room</span></div>
+              <!-- Class list: filled in live from Staff > Page Content (live-content.js) -->
+              <div class="gm-timetables" data-live="gymClasses">
+                <div class="gm-timetable">
+                  <span class="gm-tt-day">Mon &amp; Tue</span>
+                  <div><b>Circuit Training with Lorraine</b><span>6:00–7:00pm · Functional fitness room</span></div>
+                </div>
               </div>
               <p class="gm-tt-note">Included in the Gym + Classes and All Access memberships. Book your place in advance.</p>
             </div>
@@ -546,5 +551,6 @@
   </footer>
 
   <script src="subpage.js"></script>
+  <script src="live-content.js" defer></script>
 </body>
 </html>

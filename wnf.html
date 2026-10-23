@@ -177,7 +177,7 @@
     @media (max-width: 560px) { .wnf-diff { grid-template-columns: 1fr; } }
   </style>
 </head>
-<body class="theme-court">
+<body class="theme-court" data-live-page="wnf">
 
   <!-- ============ HEADER / NAV ============ -->
   <header class="site-header" id="siteHeader">
@@ -248,7 +248,7 @@
         <div class="wnf-stat"><b>Wednesdays</b><span>5:00–8:00pm, in three age groups</span></div>
         <div class="wnf-stat"><b>Indoor</b><span>Sports hall, whatever the weather</span></div>
         <div class="wnf-stat"><b>Term-based</b><span>Structured coaching that builds week to week</span></div>
-        <div class="wnf-stat"><b>From £6</b><span>A session when you book the 7-week block</span></div>
+        <div class="wnf-stat" data-live="wnfStat"><b>From £6</b><span>A session when you book the 7-week block</span></div>
       </div>
     </section>
 
@@ -344,7 +344,7 @@
           <h2 class="section-title">Book in a Couple of Minutes</h2>
           <p class="lede">Bookings and payments are all taken here on the Northwood website. Live dates and spaces are shown on the booking page.</p>
           <ol class="wnf-steps">
-            <li><b>Choose your sessions</b><span>Book the full 7-week block for £42 (£6 a session), or single Wednesdays at £6.50.</span></li>
+            <li><b>Choose your sessions</b><span data-live="wnfChoose">Book the full 7-week block for £42 (£6 a session), or single Wednesdays at £6.50.</span></li>
             <li><b>Add your player's details</b><span>Booking for more than one child? Add them all in the same booking.</span></li>
             <li><b>Pay securely online</b><span>Card payment on the website. You'll get a confirmation, with an option to add the sessions to your calendar.</span></li>
           </ol>
@@ -359,8 +359,8 @@
             <div><dt>When</dt><dd>Wednesdays, 5:00–8:00pm</dd></div>
             <div><dt>Where</dt><dd>Sports Hall, Northwood Stadium</dd></div>
             <div><dt>Age groups</dt><dd><ul class="wnf-slots"><li><a href="activitybooking.html?activity=wnf&amp;age=4-6"><b>5–6pm</b>Ages 4–6</a></li><li><a href="activitybooking.html?activity=wnf&amp;age=7-9"><b>6–7pm</b>Ages 7–9</a></li><li><a href="activitybooking.html?activity=wnf&amp;age=10"><b>7–8pm</b>Ages 10+</a></li></ul></dd></div>
-            <div><dt>Next block</dt><dd>7 Wednesdays, 4 November to 16 December</dd></div>
-            <div><dt>Price</dt><dd>£6.50 per session<br><b>£42 for the 7-week block</b> (works out at £6 a session)</dd></div>
+            <div><dt>Next block</dt><dd data-live="wnfNext">7 Wednesdays, 4 November to 16 December</dd></div>
+            <div><dt>Price</dt><dd data-live="wnfPrice">£6.50 per session<br><b>£42 for the 7-week block</b> (works out at £6 a session)</dd></div>
             <div><dt>Coaching</dt><dd>FC Hanley &amp; PCT Coaching</dd></div>
           </dl>
           <p class="wnf-secure">
@@ -395,7 +395,7 @@
           <details><summary>Does my child need to be in a team already?</summary><p>No. Wednesday Night Football is open to all abilities, whether your child plays for a club or is just starting out.</p></details>
           <details><summary>What should they wear and bring?</summary><p>Comfortable sports kit, <strong>trainers only (no football boots of any kind)</strong>, shin pads and a water bottle.</p></details>
           <details><summary>Can parents stay and watch?</summary><p>Yes. Parents are welcome to stay and watch from the viewing balcony.</p></details>
-          <details><summary>Do I have to book the whole term?</summary><p>No. You can book single sessions at £6.50, or book all 7 weeks of the block for £42, which works out at £6 a session. The next block runs every Wednesday from 4 November to 16 December.</p></details>
+          <details><summary>Do I have to book the whole term?</summary><p data-live="wnfFaq">No. You can book single sessions at £6.50, or book all 7 weeks of the block for £42, which works out at £6 a session. The next block runs every Wednesday from 4 November to 16 December.</p></details>
           <details><summary>What if we miss a week?</summary><p><span class="tbc">[refund / transfer policy]</span></p></details>
           <details><summary>Who are the coaches?</summary><p>Sessions are delivered by the FC Hanley and PCT Coaching team: Tanbir, Eva, Steve, Michelle, Jamie, Sean and Josh. <span class="tbc">[confirm: all coaches DBS checked and FA qualified, first aid on site]</span></p></details>
           <details><summary>I've got another question.</summary><p>Email us at <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> and we'll get back to you.</p></details>
@@ -407,7 +407,7 @@
     <section class="section wnf-cta track-band">
       <div class="section-inner">
         <h2 class="section-title">Ready for Wednesday?</h2>
-        <p>Spaces are limited in every age group. Book the 7-week block from 4 November, or a single session, in a couple of minutes, or email <a class="wnf-mail" href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> with any questions.</p>
+        <p>Spaces are limited in every age group. <span data-live="wnfCta">Book the 7-week block from 4 November, or a single session,</span> in a couple of minutes, or email <a class="wnf-mail" href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> with any questions.</p>
         <div class="wnf-book-actions">
           <a href="activitybooking.html?activity=wnf" class="btn-red">Book &amp; Pay Online</a>
           <a href="#why" class="btn-outline-light">Read Our Why</a>
@@ -500,5 +500,6 @@
   </footer>
 
   <script src="subpage.js"></script>
+  <script src="live-content.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Content | Northwood Stadium</title>
+<meta name="description" content="Staff tool for updating regularly-changing website content at Northwood Stadium.">
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<meta name="theme-color" content="#1A1818">
+
+<!-- Firebase (compat SDK — same version and project as activitybooking.html) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<style>
+/* ══════════════════════════════════════════════════════════
+   PAGE CONTENT — staff-only tool for the bits of the site that
+   change regularly (Track Social next event, Gym classes).
+   Styles copied from manage-activities.html so the staff pages
+   look like one tool.
+   ══════════════════════════════════════════════════════════ */
+
+.hidden { display: none !important; }
+
+.ma-page { background: var(--c-grey-light); min-height: 100vh; }
+
+/* — topbar, staff modal, form fields — copied to match
+   activitybooking.html exactly so both pages feel like one tool. — */
+.ab-topbar {
+  background: var(--c-black);
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
+}
+.ab-topbar a.ab-logo-link { display: flex; align-items: center; }
+.ab-topbar img { height: 34px; }
+.ab-topbar-nav { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.ab-staff-link {
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+.ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+.ab-staff-link[aria-current="page"] { color: white; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.1); }
+
+.ma-wrap { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+@media (max-width: 600px) { .ma-wrap { padding: 2rem 1.1rem 4rem; } }
+
+.ma-heading { margin-bottom: 2rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.ma-eyebrow {
+  font-family: var(--f-body); font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--c-red); font-weight: 700; margin-bottom: 0.5rem;
+}
+.ma-title { font-family: var(--f-display); font-size: 2.1rem; font-weight: 800; color: var(--c-black); text-transform: uppercase; letter-spacing: 0.5px; }
+.ma-sub { font-family: var(--f-body); color: var(--c-grey-mid); margin-top: 0.4rem; font-size: 0.92rem; }
+
+.ma-add-btn {
+  font-family: var(--f-display); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 0.8rem 1.4rem; border: none; border-radius: 10px; background: var(--c-red); color: white; cursor: pointer;
+  transition: opacity 0.15s; white-space: nowrap;
+}
+.ma-add-btn:hover { opacity: 0.9; }
+
+.ma-empty {
+  text-align: center; font-family: var(--f-body); color: var(--c-grey-mid);
+  padding: 3rem 1.5rem; background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* — staff-gate panel — */
+.ma-gate {
+  max-width: 420px; margin: 4rem auto; background: white; border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  padding: 2.25rem; text-align: center;
+}
+.ma-gate h2 { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 0.6rem; }
+.ma-gate p { font-family: var(--f-body); font-size: 0.9rem; color: var(--c-grey-mid); margin-bottom: 1.5rem; line-height: 1.6; }
+
+/* — form view — */
+.ma-form-card {
+  background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05); padding: 2.25rem;
+}
+@media (max-width: 600px) { .ma-form-card { padding: 1.5rem; } }
+.ma-form-title { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.5rem; }
+
+.ma-section-label {
+  font-family: var(--f-body); font-size: 0.68rem; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--c-grey-mid); font-weight: 700; margin: 1.75rem 0 0.9rem;
+}
+.ma-section-label:first-of-type { margin-top: 0; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; min-width: 0; }
+.form-row > div { min-width: 0; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 600px) { .form-row, .form-row.three { grid-template-columns: 1fr; } }
+
+label {
+  display: block; font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-black); margin-bottom: 0.4rem;
+}
+.field-hint { font-family: var(--f-body); font-size: 0.74rem; color: var(--c-grey-mid); margin-top: 0.3rem; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"],
+input[type="date"], input[type="time"], textarea, select {
+  width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 0.7rem 0.85rem; font-family: var(--f-body); font-size: 0.92rem; color: var(--c-black);
+  background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1); border-radius: 8px; transition: border-color 0.15s, background 0.15s;
+}
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--c-red); background: white; }
+
+/* iOS Safari renders the native date/time picker control with its own
+   internal sizing that ignores width:100% inside narrow grid columns,
+   causing it to overhang past its container on mobile. Stripping the
+   native appearance forces it to respect the box model like a normal
+   input; it still opens the standard date/time picker on tap. */
+input[type="date"], input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.required-mark { color: var(--c-red); }
+
+.checkbox-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem; }
+.checkbox-row input { width: 18px; height: 18px; accent-color: var(--c-red); cursor: pointer; }
+.checkbox-row label { margin: 0; cursor: pointer; }
+
+.ma-session-add-panel { background: var(--c-grey-light); border-radius: 10px; padding: 1.1rem; margin-bottom: 1.25rem; }
+.ma-mini-add-btn {
+  font-family: var(--f-body); font-size: 0.84rem; font-weight: 700; color: white; background: var(--c-black);
+  border: none; border-radius: 8px; padding: 0.65rem 1.1rem; cursor: pointer;
+}
+.ma-mini-add-btn:hover { opacity: 0.9; }
+
+.ma-form-actions { display: flex; gap: 0.7rem; margin-top: 2rem; }
+.ma-submit-btn {
+  flex: 1; padding: 1rem; font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; text-transform: uppercase;
+  letter-spacing: 0.5px; border: none; border-radius: 10px; background: var(--c-red); color: white; cursor: pointer; transition: opacity 0.15s;
+}
+.ma-submit-btn:hover { opacity: 0.9; }
+.ma-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ma-cancel-btn {
+  padding: 1rem 1.5rem; font-family: var(--f-body); font-weight: 600; font-size: 0.92rem; border-radius: 10px;
+  border: 1.5px solid rgba(0,0,0,0.15); background: none; color: var(--c-black); cursor: pointer;
+}
+
+.form-message { margin-top: 1rem; font-family: var(--f-body); font-size: 0.88rem; padding: 0.8rem 1rem; border-radius: 8px; display: none; }
+.form-message.error { display: block; background: #FBEAEA; color: #8C0000; }
+.form-message.success { display: block; background: #E8F5E9; color: #1B5E20; }
+
+/* — staff login modal (same look as activitybooking.html) — */
+.staff-modal-overlay {
+  position: fixed; inset: 0; background: rgba(11,11,12,0.6);
+  display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem; z-index: 100; overflow-y: auto;
+}
+.staff-modal { background: white; border-radius: 14px; padding: 2rem; max-width: 360px; width: 100%; margin: 2rem auto; }
+.staff-modal h3 { font-family: var(--f-display); font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.25rem; }
+.staff-modal .form-message { margin-top: 0.75rem; }
+.staff-modal-actions { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+.staff-modal-actions button { flex: 1; }
+.staff-modal-cancel {
+  background: none; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0.75rem;
+  font-family: var(--f-body); font-weight: 600; cursor: pointer;
+}
+/* — Page Content specific — */
+.pc-stack { display: flex; flex-direction: column; gap: 1.5rem; }
+.pc-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.pc-card-head .ma-form-title { margin-bottom: 0.3rem; }
+.pc-card-intro { font-family: var(--f-body); font-size: 0.88rem; color: var(--c-grey-mid); line-height: 1.6; margin-bottom: 1.4rem; max-width: 640px; }
+.pc-view-link { font-family: var(--f-body); font-size: 0.82rem; font-weight: 700; color: var(--c-red); text-decoration: underline; white-space: nowrap; }
+.pc-inline-btn {
+  font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-black); background: white;
+  border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0.45rem 0.8rem; cursor: pointer; margin-top: 0.5rem;
+}
+.pc-inline-btn:hover { border-color: var(--c-black); }
+.pc-saved { font-family: var(--f-body); font-size: 0.78rem; color: var(--c-grey-mid); margin-top: 0.8rem; }
+.pc-class { background: var(--c-grey-light); border-radius: 12px; padding: 1.1rem; margin-bottom: 0.9rem; }
+.pc-class .form-row:last-child { margin-bottom: 0; }
+.pc-class-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.8rem; }
+.pc-class-num { font-family: var(--f-display); font-weight: 800; font-size: 1.05rem; text-transform: uppercase; color: var(--c-black); }
+.pc-class-tools { display: flex; gap: 0.4rem; }
+.pc-class-tools button {
+  font-family: var(--f-body); font-size: 0.76rem; font-weight: 600; background: white; border: 1.5px solid rgba(0,0,0,0.12);
+  border-radius: 6px; padding: 0.35rem 0.6rem; cursor: pointer; color: var(--c-black);
+}
+.pc-class-tools button:disabled { opacity: 0.35; cursor: default; }
+.pc-class-tools .pc-remove { color: #8C0000; }
+.pc-class input[type="text"], .pc-class input[type="time"] { background: white; }
+.pc-empty { font-family: var(--f-body); font-size: 0.88rem; color: var(--c-grey-mid); padding: 1rem; background: var(--c-grey-light); border-radius: 10px; margin-bottom: 0.9rem; }
+.pc-info { border-left: 4px solid var(--c-red); }
+.pc-info p { font-family: var(--f-body); font-size: 0.9rem; color: var(--c-black); line-height: 1.65; }
+.pc-info p + p { margin-top: 0.6rem; }
+.pc-info a { color: var(--c-red); font-weight: 700; text-decoration: underline; }
+</style>
+</head>
+<body class="ma-page">
+
+<div class="ab-topbar">
+  <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
+  <div class="ab-topbar-nav">
+    <a href="activitybooking.html" class="ab-staff-link">Booking Page</a>
+    <a href="activitiesadmin.html" class="ab-staff-link">Bookings Admin</a>
+    <a href="manage-activities.html" class="ab-staff-link">Manage Activities</a>
+    <a href="page-content.html" class="ab-staff-link" aria-current="page">Page Content</a>
+    <button class="ab-staff-link hidden" id="staffLogoutBtn">Log out</button>
+  </div>
+</div>
+
+<div class="ma-wrap">
+
+  <!-- Staff gate: shown until a staff login is confirmed -->
+  <div class="ma-gate" id="staffGate">
+    <h2>Staff Access Required</h2>
+    <p>Page Content is only available to logged-in Northwood Stadium staff. Log in with your staff account to continue.</p>
+    <button class="ma-add-btn" id="staffGateLoginBtn">Staff Login</button>
+    <div class="form-message" id="gateMsg"></div>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <div class="ma-heading">
+      <div>
+        <div class="ma-eyebrow">Northwood Stadium · Staff</div>
+        <h1 class="ma-title">Page Content</h1>
+        <p class="ma-sub">Update the parts of the website that change regularly. Changes go live on the site as soon as you save.</p>
+      </div>
+    </div>
+
+    <div class="pc-stack">
+
+      <!-- ── Track Social: next event ── -->
+      <section class="ma-form-card" aria-labelledby="tsTitle">
+        <div class="pc-card-head">
+          <h2 class="ma-form-title" id="tsTitle">Track Social: Next Event</h2>
+          <a href="tracksocial.html#next" class="pc-view-link" target="_blank" rel="noopener">View page ↗</a>
+        </div>
+        <p class="pc-card-intro">Fills the "Our Next Track Social" section and all three Register buttons on the Track Social page. Once the date has passed, the page shows "Next date coming soon" until the next one is added here.</p>
+
+        <div class="form-row">
+          <div>
+            <label for="tsDate">Date <span class="required-mark">*</span></label>
+            <input type="date" id="tsDate">
+            <button type="button" class="pc-inline-btn" id="tsNextMonday">Use the next last Monday of the month</button>
+          </div>
+          <div class="form-row" style="margin:0;">
+            <div><label for="tsStart">Start time</label><input type="time" id="tsStart"></div>
+            <div><label for="tsEnd">End time</label><input type="time" id="tsEnd"></div>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div>
+            <label for="tsGuest">Guest running club</label>
+            <input type="text" id="tsGuest" maxlength="120" placeholder="e.g. Just Run Club">
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label for="tsActivities">Special activities</label>
+            <input type="text" id="tsActivities" maxlength="160" placeholder="e.g. DJ set and a warm-up with the guest club">
+          </div>
+          <div>
+            <label for="tsPartners">Food, drink &amp; fitness partners</label>
+            <input type="text" id="tsPartners" maxlength="160" placeholder="e.g. MrBigz Flavours, Solace">
+          </div>
+        </div>
+        <p class="field-hint" style="margin:-0.5rem 0 1rem;">Leave any of these three blank and that line is left off the page.</p>
+        <div class="form-row single">
+          <div>
+            <label for="tsRegister">Registration link</label>
+            <input type="text" id="tsRegister" inputmode="url" maxlength="500" placeholder="https://…">
+            <p class="field-hint">Used by all three "Register for Free" buttons. Leave blank and the buttons scroll to this section instead.</p>
+          </div>
+        </div>
+
+        <div class="ma-form-actions">
+          <button type="button" class="ma-submit-btn" id="tsSave">Save Track Social</button>
+        </div>
+        <div class="form-message" id="tsMsg"></div>
+        <p class="pc-saved" id="tsSaved"></p>
+      </section>
+
+      <!-- ── Gym: fitness classes ── -->
+      <section class="ma-form-card" aria-labelledby="gymTitle">
+        <div class="pc-card-head">
+          <h2 class="ma-form-title" id="gymTitle">Gym: Fitness Classes</h2>
+          <a href="gym.html#spaces" class="pc-view-link" target="_blank" rel="noopener">View page ↗</a>
+        </div>
+        <p class="pc-card-intro">The class timetable in the Fitness Classes section of the Gym page, shown in this order. With no classes, the page says the timetable is coming soon.</p>
+
+        <div id="gymList"></div>
+        <button type="button" class="ma-mini-add-btn" id="gymAdd">+ Add a class</button>
+
+        <div class="ma-form-actions">
+          <button type="button" class="ma-submit-btn" id="gymSave">Save Classes</button>
+        </div>
+        <div class="form-message" id="gymMsg"></div>
+        <p class="pc-saved" id="gymSaved"></p>
+      </section>
+
+      <!-- ── WNF & Funetics: automatic ── -->
+      <section class="ma-form-card pc-info" aria-labelledby="autoTitle">
+        <h2 class="ma-form-title" id="autoTitle">WNF &amp; Funetics: Automatic</h2>
+        <p>The dates and prices on the Wednesday Night Football and Funetics pages come straight from their activities in <a href="manage-activities.html">Manage Activities</a>: the sessions you add, the price and the block price. There's nothing to update here.</p>
+        <p>When there are no upcoming sessions, those pages say the next dates are coming soon.</p>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- Staff login modal -->
+<div class="staff-modal-overlay hidden" id="staffModalOverlay">
+  <div class="staff-modal">
+    <h3>Staff Login</h3>
+    <div class="form-row single">
+      <label for="staffEmail">Email</label>
+      <input type="email" id="staffEmail" autocomplete="username">
+    </div>
+    <div class="form-row single">
+      <label for="staffPassword">Password</label>
+      <input type="password" id="staffPassword" autocomplete="current-password">
+    </div>
+    <div class="form-message" id="staffLoginMsg"></div>
+    <div class="staff-modal-actions">
+      <button class="staff-modal-cancel" id="staffModalCancel">Cancel</button>
+      <button class="ma-submit-btn" id="staffModalSubmit">Log In</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FIREBASE CONFIG — same project as the other staff pages.
+   Writes to the "pageContent" collection, which live-content.js
+   reads on tracksocial.html and gym.html.
+   Firestore rule needed (staff write, public read):
+     match /pageContent/{docId} {
+       allow read: if true;
+       allow write: if request.auth != null
+         && exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+     }
+   ═══════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDGSOa02_oHzRARoisN-gA3zzsTTC9U9QQ",
+  authDomain: "northwood-stadium.firebaseapp.com",
+  projectId: "northwood-stadium",
+  storageBucket: "northwood-stadium.firebasestorage.app",
+  messagingSenderId: "146149087447",
+  appId: "1:146149087447:web:f5882364c8a525fa8c3892",
+  measurementId: "G-JKT47Q28YV"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+(function () {
+  "use strict";
+
+  // What the pages showed before this tool existed — used to pre-fill the
+  // forms the first time, so the first save doesn't change anything.
+  const TS_DEFAULTS = { date: "2026-10-26", startTime: "18:30", endTime: "20:30", guestClub: "Just Run Club", activities: "", partners: "", registerUrl: "" };
+  const GYM_DEFAULTS = [{ days: "Mon & Tue", name: "Circuit Training", instructor: "Lorraine", startTime: "18:00", endTime: "19:00", room: "Functional fitness room" }];
+
+  const $ = id => document.getElementById(id);
+  function msg(el, text, type) { el.textContent = text; el.className = "form-message" + (type ? " " + type : ""); }
+  function savedLine(el, data) {
+    if (!data || !data.updatedAt) { el.textContent = "Not saved here yet: the page is showing its original text."; return; }
+    const when = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
+    el.textContent = "Last saved " + when.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) +
+      (data.updatedBy ? " by " + data.updatedBy : "");
+  }
+  function isoLocal(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+
+  // ── Staff auth (same flow as Manage Activities) ─────────────
+  const staffGate = $("staffGate"), dashboard = $("dashboard"), staffLogoutBtn = $("staffLogoutBtn");
+  const gateMsg = $("gateMsg"), staffModalOverlay = $("staffModalOverlay");
+  let staffEmailAddr = "";
+
+  $("staffGateLoginBtn").addEventListener("click", () => staffModalOverlay.classList.remove("hidden"));
+  $("staffModalCancel").addEventListener("click", () => staffModalOverlay.classList.add("hidden"));
+  staffModalOverlay.addEventListener("click", e => { if (e.target === staffModalOverlay) staffModalOverlay.classList.add("hidden"); });
+  $("staffModalSubmit").addEventListener("click", async () => {
+    const email = $("staffEmail").value.trim(), password = $("staffPassword").value, m = $("staffLoginMsg");
+    msg(m, "");
+    if (!email || !password) { msg(m, "Enter your email and password.", "error"); return; }
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+      if (!staffDoc.exists) { await auth.signOut(); msg(m, "This account isn't set up for staff access.", "error"); return; }
+      staffModalOverlay.classList.add("hidden");
+    } catch (err) {
+      msg(m, "Login failed — check your details and try again.", "error");
+    }
+  });
+  staffLogoutBtn.addEventListener("click", () => auth.signOut());
+
+  auth.onAuthStateChanged(async user => {
+    function lockOut(text) {
+      staffGate.classList.remove("hidden"); dashboard.classList.add("hidden"); staffLogoutBtn.classList.add("hidden");
+      if (text) msg(gateMsg, text, "error");
+    }
+    if (!user) { lockOut(); return; }
+    let staffDoc;
+    try { staffDoc = await db.collection("staff").doc(user.uid).get(); } catch (err) { staffDoc = { exists: false }; }
+    // Not staff: hide the tool, but don't sign them out (the session is
+    // shared with customer logins in other tabs — see Manage Activities).
+    if (!staffDoc.exists) { lockOut("That account doesn't have staff access."); return; }
+    staffEmailAddr = user.email;
+    staffGate.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    staffLogoutBtn.title = `Logged in as ${user.email}`;
+    staffLogoutBtn.classList.remove("hidden");
+    loadAll();
+  });
+
+  // ── Track Social ────────────────────────────────────────────
+  function fillTs(d) {
+    $("tsDate").value = d.date || "";
+    $("tsStart").value = d.startTime || "";
+    $("tsEnd").value = d.endTime || "";
+    $("tsGuest").value = d.guestClub || "";
+    $("tsActivities").value = d.activities || "";
+    $("tsPartners").value = d.partners || "";
+    $("tsRegister").value = d.registerUrl || "";
+  }
+  // Last Monday of this month, or of next month if that's already passed
+  $("tsNextMonday").addEventListener("click", () => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (let add = 0; add < 3; add++) {
+      const last = new Date(today.getFullYear(), today.getMonth() + add + 1, 0);
+      while (last.getDay() !== 1) last.setDate(last.getDate() - 1);
+      if (last >= today) { $("tsDate").value = isoLocal(last); break; }
+    }
+  });
+  $("tsSave").addEventListener("click", async () => {
+    const m = $("tsMsg"), btn = $("tsSave");
+    const data = {
+      date: $("tsDate").value, startTime: $("tsStart").value, endTime: $("tsEnd").value,
+      guestClub: $("tsGuest").value.trim(), activities: $("tsActivities").value.trim(),
+      partners: $("tsPartners").value.trim(), registerUrl: $("tsRegister").value.trim()
+    };
+    if (!data.date) { msg(m, "Choose the date of the next Track Social.", "error"); return; }
+    if (data.startTime && data.endTime && data.endTime <= data.startTime) { msg(m, "The end time needs to be after the start time.", "error"); return; }
+    if (data.registerUrl && !/^https?:\/\/\S+\.\S+/i.test(data.registerUrl)) {
+      msg(m, "The registration link needs to be a full web address starting with https://", "error"); return;
+    }
+    btn.disabled = true; btn.textContent = "Saving…"; msg(m, "");
+    try {
+      data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.updatedBy = staffEmailAddr;
+      await db.collection("pageContent").doc("trackSocial").set(data);
+      msg(m, "🎉 Saved — the Track Social page is updated.", "success");
+      savedLine($("tsSaved"), { updatedAt: new Date(), updatedBy: staffEmailAddr });
+    } catch (err) {
+      console.error("Track Social save failed:", err);
+      msg(m, "Couldn't save — please try again.", "error");
+    } finally { btn.disabled = false; btn.textContent = "Save Track Social"; }
+  });
+
+  // ── Gym classes ─────────────────────────────────────────────
+  let classes = [];
+  const FIELDS = [
+    ["days", "Day(s)", "text", "e.g. Mon & Tue"], ["name", "Class name", "text", "e.g. Circuit Training"],
+    ["instructor", "Instructor (optional)", "text", "e.g. Lorraine"], ["room", "Where", "text", "e.g. Functional fitness room"],
+    ["startTime", "Start time", "time", ""], ["endTime", "End time", "time", ""]
+  ];
+  function escAttr(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
+  function field(i, f) {
+    const [key, label, type, ph] = f, id = `gym-${i}-${key}`;
+    return `<div><label for="${id}">${label}${key === "name" ? ' <span class="required-mark">*</span>' : ""}</label>` +
+      `<input type="${type}" id="${id}" data-i="${i}" data-k="${key}" value="${escAttr(classes[i][key])}"${ph ? ` placeholder="${escAttr(ph)}"` : ""}${type === "text" ? ' maxlength="80"' : ""}></div>`;
+  }
+  function renderClasses() {
+    const list = $("gymList");
+    if (!classes.length) { list.innerHTML = '<div class="pc-empty">No classes yet. The Gym page will say the timetable is coming soon.</div>'; return; }
+    list.innerHTML = classes.map((c, i) => `
+      <div class="pc-class">
+        <div class="pc-class-head">
+          <span class="pc-class-num">Class ${i + 1}</span>
+          <div class="pc-class-tools">
+            <button type="button" data-move="-1" data-i="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move class ${i + 1} up">↑</button>
+            <button type="button" data-move="1" data-i="${i}" ${i === classes.length - 1 ? "disabled" : ""} aria-label="Move class ${i + 1} down">↓</button>
+            <button type="button" class="pc-remove" data-remove="${i}">Remove</button>
+          </div>
+        </div>
+        <div class="form-row">${field(i, FIELDS[0])}${field(i, FIELDS[1])}</div>
+        <div class="form-row">${field(i, FIELDS[2])}${field(i, FIELDS[3])}</div>
+        <div class="form-row">${field(i, FIELDS[4])}${field(i, FIELDS[5])}</div>
+      </div>`).join("");
+  }
+  $("gymList").addEventListener("input", e => {
+    const el = e.target; if (!el.dataset.k) return;
+    classes[Number(el.dataset.i)][el.dataset.k] = el.value;
+  });
+  $("gymList").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.remove != null) { classes.splice(Number(b.dataset.remove), 1); renderClasses(); return; }
+    if (b.dataset.move) {
+      const i = Number(b.dataset.i), j = i + Number(b.dataset.move);
+      [classes[i], classes[j]] = [classes[j], classes[i]]; renderClasses();
+    }
+  });
+  $("gymAdd").addEventListener("click", () => {
+    classes.push({ days: "", name: "", instructor: "", room: "", startTime: "", endTime: "" });
+    renderClasses();
+    const inputs = $("gymList").querySelectorAll(".pc-class:last-child input");
+    if (inputs[0]) inputs[0].focus();
+  });
+  $("gymSave").addEventListener("click", async () => {
+    const m = $("gymMsg"), btn = $("gymSave");
+    const clean = classes.map(c => ({
+      days: (c.days || "").trim(), name: (c.name || "").trim(), instructor: (c.instructor || "").trim(),
+      room: (c.room || "").trim(), startTime: c.startTime || "", endTime: c.endTime || ""
+    }));
+    const missing = clean.findIndex(c => !c.name);
+    if (missing > -1) { msg(m, `Class ${missing + 1} needs a class name (or remove it).`, "error"); return; }
+    const badTime = clean.findIndex(c => c.startTime && c.endTime && c.endTime <= c.startTime);
+    if (badTime > -1) { msg(m, `Class ${badTime + 1}: the end time needs to be after the start time.`, "error"); return; }
+    btn.disabled = true; btn.textContent = "Saving…"; msg(m, "");
+    try {
+      await db.collection("pageContent").doc("gymClasses").set({
+        classes: clean, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: staffEmailAddr
+      });
+      msg(m, "🎉 Saved — the Gym page is updated.", "success");
+      savedLine($("gymSaved"), { updatedAt: new Date(), updatedBy: staffEmailAddr });
+    } catch (err) {
+      console.error("Gym classes save failed:", err);
+      msg(m, "Couldn't save — please try again.", "error");
+    } finally { btn.disabled = false; btn.textContent = "Save Classes"; }
+  });
+
+  // ── Load both on login ──────────────────────────────────────
+  async function loadAll() {
+    try {
+      const [ts, gym] = await Promise.all([
+        db.collection("pageContent").doc("trackSocial").get(),
+        db.collection("pageContent").doc("gymClasses").get()
+      ]);
+      fillTs(ts.exists ? ts.data() : TS_DEFAULTS);
+      savedLine($("tsSaved"), ts.exists ? ts.data() : null);
+      classes = gym.exists && Array.isArray(gym.data().classes) ? gym.data().classes.map(c => ({ ...c })) : GYM_DEFAULTS.map(c => ({ ...c }));
+      savedLine($("gymSaved"), gym.exists ? gym.data() : null);
+    } catch (err) {
+      console.error("Couldn't load page content:", err);
+      fillTs(TS_DEFAULTS);
+      classes = GYM_DEFAULTS.map(c => ({ ...c }));
+      msg($("tsMsg"), "Couldn't load what's saved — check the Firestore rule for pageContent has been added.", "error");
+    }
+    renderClasses();
+  }
+})();
+</script>
+
+</body>
+</html>

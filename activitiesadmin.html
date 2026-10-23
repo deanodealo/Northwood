@@ -48,6 +48,7 @@
   display: inline-block;
 }
 .ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+.ab-staff-link[aria-current="page"] { color: white; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.1); }
 
 /* — login gate — */
 .aa-login-wrap { max-width: 360px; margin: 4rem auto; padding: 2rem; background: white; border-radius: 14px; }
@@ -187,7 +188,9 @@
   <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
   <div class="ab-topbar-nav">
     <a href="activitybooking.html" class="ab-staff-link">Booking Page</a>
+    <a href="activitiesadmin.html" class="ab-staff-link" aria-current="page">Bookings Admin</a>
     <a href="manage-activities.html" class="ab-staff-link">Manage Activities</a>
+    <a href="page-content.html" class="ab-staff-link">Page Content</a>
     <button class="ab-staff-link hidden" id="logoutBtn">Log out</button>
   </div>
 </div>
