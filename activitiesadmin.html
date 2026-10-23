@@ -151,6 +151,13 @@
 .mark-collected-btn:hover { background: var(--c-black); color: white; }
 
 .aa-empty { text-align: center; font-family: var(--f-body); color: var(--c-grey-mid); padding: 3rem 1rem; }
+.aa-list-count { font-family: var(--f-body); font-size: 0.8rem; color: var(--c-grey-mid); margin-bottom: 0.6rem; }
+.aa-list-more { text-align: center; margin-top: 1rem; }
+.aa-list-more button {
+  font-family: var(--f-body); font-size: 0.88rem; font-weight: 700; color: var(--c-black); background: white;
+  border: 1.5px solid rgba(0,0,0,0.15); border-radius: 10px; padding: 0.75rem 1.5rem; cursor: pointer;
+}
+.aa-list-more button:hover { border-color: var(--c-black); }
 
 /* — attendance register — shown only for a single activity + single date,
    and only when that activity has the register enabled (Manage Activities).
@@ -489,6 +496,9 @@ const auth = firebase.auth();
   });
 
   let allBookings = [];
+  // Bookings list paging (see renderBookingsList)
+  const LIST_PAGE_SIZE = 50;
+  let listShown = LIST_PAGE_SIZE;
   let statusFilter = "all";
   let activityFilter = "all";
   let dateFilter = "all";
@@ -692,6 +702,7 @@ const auth = firebase.auth();
   }
 
   function renderAll() {
+    listShown = LIST_PAGE_SIZE;
     renderSummary();
     renderSessionSummary();
     renderAttendanceRegister();
@@ -869,16 +880,55 @@ const auth = firebase.auth();
     `;
   }
 
+  // ── Bookings list: sorted and shown 50 at a time ──────────────
+  // Totals, the session summary, the register and the CSV export all
+  // still use EVERY matching booking; only the cards drawn on screen are
+  // limited, so the page stays quick on a phone however busy it gets.
+
+  // "6:00pm – 7:00pm" → minutes after midnight of the start (for sorting)
+  function sessionStartMinutes(t) {
+    const m = String(t || "").match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+    if (!m) return 0;
+    let h = Number(m[1]) % 12;
+    if (m[3].toLowerCase() === "pm") h += 12;
+    return h * 60 + Number(m[2] || 0);
+  }
+  function localTodayIso() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+  // Upcoming sessions first (soonest at the top), then past ones (most
+  // recent first), so today's bookings are what staff see straight away.
+  function sortForList(rows) {
+    const today = localTodayIso();
+    return [...rows].sort((a, b) => {
+      const da = a.sessionDate || "", dbb = b.sessionDate || "";
+      const upA = da >= today, upB = dbb >= today;
+      if (upA !== upB) return upA ? -1 : 1;
+      if (da !== dbb) return upA ? da.localeCompare(dbb) : dbb.localeCompare(da);
+      const ta = sessionStartMinutes(a.sessionTime), tb = sessionStartMinutes(b.sessionTime);
+      if (ta !== tb) return ta - tb;
+      return bookingContactName(a).localeCompare(bookingContactName(b));
+    });
+  }
+
   function renderBookingsList() {
-    const rows = filteredBookings();
+    const allRows = sortForList(filteredBookings());
     const listEl = document.getElementById("bookingsList");
 
-    if (!rows.length) {
+    if (!allRows.length) {
       listEl.innerHTML = '<div class="aa-empty">No bookings match this filter.</div>';
       return;
     }
 
-    listEl.innerHTML = rows.map(b => {
+    const rows = allRows.slice(0, listShown);
+    const remaining = allRows.length - rows.length;
+    const countLine = `<div class="aa-list-count">Showing ${rows.length.toLocaleString("en-GB")} of ${allRows.length.toLocaleString("en-GB")} booking${allRows.length === 1 ? "" : "s"}</div>`;
+    const moreBtn = remaining > 0
+      ? `<div class="aa-list-more"><button type="button" id="showMoreBookingsBtn">Show ${Math.min(LIST_PAGE_SIZE, remaining)} more</button></div>`
+      : "";
+
+    listEl.innerHTML = countLine + rows.map(b => {
       const tagClass = b.paymentStatus === "paid" ? "tag-paid" : b.paymentStatus === "collected" ? "tag-collected" : b.paymentStatus === "free" ? "tag-free" : "tag-unpaid";
       const tagLabel = b.paymentStatus === "paid" ? "Paid Online" : b.paymentStatus === "collected" ? "Collected at Venue" : b.paymentStatus === "free" ? "Free" : "Unpaid";
       const dateLabel = b.sessionDate ? new Date(b.sessionDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "";
@@ -898,14 +948,25 @@ const auth = firebase.auth();
           </div>
         </div>
       `;
-    }).join("");
+    }).join("") + moreBtn;
+
+    const more = document.getElementById("showMoreBookingsBtn");
+    if (more) more.addEventListener("click", () => {
+      listShown += LIST_PAGE_SIZE;
+      renderBookingsList();
+    });
 
     listEl.querySelectorAll(".mark-collected-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
         btn.disabled = true;
         btn.textContent = "Saving...";
         await db.collection("activityBookings").doc(btn.dataset.id).update({ paymentStatus: "collected" });
+        // Reload, but keep however many the list was showing, so marking
+        // one as collected doesn't throw you back to the top 50.
+        const keep = listShown;
         await loadBookings();
+        listShown = keep;
+        renderBookingsList();
       });
     });
   }
