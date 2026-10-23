@@ -1453,15 +1453,19 @@ a { color: inherit; text-decoration: none; }
 }
 @media (max-width: 1000px) {
   .nav-drop { flex-direction: column; align-items: flex-start; }
-  .nav-drop-btn { padding: 0; cursor: default; }
-  .nav-drop-btn svg { display: none; }
+  .nav-drop-btn { padding: 0; }
+  .nav-drop:hover .nav-drop-btn svg,
+  .nav-drop:focus-within .nav-drop-btn svg { transform: none; }
+  .nav-drop.is-expanded .nav-drop-btn svg { transform: rotate(180deg); }
   .nav-drop-menu {
+    display: none; /* collapsed until "What's On" is tapped */
     position: static; transform: none; opacity: 1; visibility: visible;
     min-width: 0; margin-top: 14px; padding: 0 0 0 14px; gap: 14px;
     background: none; border: 0; border-left: 2px solid var(--c-red); border-radius: 0; box-shadow: none;
   }
   .nav-drop:hover .nav-drop-menu,
   .nav-drop:focus-within .nav-drop-menu { transform: none; }
+  .nav-drop.is-expanded .nav-drop-menu { display: flex; }
   .nav-drop-menu::before { display: none; }
   .main-nav .nav-drop-menu a { padding: 0; }
   .main-nav .nav-drop-menu a:hover { background: none; }

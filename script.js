@@ -1,3 +1,15 @@
+(function () {
+  // "What's On" in the burger menu: tap to open/close its list.
+  // (Desktop opens it on hover via CSS; the class only matters at 1000px and below.)
+  document.querySelectorAll(".nav-drop-btn").forEach(btn => {
+    btn.setAttribute("aria-expanded", "false");
+    btn.addEventListener("click", () => {
+      const open = btn.parentElement.classList.toggle("is-expanded");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  });
+})();
+
 // ============ MOBILE NAV TOGGLE ============
 const navToggle = document.getElementById('navToggle');
 const mainNav = document.getElementById('mainNav');

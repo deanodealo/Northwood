@@ -22,6 +22,16 @@
     }));
   }
 
+
+  // "What's On" in the burger menu: tap to open/close its list.
+  // (Desktop opens it on hover via CSS; the class only matters at 1000px and below.)
+  document.querySelectorAll(".nav-drop-btn").forEach(btn => {
+    btn.setAttribute("aria-expanded", "false");
+    btn.addEventListener("click", () => {
+      const open = btn.parentElement.classList.toggle("is-expanded");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  });
   // ── 2. Call Now popup ─────────────────────────────────────────
   const callBtn = document.getElementById("callNowBtn");
   const callModal = document.getElementById("callModal");
