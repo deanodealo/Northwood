@@ -154,61 +154,65 @@
     }
   </style>
   <style>
-    /* ============ WORK WITH US (events + partners cards) ============ */
-    /* Same glass-card look as the Follow Our Journey cards (.social-embed-card),
-       on the section's charcoal background. */
-    .work-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
-      text-align: left;
+    /* ============ WORK WITH US: events (court blue) + sponsorship (pitch green)
+       + clubs strip. Supplied by Northwood, Oct 2026. ============ */
+    .wu { position: relative; overflow: hidden; background: var(--c-black); color: var(--c-white); }
+    .wu-track { right: -360px; top: -140px; height: 1050px; opacity: 0.16; z-index: 0; }
+    .wu-inner { position: relative; z-index: 1; }
+    .wu-eyebrow { color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+    .wu-title { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(36px, 5vw, 60px); line-height: 1; }
+    .wu-lede { color: rgba(255,255,255,0.78); font-size: 17px; line-height: 1.65; max-width: 620px; margin-top: 16px; }
+    .wu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 44px; }
+    .wu-grid > * { min-width: 0; }
+    .wu-panel { --wu: #377BBA; --wu-deep: #1F4F7D; --wu-soft: #8EC2F0;
+      display: flex; flex-direction: column; border-radius: 18px; overflow: hidden;
+      background: linear-gradient(165deg, var(--wu-deep) 0%, #101826 100%); border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.35); }
+    .wu-sponsor { --wu: #3F7148; --wu-deep: #2C5233; --wu-soft: #7DBB89; background: linear-gradient(165deg, var(--wu-deep) 0%, #101a12 100%); }
+    .wu-media { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-bottom: 4px solid var(--wu); }
+    .wu-main { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
+    .wu-media:hover .wu-main { transform: scale(1.04); }
+    .wu-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%); pointer-events: none; }
+    .wu-thumbs { position: absolute; z-index: 1; left: 16px; right: 16px; bottom: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .wu-thumbs--2 { grid-template-columns: repeat(2, 1fr); right: auto; width: 46%; }
+    .wu-thumbs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+    .wu-body { padding: 30px 32px 32px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+    .wu-kicker { color: var(--wu-soft); font-size: 12px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; }
+    .wu-body h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: clamp(28px, 2.8vw, 38px); line-height: 1.02; }
+    .wu-body > p:not(.wu-kicker) { color: rgba(255,255,255,0.82); font-size: 16px; line-height: 1.65; }
+    .wu-stats { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.14); }
+    .wu-stats li { padding: 16px 12px 0 0; font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.35; }
+    .wu-stats li + li { padding-left: 14px; border-left: 1px solid rgba(255,255,255,0.14); }
+    .wu-stats b { display: block; font-family: var(--f-display); font-weight: 800; font-size: clamp(24px, 2.4vw, 32px); color: var(--c-white); line-height: 1; margin-bottom: 6px; }
+    .wu-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .wu-chips li { border: 1.5px solid rgba(255,255,255,0.22); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.88); }
+    .wu-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: auto; padding-top: 10px; }
+    .wu-btn { display: inline-flex; align-items: center; justify-content: center; background: var(--wu, #377BBA); color: var(--c-white); border: 0; cursor: pointer;
+      font-family: var(--f-display); font-weight: 800; font-size: 17px; text-transform: uppercase; letter-spacing: 0.6px; padding: 14px 26px; border-radius: 6px;
+      transition: background 0.2s var(--ease), transform 0.2s var(--ease); }
+    .wu-btn:hover { background: var(--wu-deep, #1F4F7D); transform: translateY(-2px); }
+    .wu-panel .wu-btn { background: var(--wu); }
+    .wu-panel .wu-btn:hover { background: var(--c-white); color: var(--wu-deep); }
+    .wu-link { color: var(--wu-soft); font-weight: 700; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
+    .wu-link:hover { color: var(--c-white); }
+    .wu-strip { display: flex; align-items: center; justify-content: space-between; gap: 24px 40px; margin-top: 28px; padding: 26px 32px; border-radius: 14px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); }
+    .wu-strip .wu-kicker { color: rgba(255,255,255,0.65); margin-bottom: 6px; }
+    .wu-strip-copy { color: rgba(255,255,255,0.85); font-size: 15px; line-height: 1.6; max-width: 720px; }
+    .wu-strip-copy a { color: var(--c-white); font-weight: 700; text-decoration: underline; }
+    .wu-btn--light { background: var(--c-white); color: var(--c-black); flex: none; }
+    .wu-btn--light:hover { background: var(--c-red); color: var(--c-white); }
+    @media (max-width: 1000px) { .wu-grid { grid-template-columns: 1fr; } .wu-track { opacity: 0.1; } }
+    @media (max-width: 640px) {
+      .wu-body { padding: 24px 20px 26px; }
+      .wu-thumbs { left: 10px; right: 10px; bottom: 10px; gap: 6px; }
+      .wu-thumbs--2 { width: 56%; }
+      .wu-stats li { padding-right: 6px; } .wu-stats li + li { padding-left: 8px; }
+      .wu-strip { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
+      .wu-actions .wu-btn, .wu-strip .wu-btn { width: 100%; }
     }
-    @media (max-width: 800px) { .work-grid { grid-template-columns: 1fr; gap: 20px; } }
-    .work-card {
-      display: flex; flex-direction: column; align-items: flex-start;
-      padding: 32px; border-radius: 16px; color: var(--c-white);
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.16);
-      border-top: 4px solid var(--c-red);
-    }
-    .work-card-label {
-      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 10px;
-    }
-    .work-card-title {
-      font-family: var(--f-display); font-weight: 800; font-size: clamp(24px, 2.6vw, 32px);
-      text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.05; margin-bottom: 14px;
-    }
-    .work-card-copy { font-size: 15px; line-height: 1.7; color: rgba(255,255,255,0.85); margin-bottom: 20px; }
-    .work-card-tags { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
-    .work-card-tags li {
-      font-size: 13px; font-weight: 600; color: var(--c-white);
-      padding: 6px 12px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.25);
-    }
-    /* Push the button to the bottom so both cards' buttons line up. */
-    .work-card .btn-about { margin-top: auto; }
-    .work-card button.btn-about { border: none; cursor: pointer; font-family: inherit; }
-    @media (max-width: 600px) { .work-card { padding: 24px; } }
-  </style>
-  <style>
-    /* ============ BECOME A SPONSOR (strip under the logo marquee) ============ */
-    .sponsor-cta {
-      margin-top: 48px;
-      display: flex; align-items: center; justify-content: space-between; gap: 24px 40px;
-      flex-wrap: wrap;
-      padding: 28px 32px; border-radius: 14px;
-      background: var(--c-grey-light);
-      border-left: 4px solid var(--c-red);
-    }
-    .sponsor-cta-title {
-      font-family: var(--f-display); font-weight: 800; text-transform: uppercase;
-      font-size: clamp(22px, 2.4vw, 28px); line-height: 1.1; letter-spacing: 0.3px; margin-bottom: 6px;
-    }
-    .sponsor-cta-copy { color: var(--c-grey-mid); font-size: 15px; line-height: 1.6; max-width: 560px; }
-    .sponsor-cta .btn-about { flex-shrink: 0; }
-    @media (max-width: 600px) {
-      .sponsor-cta { padding: 24px; }
-      .sponsor-cta .btn-about { width: 100%; text-align: center; }
-    }
+    .offer-link { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 700; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
+    .offer-link:hover { color: var(--c-black); }
   </style>
   <style>
     /* ============ WHAT'S ON OFFER ============ */
@@ -236,9 +240,18 @@
 
       <nav class="main-nav" id="mainNav">
         <a href="#about">About Us</a>
+        <div class="nav-drop">
+          <button type="button" class="nav-drop-btn" aria-haspopup="true">What's On <svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="nav-drop-menu">
+            <a href="wnf.html">Wednesday Night Football</a>
+            <a href="funetics.html">Funetics</a>
+            <a href="tracksocial.html">Track Social</a>
+            <a href="youthclub.html">Youth Club</a>
+            <a href="#activities" class="nav-drop-all">All activities →</a>
+          </div>
+        </div>
         <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Book Facilities</a>
         <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
-        <a href="sponsorship.html">Sponsorship</a>
         <a href="#contact">Contact</a>
         <a href="#" id="accountNavLink">My Account</a>
       </nav>
@@ -390,7 +403,7 @@
 
       <div class="hero-content">
         <p class="hero-eyebrow">Stoke-on-Trent</p>
-        <h1 class="hero-title">Northwood Community Sports<br><span class="ptw-word ptw-1">Play.</span> <span class="ptw-word ptw-2">Train.</span> <span class="ptw-word ptw-3">Win.</span></h1>
+        <h1 class="hero-title">Northwood Stadium.<br><span class="ptw-word ptw-1">Home of Sport</span> <span class="ptw-word ptw-2">and Community.</span></h1>
         <p class="hero-sub">Gym, Track, Football, &amp; Indoor.  Staffordshire's home for All Sports</p>
         <div class="hero-actions">
           <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" class="btn btn-primary">Book a Facility</a>
@@ -423,6 +436,7 @@
                 <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" class="btn btn-small">Book a Slot</a>
                 <a href="team-bookings.html" class="btn btn-small btn-small-outline">Team Bookings</a>
               </div>
+              <a href="wnf.html" class="offer-link">Wednesday Night Football →</a>
             </div>
           </div>
 
@@ -434,8 +448,8 @@
               <h3>Gym</h3>
               <p>Fully equipped strength and cardio gym open to members, with flexible access to fit around match days and training.</p>
               <div class="offer-actions">
-                <a href="gym.html" class="btn btn-small">Explore the Gym</a>
-                <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn btn-small btn-small-outline">View Memberships</a>
+                <a href="gym.html" class="btn btn-small">Explore</a>
+                <a href="gym.html#memberships" class="btn btn-small btn-small-outline">View Memberships</a>
               </div>
             </div>
           </div>
@@ -446,8 +460,12 @@
             </div>
             <div class="offer-body">
               <h3>Sports Hall</h3>
-              <p>A versatile indoor hall for five-a-side, netball, badminton and community sessions, bookable by the hour.</p>
-              <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" class="btn btn-small">Book Now</a>
+              <p>1,600m² indoor hall with courts for badminton, netball, basketball, futsal, tennis and more, bookable by the hour.</p>
+              <div class="offer-actions">
+                <a href="sportshall.html" class="btn btn-small">Explore</a>
+                <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20" class="btn btn-small btn-small-outline">Book Now</a>
+              </div>
+              <a href="venue-hire.html" class="offer-link">Events &amp; venue hire →</a>
             </div>
           </div>
 
@@ -459,7 +477,7 @@
               <h3>Track</h3>
               <p>A full outdoor athletics track for training, timed sessions and events, open to clubs, schools and individual members.</p>
               <div class="offer-actions">
-                <a href="track.html" class="btn btn-small">Explore the Track</a>
+                <a href="track.html" class="btn btn-small">Explore</a>
                 <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn btn-small btn-small-outline">View Memberships</a>
               </div>
             </div>
@@ -503,41 +521,79 @@
       </div>
     </section>
 
-<!-- ============ WORK WITH US (events + partners) ============ -->
-<!-- Kept id="partner" so any existing links to #partner still land here. -->
-<section class="section about theme-pitch track-band--left" id="partner">
-  <img src="images/logored.png" alt="" class="about-mark" aria-hidden="true">
-  <div class="section-inner about-inner">
-    <p class="about-label">— Work With Us</p>
-    <h2 class="about-title">Events &amp; Partnerships</h2>
-    <p class="about-sub">Bringing a group to Northwood, or looking for a home for your club or sessions? Here's how we can help.</p>
+<!-- ============ WORK WITH US (events + sponsorship + partners) ============ -->
+<!-- Kept id="partner" (section) and id="events" (events panel) so existing links still land here.
+     Events panel uses COURT blue (as venue-hire.html); sponsorship panel uses PITCH green (as sponsorship.html). -->
+<section class="section wu" id="partner">
+  <div class="track-graphic wu-track" aria-hidden="true"></div>
+  <div class="section-inner wu-inner">
+    <p class="wu-eyebrow">— Work With Us</p>
+    <h2 class="wu-title">Events &amp; Partnerships</h2>
+    <p class="wu-lede">Bring your event to a real stadium, or put your business at the heart of community sport in Stoke-on-Trent.</p>
 
-    <div class="work-grid" id="events">
-      <!-- Events -->
-      <div class="work-card">
-        <p class="work-card-label">Schools · Colleges · Companies</p>
-        <h3 class="work-card-title">Host an Event</h3>
-        <p class="work-card-copy">From sports days and college fixtures to team-building days, we'll set up the space and facilities around your group.</p>
-        <ul class="work-card-tags">
-          <li>School Events</li>
-          <li>College Events</li>
-          <li>Company Events</li>
-        </ul>
-        <a href="venue-hire.html" class="btn-about">Explore Events →</a>
-      </div>
+    <div class="wu-grid">
+      <!-- EVENTS -->
+      <article class="wu-panel wu-events" id="events">
+        <a href="venue-hire.html" class="wu-media">
+          <img src="images/track-aerial.jpg" alt="Aerial view of Northwood Stadium: the track, grandstand and pitches" class="wu-main" loading="lazy">
+          <span class="wu-thumbs">
+            <img src="images/conquer-super7.jpg" alt="Conquer Fitness race finishers" loading="lazy">
+            <img src="images/colour-dash.jpg" alt="Children at the Colour Dash" loading="lazy" style="object-position: center 70%;">
+            <img src="images/tamil-sports-day.jpg" alt="The Tamil sports day opening ceremony on the track" loading="lazy">
+            <img src="images/igbo-new-yam.jpg" alt="The Igbo New Yam Festival in the sports hall" loading="lazy">
+          </span>
+        </a>
+        <div class="wu-body">
+          <p class="wu-kicker">Events &amp; Venue Hire</p>
+          <h3>Host Your Event at a Real Stadium</h3>
+          <p>From school sports days and county championships to cultural festivals, fitness races and company days, we set the venue up around your event.</p>
+          <ul class="wu-stats">
+            <li><b>3,000+</b>outdoor capacity</li>
+            <li><b>750</b>seat grandstand</li>
+            <li><b>1,600m²</b>sports hall</li>
+          </ul>
+          <ul class="wu-chips"><li>Schools &amp; colleges</li><li>Cultural festivals</li><li>Fitness races</li><li>Tournaments</li><li>Company days</li></ul>
+          <div class="wu-actions">
+            <a href="venue-hire.html" class="wu-btn">Explore Events</a>
+            <a href="events.html#event" class="wu-link">Make a booking request →</a>
+          </div>
+        </div>
+      </article>
 
-      <!-- Partners -->
-      <div class="work-card">
-        <p class="work-card-label">Local Businesses &amp; Clubs</p>
-        <h3 class="work-card-title">Partner With Northwood</h3>
-        <p class="work-card-copy">Independent business, club, league or coaching provider? Run your sessions from our football pitches, track, gym and sports hall, and make Northwood your new home. Football team after a weekly 3G slot? See <a href="team-bookings.html" style="color:var(--c-white); font-weight:700; text-decoration:underline;">team &amp; club bookings</a>.</p>
-        <ul class="work-card-tags">
-          <li>Block booking discounts</li>
-          <li>Clubs &amp; leagues</li>
-          <li>Coaching providers</li>
-        </ul>
-        <button type="button" class="btn-about" id="partnerContactBtn">Get In Touch →</button>
+      <!-- SPONSORSHIP -->
+      <article class="wu-panel wu-sponsor">
+        <a href="sponsorship.html" class="wu-media">
+          <img src="images/trackside-board.jpg" alt="A 'Your Business Here' sponsor board beside the Northwood track" class="wu-main" loading="lazy">
+          <span class="wu-thumbs wu-thumbs--2">
+            <img src="images/grandstand.jpg" alt="The view from the 750-seat grandstand" loading="lazy">
+            <img src="images/track-social.jpg" alt="Runners at Track Social in front of the grandstand" loading="lazy" style="object-position: center 58%;">
+          </span>
+        </a>
+        <div class="wu-body">
+          <p class="wu-kicker">Sponsorship &amp; Partnerships</p>
+          <h3>Back Your Community. Be Seen Doing It.</h3>
+          <p>Put your brand in front of families, clubs, schools and athletes every week. Northwood is owned by a registered charity, so every pound goes back into community sport.</p>
+          <ul class="wu-stats">
+            <li><b>100,000+</b>visitors a year</li>
+            <li><b>£400</b>packages from, per year</li>
+            <li><b>7 days</b>a week on show</li>
+          </ul>
+          <ul class="wu-chips"><li>Trackside boards</li><li>Social media features</li><li>Free gym &amp; track passes</li><li>Grandstand naming rights</li></ul>
+          <div class="wu-actions">
+            <a href="sponsorship.html" class="wu-btn">View Sponsorship Packages</a>
+            <a href="sponsorship.html#enquire" class="wu-link">Make an enquiry →</a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- CLUBS & COACHING PROVIDERS (opens the existing partner popup) -->
+    <div class="wu-strip">
+      <div>
+        <p class="wu-kicker">Clubs, leagues &amp; coaching providers</p>
+        <p class="wu-strip-copy">Run your sessions from our pitches, track, gym and sports hall, with block booking discounts. Football team after a weekly 3G slot? See <a href="team-bookings.html">team &amp; club bookings</a>.</p>
       </div>
+      <button type="button" class="wu-btn wu-btn--light" id="partnerContactBtn">Get In Touch</button>
     </div>
   </div>
 </section>
@@ -613,17 +669,6 @@
       </div>
       <div class="sponsor-marquee">
         <ul class="sponsor-track" id="sponsorTrack"></ul>
-      </div>
-
-      <!-- Become a sponsor (links to sponsorship.html) -->
-      <div class="section-inner">
-        <div class="sponsor-cta">
-          <div>
-            <h3 class="sponsor-cta-title">Interested in becoming a sponsor at Northwood?</h3>
-            <p class="sponsor-cta-copy">Put your business in front of the local community and support grassroots sport in Stoke-on-Trent.</p>
-          </div>
-          <a href="sponsorship.html" class="btn-about">Become a Sponsor →</a>
-        </div>
       </div>
     </section>
 
@@ -806,11 +851,14 @@
           <h4>Explore</h4>
           <a href="#about">About Us</a>
           <a href="#offer">Facilities</a>
-          <a href="#activities">Activities</a>
           <a href="gym.html">Gym</a>
-          <a href="track.html">Track</a>
-          <a href="youthclub.html">Youth Club</a>
+          <a href="track.html">Athletics Track</a>
+          <a href="sportshall.html">Sports Hall</a>
+          <a href="#activities">Activities</a>
+          <a href="wnf.html">Wednesday Night Football</a>
+          <a href="funetics.html">Funetics</a>
           <a href="tracksocial.html">Track Social</a>
+          <a href="youthclub.html">Youth Club</a>
           <a href="venue-hire.html">Events &amp; Venue Hire</a>
           <a href="sponsorship.html">Sponsorship</a>
         </div>
@@ -819,7 +867,7 @@
           <h4>Book</h4>
           <a href="https://pitchbooking.com/partners/NORTHWOODCOMMUNITYSPORTS%20">Pitch &amp; Sports Hall bookings</a>
           <a href="team-bookings.html">Team &amp; Club 3G Bookings</a>
-          <a href="events.html">Event &amp; School Hire Bookings</a>
+          <a href="events.html">Event &amp; School Bookings</a>
           <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6">Track &amp; Gym Memberships</a>
           <a href="activitiesadmin.html">Staff Login</a>
         </div>
