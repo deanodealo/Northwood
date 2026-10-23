@@ -1,0 +1,8 @@
+# Northwood Stadium
+User-agent: *
+Allow: /
+
+# Staff tools and demo pages are kept out of Google with a "noindex" tag on
+# each page (blocking them here would stop Google seeing that tag).
+
+Sitemap: https://northwoodstadium.co.uk/sitemap.xml

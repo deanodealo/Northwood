@@ -4,7 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Track Social: Free Running Events in Stoke-on-Trent | Northwood Stadium</title>
-  <meta name="description" content="Track Social: free running events in Stoke-on-Trent on the last Monday of every month at Northwood Stadium. All abilities welcome, with local running clubs, music and food.">
+  <meta name="description" content="Free monthly running events at Northwood Stadium, Stoke-on-Trent, on the last Monday of the month. All abilities welcome, with music and food.">
+  <link rel="canonical" href="https://northwoodstadium.co.uk/tracksocial.html">
+  <!-- Link previews (WhatsApp, Facebook, X, etc.) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Northwood Stadium">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:title" content="Track Social: Free Running Events in Stoke-on-Trent | Northwood Stadium">
+  <meta property="og:description" content="Free monthly running events at Northwood Stadium, Stoke-on-Trent, on the last Monday of the month. All abilities welcome, with music and food.">
+  <meta property="og:url" content="https://northwoodstadium.co.uk/tracksocial.html">
+  <meta property="og:image" content="https://northwoodstadium.co.uk/images/group.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <!-- SEO: event details for Google. Update startDate each month along with the "Next Track Social" block. -->
   <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SportsEvent", "name": "Track Social at Northwood Stadium", "description": "Free monthly community running event for all abilities, with music, food and a social after the run.", "startDate": "2026-10-26T18:30:00+00:00", "endDate": "2026-10-26T20:30:00+00:00", "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode", "eventStatus": "https://schema.org/EventScheduled", "isAccessibleForFree": true, "location": {"@type": "Place", "name": "Northwood Stadium", "address": {"@type": "PostalAddress", "streetAddress": "Keelings Road, Northwood", "addressLocality": "Stoke-on-Trent", "postalCode": "ST1 6PA", "addressCountry": "GB"}}, "organizer": {"@type": "Organization", "name": "Northwood Community Sports", "url": "https://northwoodstadium.co.uk/"}}</script>
 
@@ -26,7 +36,7 @@
        Track Social has its own sub-brand: neon pink on black, taken from
        the event artwork. The Northwood header, footer and main red stay
        as they are; pink is only used inside this page's content.
-       PHOTO SLOTS: replace any <div class="ts-ph">…</div> with an <img>.
+       PHOTO SLOTS: replace any <div class="ts-ph">…</div> with an <img loading="lazy" decoding="async">.
        ═══════════════════════════════════════════════════════════ */
     :root {
       --ts-pink: #C00BBE;       /* sampled from the Track Social artwork */
@@ -288,7 +298,7 @@
 
     <!-- ============ 1. HERO ============ -->
     <section class="ts-hero">
-      <div class="ts-hero-media" aria-hidden="true"><img src="images/group.jpg" alt=""></div>
+      <div class="ts-hero-media" aria-hidden="true"><img src="images/group.jpg" alt="" fetchpriority="high"></div>
       <div class="track-graphic ts-track" aria-hidden="true"></div>
       <div class="ts-hero-inner">
         <img src="images/track-social-logo.png" alt="Track Social" class="ts-logo">
@@ -322,9 +332,9 @@
           <ul class="ts-mix"><li>Running clubs</li><li>First-timers</li><li>All abilities</li><li>Local businesses</li><li>Music</li><li>Food &amp; drinks</li></ul>
         </div>
         <div class="ts-gallery">
-          <figure><img src="images/group.jpg" alt="Runners gathered on the Northwood track in front of the grandstand at a Track Social" style="object-position: center 58%;"></figure>
-          <figure><img src="images/runners.jpg" alt="Runners lining up in two groups on the Northwood track at a Track Social" style="object-position: center 60%;"></figure>
-          <figure><img src="images/social.jpg" alt="Runners gathering at a drinks stand on the track after a Track Social run" style="object-position: 45% 40%;"></figure>
+          <figure><img src="images/group.jpg" alt="Runners gathered on the Northwood track in front of the grandstand at a Track Social" style="object-position: center 58%;" loading="lazy" decoding="async"></figure>
+          <figure><img src="images/runners.jpg" alt="Runners lining up in two groups on the Northwood track at a Track Social" style="object-position: center 60%;" loading="lazy" decoding="async"></figure>
+          <figure><img src="images/social.jpg" alt="Runners gathering at a drinks stand on the track after a Track Social run" style="object-position: 45% 40%;" loading="lazy" decoding="async"></figure>
         </div>
       </div>
     </section>
@@ -413,7 +423,7 @@
           <p>It's a chance for clubs to <strong>introduce themselves to new runners</strong>, grow their membership and help build an inclusive, city-wide running community.</p>
         </div>
         <div>
-          <!-- CLUB LOGOS: swap each .ts-club-logo div for <img src="images/club-NAME.png" alt="NAME logo" class="ts-club-logo"> -->
+          <!-- CLUB LOGOS: swap each .ts-club-logo div for <img src="images/club-NAME.png" alt="NAME logo" class="ts-club-logo" loading="lazy" decoding="async"> -->
           <div class="ts-club-cards">
             <div class="ts-club"><div class="ts-club-logo">MARA</div><b>MARA Run Club</b><a href="#" target="_blank" rel="noopener"><span class="tbc">[Instagram link]</span></a></div>
             <div class="ts-club"><div class="ts-club-logo">JRC</div><b>Just Run Club</b><a href="#" target="_blank" rel="noopener"><span class="tbc">[Instagram link]</span></a></div>
@@ -433,10 +443,10 @@
         <p class="ts-eyebrow">— More Than Running</p>
         <h2 class="section-title">Come for the Run. Stay for the Atmosphere.</h2>
         <div class="ts-more">
-          <figure class="wide tall"><img src="images/social.jpg" alt="Runners at the Solace drinks stand after a Track Social" style="object-position: 45% 40%;"><figcaption>Refreshments</figcaption></figure>
-          <figure><img src="images/dj.jpg" alt="DJs at the decks watching runners go past on the track" style="object-position: 50% 55%;"><figcaption>Music</figcaption></figure>
-          <figure><img src="images/food-vendor.jpg" alt="MrBigz Flavours serving food at a Track Social" style="object-position: center 36%;"><figcaption>Food</figcaption></figure>
-          <figure class="wide"><img src="images/trophy.jpg" alt="A group on the track holding a 4 in 48 4 Dougie Mac plaque" style="object-position: center 38%;"><figcaption>Community</figcaption></figure>
+          <figure class="wide tall"><img src="images/social.jpg" alt="Runners at the Solace drinks stand after a Track Social" style="object-position: 45% 40%;" loading="lazy" decoding="async"><figcaption>Refreshments</figcaption></figure>
+          <figure><img src="images/dj.jpg" alt="DJs at the decks watching runners go past on the track" style="object-position: 50% 55%;" loading="lazy" decoding="async"><figcaption>Music</figcaption></figure>
+          <figure><img src="images/food-vendor.jpg" alt="MrBigz Flavours serving food at a Track Social" style="object-position: center 36%;" loading="lazy" decoding="async"><figcaption>Food</figcaption></figure>
+          <figure class="wide"><img src="images/trophy.jpg" alt="A group on the track holding a 4 in 48 4 Dougie Mac plaque" style="object-position: center 38%;" loading="lazy" decoding="async"><figcaption>Community</figcaption></figure>
         </div>
         <div class="ts-welcome">
           <p>Track Socials bring together local businesses, food vendors, DJs, fitness brands and families. <strong>You don't have to run to come along.</strong> Plenty of people come just for the music, the food and the company.</p>
@@ -461,11 +471,11 @@
           <div class="ts-stat"><b>Monthly</b><span>Events getting Stoke moving</span></div>
         </div>
         <div class="ts-gal">
-          <figure class="big"><img src="images/group.jpg" alt="Track Social runners gathered in front of the Northwood grandstand" style="object-position: center 58%;"></figure>
-          <figure><img src="images/runners.jpg" alt="Runners lining up on the Northwood track" style="object-position: center 60%;"></figure>
-          <figure><img src="images/running.jpg" alt="Runners of different abilities on the track at a Track Social" style="object-position: 60% center;"></figure>
-          <figure><img src="images/candid.jpg" alt="A smiling runner during the Track Social warm-up" style="object-position: 45% 30%;"></figure>
-          <figure><img src="images/warm-up.jpg" alt="A long line of runners doing a lunge warm-up down the Northwood track" style="object-position: 65% center;"></figure>
+          <figure class="big"><img src="images/group.jpg" alt="Track Social runners gathered in front of the Northwood grandstand" style="object-position: center 58%;" loading="lazy" decoding="async"></figure>
+          <figure><img src="images/runners.jpg" alt="Runners lining up on the Northwood track" style="object-position: center 60%;" loading="lazy" decoding="async"></figure>
+          <figure><img src="images/running.jpg" alt="Runners of different abilities on the track at a Track Social" style="object-position: 60% center;" loading="lazy" decoding="async"></figure>
+          <figure><img src="images/candid.jpg" alt="A smiling runner during the Track Social warm-up" style="object-position: 45% 30%;" loading="lazy" decoding="async"></figure>
+          <figure><img src="images/warm-up.jpg" alt="A long line of runners doing a lunge warm-up down the Northwood track" style="object-position: 65% center;" loading="lazy" decoding="async"></figure>
         </div>
         <!-- TESTIMONIALS: replace with real quotes (first name + club or "first-timer") -->
         <div class="ts-quotes">
@@ -539,7 +549,7 @@
     <div class="footer-inner-grid">
       <div class="footer-top">
         <div class="footer-brand">
-          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo">
+          <img src="images/logoblack.png" alt="Northwood Stadium" class="footer-logo" loading="lazy" decoding="async">
           <p>Staffordshire's home of sport — track, gym, pitches and community sessions, all in one venue, in Stoke-on-Trent.</p>
           <div class="footer-socials">
             <a href="https://www.facebook.com/people/Northwood-Community-Sports/100090664912680/?locale=en_GB" class="footer-social" target="_blank" rel="noopener" aria-label="Facebook">
@@ -599,7 +609,7 @@
       <div class="footer-bottom">
         <span>© 2026 Northwood Community Sports. All rights reserved.</span>
         <a href="https://deanodealo.github.io/dealo/" class="footer-credit" target="_blank" rel="noopener">
-          Site by <img src="images/dealo.PNG" alt="Dealo">
+          Site by <img src="images/dealo.PNG" alt="Dealo" loading="lazy" decoding="async">
         </a>
       </div>
     </div>
