@@ -252,6 +252,17 @@ input[type="date"], input[type="time"] {
   font-family: var(--f-body); font-size: 0.76rem; font-weight: 600; color: #8C0000; background: none; border: none; cursor: pointer;
 }
 .ma-session-remove:disabled { color: var(--c-grey-mid); cursor: not-allowed; }
+.ma-session-row.is-past { background: var(--c-grey-light); }
+.ma-session-row.is-past .info { color: var(--c-grey-mid); }
+.ma-session-row .booked-note.past { color: var(--c-grey-mid); }
+.ma-past-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.ma-past-toggle, .ma-past-clear {
+  font-family: var(--f-body); font-size: 0.82rem; font-weight: 700; background: none; border: none; padding: 0.3rem 0; cursor: pointer;
+}
+.ma-past-toggle { color: var(--c-black); text-decoration: underline; text-underline-offset: 3px; }
+.ma-past-clear { color: #8C0000; }
+.ma-past-hint { margin: 0.2rem 0 0.7rem; }
+.ma-past-list { margin-top: 0.2rem; }
 
 .ma-session-add-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
 .ma-session-add-tab {
@@ -422,7 +433,7 @@ input[type="date"], input[type="time"] {
         <div id="imageUploadArea"></div>
 
         <div class="ma-section-label">Sessions</div>
-        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Every date customers can book onto. A session that's already past is automatically hidden from the booking page.</p>
+        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Every date customers can book onto. Past sessions are hidden from the booking page automatically, and folded away below so this list stays short.</p>
         <div class="ma-session-list" id="sessionList"></div>
 
         <div class="ma-session-add-tabs">
@@ -1178,30 +1189,68 @@ const SEED_ACTIVITIES = [
     reader.readAsDataURL(file);
   }
 
+  // Past sessions can always be removed, even if people were booked on
+  // them: every booking keeps its own copy of the activity name, date and
+  // time, so Bookings Admin, registers, exports and customers' "My
+  // bookings" are unaffected. Upcoming sessions with bookings stay locked,
+  // so nobody is left booked onto a date that's disappeared.
+  let showPastSessions = false;
+  function todayIsoLocal() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+  function sessionRowHtml(s, isPast) {
+    const booked = bookedCountsForEdit[s.id] || 0;
+    const locked = !isPast && booked > 0;
+    const note = booked > 0
+      ? ` · <span class="booked-note${isPast ? " past" : ""}">${booked} ${isPast ? (booked === 1 ? "was booked" : "were booked") : "already booked"}</span>` : "";
+    return `
+        <div class="ma-session-row${isPast ? " is-past" : ""}">
+          <div>
+            <div class="info">${s.dow} ${fmtDate(s.date)} · ${s.time}</div>
+            <div class="sub">${isPast ? "Past · " : ""}Capacity ${s.capacity}${note}</div>
+          </div>
+          <button type="button" class="ma-session-remove" data-remove-session="${s.id}" ${locked ? "disabled title=\"Can't remove — this upcoming session already has bookings\"" : ""}>Remove</button>
+        </div>`;
+  }
   function renderSessionList() {
     if (!currentSessions.length) {
       sessionListEl.innerHTML = '<p class="field-hint">No sessions added yet — use the generator below.</p>';
       return;
     }
+    const today = todayIsoLocal();
     const sorted = [...currentSessions].sort((a, b) => a.date.localeCompare(b.date));
-    sessionListEl.innerHTML = sorted.map(s => {
-      const booked = bookedCountsForEdit[s.id] || 0;
-      const hasBookings = booked > 0;
-      return `
-        <div class="ma-session-row">
-          <div>
-            <div class="info">${s.dow} ${fmtDate(s.date)} · ${s.time}</div>
-            <div class="sub">Capacity ${s.capacity}${hasBookings ? ` · <span class="booked-note">${booked} already booked</span>` : ""}</div>
-          </div>
-          <button type="button" class="ma-session-remove" data-remove-session="${s.id}" ${hasBookings ? "disabled title=\"Can't remove — this session already has bookings\"" : ""}>Remove</button>
+    const upcoming = sorted.filter(s => s.date >= today);
+    const past = sorted.filter(s => s.date < today).reverse(); // most recent first
+    let html = upcoming.length
+      ? upcoming.map(s => sessionRowHtml(s, false)).join("")
+      : '<p class="field-hint">No upcoming sessions — add some below.</p>';
+    if (past.length) {
+      html += `
+        <div class="ma-past-bar">
+          <button type="button" class="ma-past-toggle" id="pastToggle" aria-expanded="${showPastSessions}">
+            ${showPastSessions ? "Hide" : "Show"} past sessions (${past.length})
+          </button>
+          <button type="button" class="ma-past-clear" id="pastClear">Remove all past sessions</button>
         </div>
-      `;
-    }).join("");
+        <p class="field-hint ma-past-hint">Removing past sessions keeps the list tidy. Their bookings stay in Bookings Admin. Changes apply when you press Save Activity.</p>
+        ${showPastSessions ? `<div class="ma-session-list ma-past-list">${past.map(s => sessionRowHtml(s, true)).join("")}</div>` : ""}`;
+    }
+    sessionListEl.innerHTML = html;
     sessionListEl.querySelectorAll("[data-remove-session]").forEach(btn => {
       btn.addEventListener("click", () => {
         currentSessions = currentSessions.filter(s => s.id !== btn.dataset.removeSession);
         renderSessionList();
       });
+    });
+    const toggle = document.getElementById("pastToggle");
+    if (toggle) toggle.addEventListener("click", () => { showPastSessions = !showPastSessions; renderSessionList(); });
+    const clear = document.getElementById("pastClear");
+    if (clear) clear.addEventListener("click", () => {
+      if (!confirm(`Remove all ${past.length} past session${past.length === 1 ? "" : "s"} from this activity?\n\nTheir bookings stay in Bookings Admin. Nothing changes until you press Save Activity.`)) return;
+      currentSessions = currentSessions.filter(s => s.date >= today);
+      showPastSessions = false;
+      renderSessionList();
     });
   }
 
@@ -1339,10 +1388,16 @@ const SEED_ACTIVITIES = [
       const ids = currentSessions.map(s => s.id);
       if (ids.length) {
         try {
-          const snap = await db.collection("activitySessionCounts")
-            .where(firebase.firestore.FieldPath.documentId(), "in", ids.slice(0, 10))
-            .get();
-          snap.forEach(doc => { bookedCountsForEdit[doc.id] = doc.data().booked || 0; });
+          // Firestore's "in" query takes at most 10 ids, so ask in batches of
+          // 10 (previously only the first 10 sessions were checked).
+          const batches = [];
+          for (let i = 0; i < ids.length; i += 10) {
+            batches.push(db.collection("activitySessionCounts")
+              .where(firebase.firestore.FieldPath.documentId(), "in", ids.slice(i, i + 10))
+              .get());
+          }
+          (await Promise.all(batches)).forEach(snap =>
+            snap.forEach(doc => { bookedCountsForEdit[doc.id] = doc.data().booked || 0; }));
         } catch (err) { console.error("Couldn't fetch booked counts:", err); }
       }
     } else {
