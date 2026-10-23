@@ -135,6 +135,26 @@
     .wnf-cta a.wnf-mail { color: #8EC2F0; font-weight: 700; text-decoration: underline; }
     .wnf-cta .wnf-book-actions { justify-content: center; }
 
+    /* ---------- End-of-block awards ---------- */
+    .wnf-awards { background: var(--wnf-navy); color: var(--c-white); }
+    .wnf-awards .section-eyebrow { color: #8EC2F0; }
+    .wnf-awards .section-title { color: var(--c-white); }
+    .wnf-awards-top { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; }
+    .wnf-awards-top > * { min-width: 0; }
+    .wnf-awards-copy p { color: rgba(255,255,255,0.85); font-size: 17px; line-height: 1.75; margin-bottom: 16px; max-width: 560px; }
+    .wnf-trophies { list-style: none; display: grid; gap: 12px; margin-top: 24px; max-width: 520px; }
+    .wnf-trophies li { display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 14px 18px; }
+    .wnf-trophies li i { flex: none; width: 40px; height: 40px; border-radius: 50%; background: #C9A227; color: var(--wnf-navy-deep); display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 18px; }
+    .wnf-trophies b { display: block; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 20px; line-height: 1.1; }
+    .wnf-trophies span { display: block; color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 2px; }
+    .wnf-awards-photo { border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 5; max-width: 460px; justify-self: center; box-shadow: 0 24px 60px rgba(0,0,0,0.35); }
+    .wnf-awards-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%; }
+    .wnf-awards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 48px; }
+    .wnf-awards-grid figure { margin: 0; border-radius: 10px; overflow: hidden; aspect-ratio: 3 / 4; background: var(--wnf-navy-deep); }
+    .wnf-awards-grid figure.wide { grid-column: span 2; aspect-ratio: 16 / 10; }
+    .wnf-awards-grid img { width: 100%; height: 100%; object-fit: cover; }
+    @media (max-width: 900px) { .wnf-awards-top { grid-template-columns: 1fr; gap: 36px; } .wnf-awards-grid { grid-template-columns: 1fr 1fr; } }
+
     @media (max-width: 1100px) {
       .wnf-diff { grid-template-columns: 1fr 1fr; }
       .wnf-gallery { grid-template-columns: 1fr 1fr; }
@@ -285,6 +305,33 @@
           <figure><img src="images/wnf-kick.jpg" alt="A young player striking the ball in the sports hall" loading="lazy"></figure>
           <figure class="wide"><img src="images/wnf-red-yellow.jpg" alt="Two young players waiting for their turn" loading="lazy" style="object-position: center 40%;"></figure>
           <figure class="wide"><img src="images/wnf-group-wall.jpg" alt="A group of young players listening to the coach" loading="lazy" style="object-position: center 45%;"></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ END-OF-BLOCK AWARDS ============ -->
+    <section class="section wnf-awards" id="awards">
+      <div class="section-inner">
+        <div class="wnf-awards-top">
+          <div class="wnf-awards-copy">
+            <p class="section-eyebrow">— End-of-Block Awards</p>
+            <h2 class="section-title">Every Player Celebrated</h2>
+            <p>Every block finishes with an awards night. Every player goes home with a WNF medal, and the coaches pick out the players who've stood out over the weeks.</p>
+            <ul class="wnf-trophies">
+              <li><i>★</i><div><b>Top Technician</b><span>The best touch, skills and technique</span></div></li>
+              <li><i>★</i><div><b>Top Learner</b><span>The player who's listened, tried and improved the most</span></div></li>
+              <li><i>★</i><div><b>Coaches' Player</b><span>Chosen by the coaches for attitude and effort</span></div></li>
+            </ul>
+          </div>
+          <div class="wnf-awards-photo"><img src="images/wnf-awards-trophies.jpg" alt="WNF Top Technician, Top Learner and Coaches' Player trophies with a table of WNF medals" loading="lazy"></div>
+        </div>
+        <div class="wnf-awards-grid">
+          <figure class="wide"><img src="images/wnf-awards-group-1.jpg" alt="Players with their medals in front of the WNF banners on awards night" loading="lazy"></figure>
+          <figure class="wide"><img src="images/wnf-awards-group-2.jpg" alt="A younger age group with their medals on awards night" loading="lazy"></figure>
+          <figure><img src="images/wnf-awards-winner-1.jpg" alt="A trophy winner with his award and medal" loading="lazy"></figure>
+          <figure><img src="images/wnf-awards-winner-2.jpg" alt="A trophy winner smiling with her award" loading="lazy"></figure>
+          <figure><img src="images/wnf-awards-winner-3.jpg" alt="A young player holding his trophy" loading="lazy"></figure>
+          <figure><img src="images/wnf-awards-winner-4.jpg" alt="A young player with his trophy and medal" loading="lazy"></figure>
         </div>
       </div>
     </section>
