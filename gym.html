@@ -89,6 +89,11 @@
     .gm-strip img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
     .gm-strip figure:hover img { transform: scale(1.04); }
     @media (max-width: 560px) { .gm-strip figure { aspect-ratio: 1 / 1; } }
+    .gm-timetable { display: flex; align-items: center; gap: 16px; background: var(--c-chalk); border-left: 4px solid var(--c-red); border-radius: 0 10px 10px 0; padding: 14px 18px; margin-top: 4px; }
+    .gm-tt-day { flex: none; background: var(--c-black); color: var(--c-white); font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 15px; letter-spacing: 0.5px; padding: 8px 12px; border-radius: 6px; }
+    .gm-timetable b { display: block; font-size: 16px; }
+    .gm-timetable div span { display: block; color: var(--c-grey-mid); font-size: 14px; margin-top: 2px; }
+    .gm-body p.gm-tt-note { font-size: 14px; }
     .gm-kit { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
     .gm-kit li { background: var(--c-chalk); border-radius: 6px; padding: 8px 12px; font-size: 14px; font-weight: 600; }
 
@@ -109,6 +114,39 @@
       padding: 15px 30px; transition: background 0.2s var(--ease), transform 0.2s var(--ease);
     }
     .btn-dark:hover { background: var(--c-red); transform: translateY(-2px); }
+    /* ---------- Membership bundles (Gym + Classes, All Access) ---------- */
+    .gm-tier-label { display: flex; align-items: center; gap: 14px; margin: 44px 0 18px; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 22px; letter-spacing: 0.3px; }
+    .gm-tier-label::after { content: ""; flex: 1; height: 1px; background: rgba(26,24,24,0.12); }
+    .gm-tier-label .gm-new { background: var(--c-red); color: var(--c-white); font-family: var(--f-body); font-size: 11px; font-weight: 700; letter-spacing: 1.6px; padding: 5px 9px; border-radius: 4px; }
+    .gm-bundles { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .gm-bundles > * { min-width: 0; }
+    .gm-bundle { position: relative; display: flex; flex-direction: column; background: var(--c-white); border: 2px solid rgba(26,24,24,0.08); border-radius: 18px; padding: 34px 32px 30px; box-shadow: 0 10px 30px rgba(26,24,24,0.06); }
+    .gm-bundle.all { background: var(--c-black); color: var(--c-white); border-color: var(--c-black); }
+    .gm-bundle .badge { position: absolute; top: -13px; left: 32px; background: var(--c-red); color: var(--c-white); font-size: 12px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; }
+    .gm-bundle h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 34px; line-height: 1; }
+    .gm-bundle .who { color: var(--c-grey-mid); font-size: 15px; margin-top: 8px; }
+    .gm-bundle.all .who { color: rgba(255,255,255,0.7); }
+    .gm-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0 6px; }
+    .gm-plan { border: 2px solid rgba(26,24,24,0.1); border-radius: 12px; padding: 16px 16px 14px; }
+    .gm-bundle.all .gm-plan { border-color: rgba(255,255,255,0.18); }
+    .gm-plan.best { border-color: var(--c-red); background: rgba(218,56,50,0.05); }
+    .gm-bundle.all .gm-plan.best { border-color: var(--c-red); background: rgba(218,56,50,0.16); }
+    .gm-plan-name { display: block; font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--c-grey-mid); }
+    .gm-bundle.all .gm-plan-name { color: rgba(255,255,255,0.65); }
+    .gm-plan-price { display: block; font-family: var(--f-display); font-weight: 800; font-size: 42px; line-height: 1; margin-top: 8px; }
+    .gm-plan-price small { font-family: var(--f-body); font-size: 15px; font-weight: 600; }
+    .gm-plan-note { display: block; font-size: 13px; color: var(--c-grey-mid); margin-top: 6px; line-height: 1.4; }
+    .gm-bundle.all .gm-plan-note { color: rgba(255,255,255,0.65); }
+    .gm-bundle .gm-feat { align-content: start; }
+    .gm-bundle.all .gm-feat { border-top-color: rgba(255,255,255,0.14); }
+    .gm-feat li small { display: block; font-size: 13px; color: var(--c-grey-mid); margin-top: 2px; }
+    .gm-bundle.all .gm-feat li small { color: rgba(255,255,255,0.6); }
+    .gm-bundle-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+    .gm-bundle-actions a { width: 100%; font-size: 16px; padding: 14px 16px; text-align: center; }
+    .gm-bundle.all .btn-dark { background: var(--c-white); color: var(--c-black); }
+    .gm-bundle.all .btn-dark:hover { background: var(--c-red); color: var(--c-white); }
+    @media (max-width: 1000px) { .gm-bundles { grid-template-columns: 1fr; max-width: 640px; } }
+    @media (max-width: 480px) { .gm-plans, .gm-bundle-actions { grid-template-columns: 1fr; } .gm-bundle { padding: 30px 22px 24px; } }
     .gm-note { font-size: 14px; color: var(--c-grey-mid); margin-top: 18px; line-height: 1.6; }
 
     /* ---------- Before you start (dark band) ---------- */
@@ -275,18 +313,18 @@
           <!-- 3. Cardio -->
           <article class="gm-space" id="cardio">
             <div class="gm-media">
-              <!-- PHOTO TO COME: cardio section -->
-              <div class="gm-ph" role="img" aria-label="Photo to come: Cardio section">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span class="gm-ph-title">Cardio section photo</span>
-                <span class="gm-ph-spec">The line of cardio machines from one end · landscape · min 1600px</span>
-              </div>
+              <img src="images/gym-cardio-view.jpg" alt="A member on a cross-trainer looking out over the Northwood athletics track" loading="lazy" style="object-position: 50% 45%;">
             </div>
             <div class="gm-body">
               <span class="gm-kicker">Endurance</span>
               <h3>Cardio Section</h3>
               <p>Warm up, build your engine or settle into a steady session at your own pace. Pair it with the track outside for interval work you won't get in a high-street gym.</p>
-              <ul class="gm-kit"><li class="tbc">[confirm equipment list]</li></ul>
+              <ul class="gm-kit"><li>Treadmills</li><li>Cross-trainers</li><li>Exercise bikes</li><li>Views over the track</li></ul>
+            </div>
+            <div class="gm-strip">
+              <figure><img src="images/gym-treadmills.jpg" alt="A row of treadmills along the windows of the cardio section" loading="lazy" style="object-position: 50% 62%;"></figure>
+              <figure><img src="images/gym-cross-trainers.jpg" alt="Cross-trainers and bikes facing the windows" loading="lazy" style="object-position: 50% 62%;"></figure>
+              <figure><img src="images/gym-track-view.jpg" alt="The view from the cardio section over the athletics track and grandstand" loading="lazy" style="object-position: 50% 45%;"></figure>
             </div>
           </article>
 
@@ -306,18 +344,22 @@
           <!-- 5. Classes -->
           <article class="gm-space" id="classes">
             <div class="gm-media">
-              <!-- PHOTO TO COME: fitness class in progress -->
-              <div class="gm-ph" role="img" aria-label="Photo to come: Fitness class">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span class="gm-ph-title">Fitness class photo</span>
-                <span class="gm-ph-spec">A coach-led class mid-session, faces visible · landscape · min 1600px</span>
-              </div>
+              <img src="images/gym-class-studio.jpg" alt="A coach-led fitness class in the Northwood functional fitness room, with box step-ups and barbell lifts" loading="lazy" style="object-position: 45% 55%;">
             </div>
             <div class="gm-body">
               <span class="gm-kicker">Train together</span>
               <h3>Fitness Classes</h3>
               <p>Coach-led group sessions for every fitness level. Train alongside others, stay motivated and learn new skills with someone guiding you through every round.</p>
-              <ul class="gm-kit"><li class="tbc">[add class names and timetable]</li></ul>
+              <div class="gm-timetable">
+                <span class="gm-tt-day">Mon &amp; Tue</span>
+                <div><b>Circuit Training with Lorraine</b><span>6:00–7:00pm · Functional fitness room</span></div>
+              </div>
+              <p class="gm-tt-note">Included in the Gym + Classes and All Access memberships. Book your place in advance.</p>
+            </div>
+            <div class="gm-strip">
+              <figure><img src="images/gym-class-circuit.jpg" alt="A busy circuit class with box step-ups, rowing and kettlebells" loading="lazy" style="object-position: 50% 45%;"></figure>
+              <figure><img src="images/gym-class-group.jpg" alt="Class members working through stations on the rower, kettlebells and sled" loading="lazy" style="object-position: 50% 40%;"></figure>
+              <figure><img src="images/gym-class-skierg.jpg" alt="A member on the SkiErg during a class" loading="lazy" style="object-position: 55% 45%;"></figure>
             </div>
           </article>
         </div>
@@ -329,7 +371,50 @@
       <div class="section-inner">
         <p class="section-eyebrow">— Memberships</p>
         <h2 class="section-title">Simple, Flexible Prices</h2>
-        <p class="lede">Pay for a day or a month at a time. Sign up online in a few minutes.</p>
+        <p class="lede">From a single day pass to everything Northwood has to offer. Sign up online in a few minutes.</p>
+        <h3 class="gm-tier-label"><span class="gm-new">New</span>Membership Bundles</h3>
+        <div class="gm-bundles">
+          <article class="gm-bundle">
+            <h3>Gym + Classes</h3>
+            <p class="who">The gym and every group fitness class, in one membership</p>
+            <div class="gm-plans">
+              <div class="gm-plan best"><span class="gm-plan-name">12-month direct debit</span><span class="gm-plan-price">£25<small> /month</small></span><span class="gm-plan-note">Best value</span></div>
+              <div class="gm-plan"><span class="gm-plan-name">1 month, paid in full</span><span class="gm-plan-price">£35</span><span class="gm-plan-note">No contract</span></div>
+            </div>
+            <ul class="gm-feat">
+              <li>Unlimited gym access</li>
+              <li>Unlimited group fitness classes</li>
+              <li>Book classes in advance</li>
+            </ul>
+            <!-- SIGN-UP LINKS: replace with the Ashbourne links for each Gym + Classes plan -->
+            <div class="gm-bundle-actions">
+              <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-red">Join on £25/month</a>
+              <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-dark">Buy 1 month</a>
+            </div>
+          </article>
+          <article class="gm-bundle all">
+            <span class="badge">Everything Northwood</span>
+            <h3>All Access</h3>
+            <p class="who">Gym, track, classes and court time, all in one</p>
+            <div class="gm-plans">
+              <div class="gm-plan best"><span class="gm-plan-name">12-month direct debit</span><span class="gm-plan-price">£35<small> /month</small></span><span class="gm-plan-note">Best value</span></div>
+              <div class="gm-plan"><span class="gm-plan-name">1 month, paid in full</span><span class="gm-plan-price">£45</span><span class="gm-plan-note">No contract</span></div>
+            </div>
+            <ul class="gm-feat">
+              <li>Unlimited gym access</li>
+              <li>Unlimited athletics track access<small>Subject to availability</small></li>
+              <li>Unlimited group fitness classes</li>
+              <li>One badminton or pickleball session a week<small>Off-peak only, subject to availability, book at reception</small></li>
+              <li>Book classes in advance</li>
+            </ul>
+            <!-- SIGN-UP LINKS: replace with the Ashbourne links for each All Access plan -->
+            <div class="gm-bundle-actions">
+              <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-red">Join on £35/month</a>
+              <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-dark">Buy 1 month</a>
+            </div>
+          </article>
+        </div>
+        <h3 class="gm-tier-label">Day Passes &amp; Single Memberships</h3>
         <div class="price-grid gm-price-grid">
           <div class="price-card">
             <h3>Day Pass</h3>
@@ -340,7 +425,6 @@
             <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-dark">Get a Day Pass</a>
           </div>
           <div class="price-card featured">
-            <span class="badge">Most popular</span>
             <h3>Gym Membership</h3>
             <p class="who">Full use of the gym, every day we're open</p>
             <div class="price"><small class="gm-from">from</small> £15</div>
@@ -357,7 +441,7 @@
             <a href="https://secure.ashbournemanagement.co.uk/signupUK/index.aspx?fn=GREP6" class="btn-dark">Join the Track</a>
           </div>
         </div>
-        <p class="gm-note">Fitness classes: <span class="tbc">[confirm whether classes are included or booked separately]</span></p>
+        <p class="gm-note">Group fitness classes are included in the Gym + Classes and All Access memberships. Track access is subject to availability: the track is reserved for City of Stoke AC on Tuesdays and Thursdays, 5–8pm.</p>
       </div>
     </section>
 
