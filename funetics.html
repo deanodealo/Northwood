@@ -105,7 +105,7 @@
     /* ---------- Run, jump, throw ---------- */
     .fn-skills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
     .fn-skill { background: var(--c-white); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(82,26,96,0.08); }
-    .fn-skill-media { position: relative; aspect-ratio: 4 / 3; background: var(--fn-purple); }
+    .fn-skill-media { position: relative; aspect-ratio: 4 / 5; background: var(--fn-purple); }
     .fn-skill-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .fn-skill-body { padding: 22px 24px 26px; border-top: 5px solid var(--fn-lilac); }
     .fn-skill:nth-child(2) .fn-skill-body { border-top-color: var(--fn-pink); }
@@ -323,15 +323,15 @@
         <p class="lede">Every session is built around the three skills at the heart of athletics, taught through games and challenges children actually want to do.</p>
         <div class="fn-skills">
           <article class="fn-skill">
-            <div class="fn-skill-media"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Run</b><span>A child sprinting or racing, ideally mid-stride</span></div></div>
+            <div class="fn-skill-media"><img src="images/funetics-run.jpg" alt="A young athlete running during a Funetics session in the sports hall" loading="lazy" style="object-position: 50% 55%;"></div>
             <div class="fn-skill-body"><h3>Run</h3><p>Speed, agility and balance through relays, races and chase games.</p></div>
           </article>
           <article class="fn-skill">
-            <div class="fn-skill-media"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Jump</b><span>A child mid-jump, hurdles or long jump</span></div></div>
+            <div class="fn-skill-media"><img src="images/funetics-jump.jpg" alt="A boy mid-jump along the long jump mat" loading="lazy" style="object-position: 50% 40%;"></div>
             <div class="fn-skill-body"><h3>Jump</h3><p>Hops, bounds and leaps that build power, coordination and landing control.</p></div>
           </article>
           <article class="fn-skill">
-            <div class="fn-skill-media"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Throw</b><span>A child throwing, e.g. foam javelin or ball</span></div></div>
+            <div class="fn-skill-media"><img src="images/funetics-throw.jpg" alt="A boy following through on a throw, with team-mates watching" loading="lazy" style="object-position: 50% 52%;"></div>
             <div class="fn-skill-body"><h3>Throw</h3><p>Safe, kid-sized throwing kit to learn technique and hand-eye coordination.</p></div>
           </article>
         </div>
@@ -350,7 +350,7 @@
             <span class="fn-session-kind">Fun &amp; games, all ages</span>
             <p>A high-energy, games-based session for every age group together. Perfect for first-timers and children who just love to move.</p>
             <ul class="fn-slots">
-              <li><div><b><span class="tbc">[time]</span></b><small>Sports Hall, Northwood Stadium</small></div><span class="fn-age">Ages 4–12</span></li>
+              <li><div><b>6:00–7:00pm</b><small>Sports Hall, Northwood Stadium</small></div><span class="fn-age">Ages 4–12</span></li>
             </ul>
             <div class="fn-session-foot">
               <span class="fn-session-price">£3.50 <small>per session</small></span>
@@ -362,8 +362,8 @@
             <span class="fn-session-kind">Technical development</span>
             <p>More structured sessions focused on technique, split by age so every group is coached at the right level.</p>
             <ul class="fn-slots">
-              <li><div><b>10:00–11:00am</b><small><span class="tbc">[venue: track or sports hall?]</span></small></div><span class="fn-age">Ages 4–7</span></li>
-              <li><div><b>11:00am–12:00pm</b><small><span class="tbc">[venue: track or sports hall?]</span></small></div><span class="fn-age">Ages 8+</span></li>
+              <li><div><b>10:00–11:00am</b><small>Athletics track (sports hall if wet)</small></div><span class="fn-age">Ages 4–7</span></li>
+              <li><div><b>11:00am–12:00pm</b><small>Athletics track (sports hall if wet)</small></div><span class="fn-age">Ages 8+</span></li>
             </ul>
             <div class="fn-session-foot">
               <span class="fn-session-price">£3.50 <small>per session</small></span>
@@ -408,13 +408,13 @@
         <p class="section-eyebrow">— Funetics at Northwood</p>
         <h2 class="section-title">See It in Action</h2>
         <div class="fn-gallery">
-          <figure class="big"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Group shot</b><span>The whole group celebrating, certificates or medals</span></div></figure>
-          <figure><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Coach and child</b><span>A coach demonstrating or high-fiving</span></div></figure>
-          <figure><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Saturday technical</b><span>Close-up of technique work</span></div></figure>
-          <figure><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Tuesday games</b><span>Children playing a game in the sports hall</span></div></figure>
-          <figure><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Parents</b><span>Parents watching from the side</span></div></figure>
-          <figure class="wide"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>On the track</b><span>Children racing on the track, stand behind</span></div></figure>
-          <figure class="wide"><div class="fn-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><b>Kit close-up</b><span>Hurdles, foam javelins, cones</span></div></figure>
+          <figure class="big"><img src="images/funetics-group-certificates.jpg" alt="Funetics children and their families holding up their certificates" loading="lazy" style="object-position: 50% 60%;"></figure>
+          <figure><img src="images/funetics-coach-demo.jpg" alt="A Funetics coach demonstrating a drill to the group" loading="lazy" style="object-position: 60% 45%;"></figure>
+          <figure><img src="images/funetics-cone-jump.jpg" alt="A young athlete jumping over a cone, mid-shout" loading="lazy" style="object-position: 50% 18%;"></figure>
+          <figure><img src="images/funetics-arms-up.jpg" alt="A boy jumping with his arms raised during a warm-up" loading="lazy" style="object-position: 70% 28%;"></figure>
+          <figure><img src="images/funetics-jump-mats.jpg" alt="The coach leading jumping practice on the long jump mats" loading="lazy" style="object-position: 35% 50%;"></figure>
+          <figure class="wide"><img src="images/funetics-parachute.jpg" alt="Children sitting around a parachute game with the coach" loading="lazy" style="object-position: 50% 58%;"></figure>
+          <figure class="wide"><img src="images/funetics-parents-watching.jpg" alt="Parents watching as the coach talks to the children at the end of a session" loading="lazy" style="object-position: 50% 42%;"></figure>
         </div>
       </div>
     </section>
