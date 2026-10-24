@@ -71,14 +71,16 @@
           mask: url(images/track-graphic.svg) center / contain no-repeat;
 }
 
-/* Homepage hero: big red track running off the right-hand edge */
+/* Homepage hero: big white track running off the right-hand edge, kept
+   faint so it sits behind the white headline without competing with it */
 .hero-track {
   z-index: 0;
   height: 128%; top: 50%; right: -7vw;
   transform: translateY(-50%);
-  opacity: 0.85;
+  --track-color: #fff;
+  opacity: 0.12;
 }
-@media (max-width: 900px) { .hero-track { right: -45vw; opacity: 0.2; } }
+@media (max-width: 900px) { .hero-track { right: -45vw; opacity: 0.08; } }
 
 /* Footer: faint white track turned on its side, bottom-right corner */
 .site-footer { position: relative; overflow: hidden; }
