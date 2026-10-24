@@ -1492,3 +1492,7 @@ a { color: inherit; text-decoration: none; }
 @media (min-width: 1001px) {
   .main-nav .nav-get-app { display: none; }
 }
+/* Inside the installed app the script marks these links hidden. Footer
+   and menu links have their own display rules, which would otherwise
+   override that and leave a link that does nothing. */
+[data-aths-open][hidden], [data-aths-open-wrap][hidden] { display: none !important; }

@@ -358,13 +358,12 @@
     // "Get the App" links: hidden when already running as the installed app
     const openers = document.querySelectorAll('[data-aths-open]');
     openers.forEach(el => {
+      el.addEventListener('click', e => { e.preventDefault(); show('menu'); });
       if (isInStandaloneMode()) {
         el.hidden = true;
         const wrap = el.closest('[data-aths-open-wrap]');
         if (wrap) wrap.hidden = true;
-        return;
       }
-      el.addEventListener('click', e => { e.preventDefault(); show('menu'); });
     });
 
     if (isInStandaloneMode()) return;
