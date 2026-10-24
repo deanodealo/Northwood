@@ -482,6 +482,13 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 }
 .who-option:hover { border-color: var(--activity-accent, var(--c-red)); }
 .who-option.checked { border-color: var(--activity-accent, var(--c-red)); background: rgba(0,0,0,0.02); }
+/* "Only ask if" questions: .form-row's own display would otherwise
+   override the hidden attribute and leave them showing */
+[data-show-parent][hidden] { display: none !important; }
+/* Custom questions: "tick all that apply" and single tick boxes */
+.xf-group { display: flex; flex-direction: column; gap: 0.35rem; }
+label.xf-check { display: flex; align-items: flex-start; gap: 0.6rem; font-weight: 500; font-size: 0.9rem; margin: 0; cursor: pointer; line-height: 1.45; }
+.xf-check input[type="checkbox"] { width: 18px; height: 18px; margin: 0.1rem 0 0; accent-color: var(--activity-accent, var(--c-red)); cursor: pointer; flex-shrink: 0; }
 .who-option input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--activity-accent, var(--c-red)); cursor: pointer; flex-shrink: 0; }
 .who-option label { margin: 0; cursor: pointer; font-size: 0.9rem; }
 
@@ -1088,12 +1095,40 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   // back from on submit; `value` pre-fills a previously-saved answer.
   function renderExtraFieldHtml(field, idAttr, value) {
     const requiredMark = field.required ? ' <span class="required-mark">*</span>' : "";
+    // "Only ask if": the row starts hidden and applyShowIf() (run straight
+    // after whatever is rendering this has put it on the page, and on
+    // every change) shows it when the earlier answer matches.
+    const prefix = idAttr.slice(0, idAttr.length - String(field.id).length);
+    const cond = field.showIf
+      ? ` data-show-parent="${escHtml(prefix + field.showIf.field)}" data-show-equals="${escHtml(field.showIf.equals)}" hidden`
+      : "";
+    if (field.showIf) setTimeout(applyShowIf, 0);
+    if (field.type === "checkboxes") {
+      const picked = String(value || "").split(";").map(v => v.trim()).filter(Boolean);
+      return `
+        <div class="form-row single"${cond}>
+          <label>${escHtml(field.label)}${requiredMark}</label>
+          <div class="xf-group" id="${idAttr}" data-xf-type="checkboxes" role="group" aria-label="${escHtml(field.label)}">
+            ${(field.options || []).map(o => `<label class="xf-check"><input type="checkbox" value="${escHtml(o)}"${picked.includes(o) ? " checked" : ""}> <span>${escHtml(o)}</span></label>`).join("")}
+          </div>
+        </div>
+      `;
+    }
+    if (field.type === "tick") {
+      return `
+        <div class="form-row single"${cond}>
+          <div class="xf-group" id="${idAttr}" data-xf-type="tick">
+            <label class="xf-check"><input type="checkbox" value="Yes"${value === "Yes" ? " checked" : ""}> <span>${escHtml(field.label)}${requiredMark}</span></label>
+          </div>
+        </div>
+      `;
+    }
     if (field.type === "select") {
       const optionsHtml = field.groups
         ? field.groups.map(g => `<optgroup label="${escHtml(g.group)}">${g.options.map(o => `<option value="${escHtml(o)}"${o === value ? " selected" : ""}>${escHtml(o)}</option>`).join("")}</optgroup>`).join("")
         : (field.options || []).map(o => `<option value="${escHtml(o)}"${o === value ? " selected" : ""}>${escHtml(o)}</option>`).join("");
       return `
-        <div class="form-row single">
+        <div class="form-row single"${cond}>
           <label>${escHtml(field.label)}${requiredMark}</label>
           <select id="${idAttr}">
             <option value="">Select…</option>
@@ -1103,25 +1138,55 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       `;
     }
     return `
-      <div class="form-row single">
+      <div class="form-row single"${cond}>
         <label>${escHtml(field.label)}${requiredMark}</label>
         <input type="text" id="${idAttr}" value="${escHtml(value || "")}">
       </div>
     `;
   }
 
+  // The answer to one custom question, whatever its type. Tick-all-that-
+  // apply answers are joined with "; " and a single tick box is "Yes" or
+  // "", so every answer stays a plain string (as admin, CSV and profiles
+  // expect).
+  function extraValue(idAttr) {
+    const el = document.getElementById(idAttr);
+    if (!el) return "";
+    const kind = el.getAttribute("data-xf-type");
+    if (kind === "checkboxes") return [...el.querySelectorAll("input:checked")].map(i => i.value).join("; ");
+    if (kind === "tick") return el.querySelector("input:checked") ? "Yes" : "";
+    return String(el.value || "").trim();
+  }
+
+  // Show/hide "only ask if" questions to match the answers above them.
+  function applyShowIf() {
+    document.querySelectorAll("[data-show-parent]").forEach(row => {
+      const show = extraValue(row.getAttribute("data-show-parent")) === row.getAttribute("data-show-equals");
+      row.hidden = !show;
+    });
+  }
+  document.addEventListener("change", applyShowIf);
+
+  // true if this question is currently being asked (no condition, or its
+  // condition is met by the answers in `values`)
+  function extraFieldAsked(field, values) {
+    return !field.showIf || (values[field.showIf.field] || "") === field.showIf.equals;
+  }
+
   function readExtraFieldValues(fields, idPrefix) {
     const values = {};
     fields.forEach(f => {
-      const el = document.getElementById(`${idPrefix}${f.id}`);
-      if (el) values[f.id] = el.value.trim();
+      if (document.getElementById(`${idPrefix}${f.id}`)) values[f.id] = extraValue(`${idPrefix}${f.id}`);
     });
+    // A question that isn't being asked (its "only ask if" isn't met)
+    // doesn't keep an old answer, e.g. a club name after switching to "No".
+    fields.forEach(f => { if (f.id in values && !extraFieldAsked(f, values)) values[f.id] = ""; });
     return values;
   }
 
   // true if every required field in `fields` has a non-empty answer in `values`.
   function extraFieldsSatisfied(fields, values) {
-    return fields.every(f => !f.required || (values[f.id] || "").trim());
+    return fields.every(f => !f.required || !extraFieldAsked(f, values) || (values[f.id] || "").trim());
   }
 
   // Turns Firebase's error codes into a specific, readable reason rather
@@ -2529,7 +2594,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           const el = document.getElementById(`famExtra_${m.id}_${f.id}`);
           if (!el) return;
           el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
-            familyExtraAnswers[m.id][f.id] = el.value;
+            familyExtraAnswers[m.id][f.id] = extraValue(el.id);
           });
         });
       });
@@ -2582,7 +2647,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           if (!el) return;
           el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
             if (!c.extraFields) c.extraFields = {};
-            c.extraFields[f.id] = el.value;
+            c.extraFields[f.id] = extraValue(el.id);
           });
         });
       });

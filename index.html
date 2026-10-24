@@ -1376,9 +1376,13 @@
       };
       const seenPages = new Set();
       const cards = [];
+      // Pages that already have a permanent card above (Track Social has
+      // its own branded card), so their activities don't add a second one.
+      const PERMANENT_PAGES = new Set(["tracksocial.html"]);
       activities.forEach(a => {
         const page = pageOf(a);
         if (!page) { cards.push({ a, title: a.name }); return; }
+        if (PERMANENT_PAGES.has(page)) return;
         if (seenPages.has(page)) return;
         seenPages.add(page);
         cards.push({ a, title: commonTitle(activities.filter(x => pageOf(x) === page)) });

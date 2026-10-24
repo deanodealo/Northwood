@@ -21,7 +21,7 @@
 <style>
 /* ══════════════════════════════════════════════════════════
    PAGE CONTENT — staff-only tool for the bits of the site that
-   change regularly (Track Social next event, Gym classes).
+   change regularly (Track Social next-event details, Gym classes).
    Styles copied from manage-activities.html so the staff pages
    look like one tool.
    ══════════════════════════════════════════════════════════ */
@@ -244,22 +244,10 @@ input[type="date"], input[type="time"] {
       <!-- ── Track Social: next event ── -->
       <section class="ma-form-card" aria-labelledby="tsTitle">
         <div class="pc-card-head">
-          <h2 class="ma-form-title" id="tsTitle">Track Social: Next Event</h2>
+          <h2 class="ma-form-title" id="tsTitle">Track Social: Next Event Details</h2>
           <a href="tracksocial.html#next" class="pc-view-link" target="_blank" rel="noopener">View page ↗</a>
         </div>
-        <p class="pc-card-intro">Fills the "Our Next Track Social" section and all three Register buttons on the Track Social page. Once the date has passed, the page shows "Next date coming soon" until the next one is added here.</p>
-
-        <div class="form-row">
-          <div>
-            <label for="tsDate">Date <span class="required-mark">*</span></label>
-            <input type="date" id="tsDate">
-            <button type="button" class="pc-inline-btn" id="tsNextMonday">Use the next last Monday of the month</button>
-          </div>
-          <div class="form-row" style="margin:0;">
-            <div><label for="tsStart">Start time</label><input type="time" id="tsStart"></div>
-            <div><label for="tsEnd">End time</label><input type="time" id="tsEnd"></div>
-          </div>
-        </div>
+        <p class="pc-card-intro">The extra details shown with the next Track Social. The <strong>date, time and registration</strong> come from the Track Social activity in <a href="manage-activities.html" style="color:var(--c-red); font-weight:700;">Manage Activities</a> (add each month's date as a session there). Update these after each event for the next one.</p>
         <div class="form-row single">
           <div>
             <label for="tsGuest">Guest running club</label>
@@ -276,14 +264,7 @@ input[type="date"], input[type="time"] {
             <input type="text" id="tsPartners" maxlength="160" placeholder="e.g. MrBigz Flavours, Solace">
           </div>
         </div>
-        <p class="field-hint" style="margin:-0.5rem 0 1rem;">Leave any of these three blank and that line is left off the page.</p>
-        <div class="form-row single">
-          <div>
-            <label for="tsRegister">Registration link</label>
-            <input type="text" id="tsRegister" inputmode="url" maxlength="500" placeholder="https://…">
-            <p class="field-hint">Used by all three "Register for Free" buttons. Leave blank and the buttons scroll to this section instead.</p>
-          </div>
-        </div>
+        <p class="field-hint" style="margin:-0.5rem 0 1rem;">Leave any of these blank and that line is left off the page.</p>
 
         <div class="ma-form-actions">
           <button type="button" class="ma-submit-btn" id="tsSave">Save Track Social</button>
@@ -312,8 +293,8 @@ input[type="date"], input[type="time"] {
 
       <!-- ── WNF & Funetics: automatic ── -->
       <section class="ma-form-card pc-info" aria-labelledby="autoTitle">
-        <h2 class="ma-form-title" id="autoTitle">WNF &amp; Funetics: Automatic</h2>
-        <p>The dates and prices on the Wednesday Night Football and Funetics pages come straight from their activities in <a href="manage-activities.html">Manage Activities</a>: the sessions you add, the price and the block price. There's nothing to update here.</p>
+        <h2 class="ma-form-title" id="autoTitle">WNF, Funetics &amp; Track Social Dates: Automatic</h2>
+        <p>The dates and prices on the Wednesday Night Football and Funetics pages, and the Track Social date and registration, come straight from their activities in <a href="manage-activities.html">Manage Activities</a>: the sessions you add, the price and the block price. There's nothing to update here.</p>
         <p>When there are no upcoming sessions, those pages say the next dates are coming soon.</p>
       </section>
 
@@ -371,7 +352,7 @@ const auth = firebase.auth();
 
   // What the pages showed before this tool existed — used to pre-fill the
   // forms the first time, so the first save doesn't change anything.
-  const TS_DEFAULTS = { date: "2026-10-26", startTime: "18:30", endTime: "20:30", guestClub: "Just Run Club", activities: "", partners: "", registerUrl: "" };
+  const TS_DEFAULTS = { guestClub: "Just Run Club", activities: "", partners: "" };
   const GYM_DEFAULTS = [{ days: "Mon & Tue", name: "Circuit Training", instructor: "Lorraine", startTime: "18:00", endTime: "19:00", room: "Functional fitness room" }];
 
   const $ = id => document.getElementById(id);
@@ -428,35 +409,16 @@ const auth = firebase.auth();
 
   // ── Track Social ────────────────────────────────────────────
   function fillTs(d) {
-    $("tsDate").value = d.date || "";
-    $("tsStart").value = d.startTime || "";
-    $("tsEnd").value = d.endTime || "";
     $("tsGuest").value = d.guestClub || "";
     $("tsActivities").value = d.activities || "";
     $("tsPartners").value = d.partners || "";
-    $("tsRegister").value = d.registerUrl || "";
   }
-  // Last Monday of this month, or of next month if that's already passed
-  $("tsNextMonday").addEventListener("click", () => {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    for (let add = 0; add < 3; add++) {
-      const last = new Date(today.getFullYear(), today.getMonth() + add + 1, 0);
-      while (last.getDay() !== 1) last.setDate(last.getDate() - 1);
-      if (last >= today) { $("tsDate").value = isoLocal(last); break; }
-    }
-  });
   $("tsSave").addEventListener("click", async () => {
     const m = $("tsMsg"), btn = $("tsSave");
     const data = {
-      date: $("tsDate").value, startTime: $("tsStart").value, endTime: $("tsEnd").value,
       guestClub: $("tsGuest").value.trim(), activities: $("tsActivities").value.trim(),
-      partners: $("tsPartners").value.trim(), registerUrl: $("tsRegister").value.trim()
+      partners: $("tsPartners").value.trim()
     };
-    if (!data.date) { msg(m, "Choose the date of the next Track Social.", "error"); return; }
-    if (data.startTime && data.endTime && data.endTime <= data.startTime) { msg(m, "The end time needs to be after the start time.", "error"); return; }
-    if (data.registerUrl && !/^https?:\/\/\S+\.\S+/i.test(data.registerUrl)) {
-      msg(m, "The registration link needs to be a full web address starting with https://", "error"); return;
-    }
     btn.disabled = true; btn.textContent = "Saving…"; msg(m, "");
     try {
       data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();

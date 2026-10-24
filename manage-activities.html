@@ -501,6 +501,7 @@ input[type="date"], input[type="time"] {
         <div class="ma-session-add-tabs">
           <button type="button" class="ma-session-add-tab active" data-question-mode="preset">Ethnicity (standard list)</button>
           <button type="button" class="ma-session-add-tab" data-question-mode="custom">Custom question</button>
+          <button type="button" class="ma-session-add-tab" data-question-mode="trackSocial">Track Social set</button>
         </div>
 
         <div class="ma-session-add-panel" id="presetQuestionPanel">
@@ -535,6 +536,8 @@ input[type="date"], input[type="time"] {
               <select id="customQuestionType">
                 <option value="text">Free text</option>
                 <option value="select">Dropdown (choose one)</option>
+                <option value="checkboxes">Tick all that apply</option>
+                <option value="tick">Single tick box (e.g. "I'm happy to…")</option>
               </select>
             </div>
             <div>
@@ -547,14 +550,27 @@ input[type="date"], input[type="time"] {
             </div>
           </div>
           <div class="form-row single hidden" id="customQuestionOptionsRow">
-            <label>Dropdown options (one per line)</label>
+            <label id="customQuestionOptionsLabel">Dropdown options (one per line)</label>
             <textarea id="customQuestionOptions" rows="3" placeholder="Option one&#10;Option two"></textarea>
+          </div>
+          <p class="field-hint hidden" id="customQuestionTickHint" style="margin:-0.4rem 0 0.9rem;">For a tick box, the question label is the sentence shown next to the box, e.g. "I'm happy to receive updates about future events".</p>
+          <div class="form-row single">
+            <label>Only ask if… (optional)</label>
+            <select id="customQuestionShowIf">
+              <option value="">Always ask</option>
+            </select>
+            <p class="field-hint">Show this question only when an earlier dropdown on this activity has a particular answer, e.g. "Which club?" only if "Are you part of a run club?" is "Yes".</p>
           </div>
           <div class="checkbox-row">
             <input type="checkbox" id="customQuestionRequired">
             <label for="customQuestionRequired">Required</label>
           </div>
           <button type="button" class="ma-mini-add-btn" id="addCustomQuestionBtn">Add Question</button>
+        </div>
+
+        <div class="ma-session-add-panel hidden" id="trackSocialQuestionPanel">
+          <p class="field-hint" style="margin:0 0 0.9rem;">Adds the Track Social registration questions in one go (run club, which club, Potters 'arf, running level, interests, used the track before, membership info, and an optional marketing tick box), asked of the person registering. You can remove any you don't want afterwards.</p>
+          <button type="button" class="ma-mini-add-btn" id="addTrackSocialSetBtn">Add Track Social Questions</button>
         </div>
 
         <div class="ma-form-actions">
@@ -657,8 +673,13 @@ function normalizeAccent(hex) {
    CUSTOM QUESTIONS — per-activity extra questions shown on the
    booking page (activitybooking.html) for that activity only.
    Each activity document gets an `extraFields` array of:
-     { id, label, type: "select"|"text", appliesTo: "contact"|"attendee"|"both",
-       required, groups?: [{group, options:[...]}], options?: [...] }
+     { id, label, type: "select"|"text"|"checkboxes"|"tick",
+       appliesTo: "contact"|"attendee"|"both", required,
+       groups?: [{group, options:[...]}], options?: [...],
+       showIf?: { field: <id of an earlier dropdown>, equals: <answer> } }
+   "checkboxes" (tick all that apply) is saved as one string, answers
+   joined with "; ". "tick" (a single tick box) is saved as "Yes" or "".
+   showIf hides the question unless that earlier answer matches.
    `appliesTo` controls where it's asked on the booking form —
    "contact" = the parent/guardian booking; "attendee" = each
    young person being booked on (self + each child); "both" = both
@@ -686,6 +707,26 @@ const ETHNICITY_FIELD_PRESET = {
     { group: "Other", options: ["Arab", "Gypsy/Romany/Irish Traveller", "Other ethnic group", "Prefer not to say", "Not provided"] }
   ]
 };
+
+// One-click Track Social registration questions (from Northwood's old
+// Google Form). Asked once, of the person registering ("contact").
+const TRACK_SOCIAL_QUESTION_SET = [
+  { id: "ts-run-club", label: "Are you part of a run club?", type: "select", options: ["Yes", "No"], required: true },
+  { id: "ts-which-club", label: "If yes, which club?", type: "text", required: false, showIf: { field: "ts-run-club", equals: "Yes" } },
+  { id: "ts-potters-arf", label: "Are you running the Potters 'Arf Marathon 2026?", type: "select", options: ["Yes", "No", "Would like to enter - please send me some information"], required: true },
+  { id: "ts-running-level", label: "How would you describe your running level?", type: "select", options: ["Beginner", "Intermediate", "Advanced"], required: true },
+  { id: "ts-interests", label: "What are you most interested in?", type: "checkboxes", options: ["Social running", "Improving fitness", "Track sessions / intervals", "Meeting new people"], required: true },
+  { id: "ts-used-track", label: "Have you used Northwood track before?", type: "select", options: ["Yes", "No"], required: true },
+  { id: "ts-membership-info", label: "Would you like more information about track membership (£15/month)?", type: "select", options: ["Yes please", "Maybe later", "No thanks"], required: true },
+  { id: "marketing-consent", label: "I'm happy to receive updates about future events and memberships at Northwood Stadium", type: "tick", required: false }
+];
+
+function questionTypeLabel(type) {
+  return type === "select" ? "Dropdown"
+    : type === "checkboxes" ? "Tick all that apply"
+    : type === "tick" ? "Tick box"
+    : "Free text";
+}
 
 function appliesToLabel(appliesTo) {
   return appliesTo === "contact" ? "Parent/guardian only"
@@ -1020,23 +1061,44 @@ const SEED_ACTIVITIES = [
   function renderQuestionList() {
     if (!currentExtraFields.length) {
       questionListEl.innerHTML = '<p class="field-hint">No custom questions on this activity yet.</p>';
+      refreshShowIfOptions();
       return;
     }
     questionListEl.innerHTML = currentExtraFields.map(f => `
       <div class="ma-session-row">
         <div>
           <div class="info">${escAttr(f.label)}${f.required ? ' <span class="required-mark">*</span>' : ""}</div>
-          <div class="sub">${f.type === "select" ? "Dropdown" : "Free text"} · ${appliesToLabel(f.appliesTo)}${f.required ? " · Required" : " · Optional"}</div>
+          <div class="sub">${questionTypeLabel(f.type)} · ${appliesToLabel(f.appliesTo)}${f.required ? " · Required" : " · Optional"}${f.showIf ? ` · Only if "${escAttr((currentExtraFields.find(q => q.id === f.showIf.field) || {}).label || f.showIf.field)}" is ${escAttr(f.showIf.equals)}` : ""}</div>
         </div>
         <button type="button" class="ma-session-remove" data-remove-question="${f.id}">Remove</button>
       </div>
     `).join("");
     questionListEl.querySelectorAll("[data-remove-question]").forEach(btn => {
       btn.addEventListener("click", () => {
-        currentExtraFields = currentExtraFields.filter(f => f.id !== btn.dataset.removeQuestion);
+        const gone = btn.dataset.removeQuestion;
+        // Removing a question also removes any "only ask if" that pointed at it
+        currentExtraFields = currentExtraFields.filter(f => f.id !== gone)
+          .map(f => (f.showIf && f.showIf.field === gone) ? (({ showIf, ...rest }) => rest)(f) : f);
         renderQuestionList();
       });
     });
+    refreshShowIfOptions();
+  }
+
+  // "Only ask if…" choices: every answer of every dropdown already added
+  function refreshShowIfOptions() {
+    const sel = document.getElementById("customQuestionShowIf");
+    if (!sel) return;
+    const keep = sel.value;
+    const opts = ['<option value="">Always ask</option>'];
+    currentExtraFields.filter(f => f.type === "select" && !f.groups && Array.isArray(f.options)).forEach(f => {
+      f.options.forEach(o => {
+        const v = JSON.stringify({ field: f.id, equals: o });
+        opts.push(`<option value="${escAttr(v)}">${escAttr(f.label)} → ${escAttr(o)}</option>`);
+      });
+    });
+    sel.innerHTML = opts.join("");
+    if ([...sel.options].some(o => o.value === keep)) sel.value = keep;
   }
 
   document.querySelectorAll("[data-question-mode]").forEach(btn => {
@@ -1045,6 +1107,7 @@ const SEED_ACTIVITIES = [
       btn.classList.add("active");
       document.getElementById("presetQuestionPanel").classList.toggle("hidden", btn.dataset.questionMode !== "preset");
       document.getElementById("customQuestionPanel").classList.toggle("hidden", btn.dataset.questionMode !== "custom");
+      document.getElementById("trackSocialQuestionPanel").classList.toggle("hidden", btn.dataset.questionMode !== "trackSocial");
     });
   });
 
@@ -1063,7 +1126,25 @@ const SEED_ACTIVITIES = [
   });
 
   document.getElementById("customQuestionType").addEventListener("change", (e) => {
-    document.getElementById("customQuestionOptionsRow").classList.toggle("hidden", e.target.value !== "select");
+    const t = e.target.value;
+    document.getElementById("customQuestionOptionsRow").classList.toggle("hidden", t !== "select" && t !== "checkboxes");
+    document.getElementById("customQuestionOptionsLabel").textContent = t === "checkboxes" ? "Tick box options (one per line)" : "Dropdown options (one per line)";
+    document.getElementById("customQuestionTickHint").classList.toggle("hidden", t !== "tick");
+  });
+
+  document.getElementById("addTrackSocialSetBtn").addEventListener("click", () => {
+    const existing = new Set(currentExtraFields.map(f => f.id));
+    const toAdd = TRACK_SOCIAL_QUESTION_SET.filter(q => !existing.has(q.id));
+    if (!toAdd.length) {
+      formMsg.textContent = "The Track Social questions are already on this activity.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    toAdd.forEach(q => currentExtraFields.push({ ...q, appliesTo: "contact", options: q.options ? [...q.options] : undefined }));
+    currentExtraFields = currentExtraFields.map(f => { const c = { ...f }; if (c.options === undefined) delete c.options; return c; });
+    renderQuestionList();
+    formMsg.textContent = `Added ${toAdd.length} Track Social question${toAdd.length === 1 ? "" : "s"}.`;
+    formMsg.className = "form-message success";
   });
 
   document.getElementById("addCustomQuestionBtn").addEventListener("click", () => {
@@ -1079,23 +1160,36 @@ const SEED_ACTIVITIES = [
       return;
     }
     const options = optionsRaw.split("\n").map(o => o.trim()).filter(Boolean);
-    if (type === "select" && options.length < 2) {
-      formMsg.textContent = "Add at least two dropdown options, one per line.";
+    if ((type === "select" || type === "checkboxes") && options.length < 2) {
+      formMsg.textContent = type === "checkboxes" ? "Add at least two tick box options, one per line." : "Add at least two dropdown options, one per line.";
       formMsg.className = "form-message error";
       return;
     }
+    const showIfRaw = document.getElementById("customQuestionShowIf").value;
 
     let id = slugify(label) || ("question-" + Date.now());
     if (currentExtraFields.some(f => f.id === id)) id = `${id}-${Date.now()}`;
 
     const field = { id, label, type, appliesTo, required };
-    if (type === "select") field.options = options;
+    if (type === "select" || type === "checkboxes") field.options = options;
+    if (showIfRaw) {
+      const cond = JSON.parse(showIfRaw);
+      const parent = currentExtraFields.find(f => f.id === cond.field);
+      // only meaningful when both are asked of the same person(s)
+      if (parent && parent.appliesTo !== appliesTo) {
+        formMsg.textContent = `"Only ask if" needs both questions to have the same "Applies to" (that one is: ${appliesToLabel(parent.appliesTo)}).`;
+        formMsg.className = "form-message error";
+        return;
+      }
+      field.showIf = cond;
+    }
     currentExtraFields.push(field);
     renderQuestionList();
 
     document.getElementById("customQuestionLabel").value = "";
     document.getElementById("customQuestionOptions").value = "";
     document.getElementById("customQuestionRequired").checked = false;
+    document.getElementById("customQuestionShowIf").value = "";
     formMsg.textContent = "Question added.";
     formMsg.className = "form-message success";
   });

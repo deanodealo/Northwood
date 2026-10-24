@@ -3,9 +3,12 @@
    Used by tracksocial.html, gym.html, wnf.html and funetics.html
    (each has <body data-live-page="...">).
 
-   - Track Social "Our Next Track Social" block and Register buttons, and
-     the Gym fitness class timetable, come from the "pageContent"
-     collection, edited by staff on page-content.html.
+   - Track Social: the next date and the Register buttons come from the
+     Track Social activity in Manage Activities (any active activity whose
+     "More info page" is tracksocial.html); the guest club, special
+     activities and partners come from Page Content. The Gym fitness class
+     timetable also comes from Page Content (the "pageContent" collection,
+     edited by staff on page-content.html).
    - WNF and Funetics dates and prices come straight from their activities
      in Manage Activities (any active activity whose "More info page" is
      wnf.html / funetics.html), so the page always matches what the
@@ -211,21 +214,38 @@
     }
   }
 
-  /* ── Track Social: next event (pageContent/trackSocial) ─────── */
+  /* ── Track Social: next event ─────────────────────────────── */
+  // "+01:00" in summer time, "+00:00" in winter, for the event's date
   function londonOffset(iso) {
-    // "+01:00" in summer time, "+00:00" in winter, for the event's date
     var noon = new Date(iso + "T12:00:00Z");
     var h = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", hour: "2-digit", hour12: false }).format(noon));
     var off = h - 12;
     return (off >= 0 ? "+" : "-") + String(Math.abs(off)).padStart(2, "0") + ":00";
   }
-  function initTrackSocial(doc) {
-    if (!doc) return; // nothing saved yet: keep the page as it is
-    var upcoming = doc.date && doc.date >= todayIso();
+
+  // "6:30pm" → "18:30"
+  function to24(t) {
+    var m = String(t || "").match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+    if (!m) return "";
+    var h = Number(m[1]) % 12 + (m[3].toLowerCase() === "pm" ? 12 : 0);
+    return String(h).padStart(2, "0") + ":" + (m[2] || "00");
+  }
+
+  function initTrackSocial(results) {
+    var activities = results[0] || [], doc = results[1] || {};
     var block = document.querySelector("#next .ts-next");
     if (!block) return;
+    var tsActs = activities.filter(function (a) { return a.status === "active" && pageOf(a) === "tracksocial.html"; });
+    // Not set up in Manage Activities yet: leave the page exactly as it is
+    if (!tsActs.length) return;
 
-    var times = doc.startTime ? doc.startTime + (doc.endTime ? " – " + doc.endTime : "") : "";
+    var today = todayIso(), next = null, nextAct = null;
+    tsActs.forEach(function (a) {
+      (a.sessions || []).forEach(function (sn) {
+        if (sn && sn.date >= today && (!next || sn.date < next.date)) { next = sn; nextAct = a; }
+      });
+    });
+
     var dateEl = block.querySelector(".ts-date");
     var title = block.querySelector(".ts-next-body h3");
     var rows = {
@@ -239,13 +259,13 @@
       if (value) { el.textContent = value; wrap.hidden = false; } else { wrap.hidden = true; }
     }
 
-    if (upcoming) {
-      var d = parseIso(doc.date);
+    if (next) {
+      var d = parseIso(next.date);
       dateEl.innerHTML =
-        '<span class="ts-date-day">' + dayName(doc.date) + "</span>" +
+        '<span class="ts-date-day">' + dayName(next.date) + "</span>" +
         '<span class="ts-date-num">' + d.getDate() + "</span>" +
         '<span class="ts-date-month">' + MONTHS[d.getMonth()] + " " + d.getFullYear() + "</span>" +
-        (times ? '<span class="ts-date-time">' + esc(times) + "</span>" : "");
+        (next.time ? '<span class="ts-date-time">' + esc(next.time) + "</span>" : "");
       title.textContent = MONTHS[d.getMonth()] + " Track Social";
       row(rows.guest, doc.guestClub);
       row(rows.activities, doc.activities);
@@ -253,17 +273,19 @@
 
       // Keep Google's event details in step with the page
       var ld = document.querySelector('script[type="application/ld+json"]');
-      if (ld && doc.startTime) {
+      var parts = String(next.time || "").split(/\s*[–-]\s*/);
+      var start = to24(parts[0]), end = to24(parts[1]);
+      if (ld && start) {
         try {
           var data = JSON.parse(ld.textContent);
-          var off = londonOffset(doc.date);
-          data.startDate = doc.date + "T" + doc.startTime + ":00" + off;
-          if (doc.endTime) data.endDate = doc.date + "T" + doc.endTime + ":00" + off;
+          var off = londonOffset(next.date);
+          data.startDate = next.date + "T" + start + ":00" + off;
+          if (end) data.endDate = next.date + "T" + end + ":00" + off;
           ld.textContent = JSON.stringify(data);
         } catch (e) { /* leave it as it was */ }
       }
     } else {
-      // The saved event has been and gone: don't advertise an old date.
+      // No upcoming date added yet: don't advertise an old one.
       dateEl.innerHTML =
         '<span class="ts-date-day">Every</span><span class="ts-date-num">Last</span>' +
         '<span class="ts-date-month">Monday of the month</span>';
@@ -271,16 +293,18 @@
       row(rows.guest, ""); row(rows.activities, ""); row(rows.partners, "");
     }
 
-    // Register buttons: hero, next event and Get Involved
-    var url = upcoming && /^https?:\/\//i.test(doc.registerUrl || "") ? doc.registerUrl : "";
+    // Register buttons (hero, next event, Get Involved) open the booking
+    // page on the Track Social tab, where people register for free.
+    var url = next ? "activitybooking.html?activity=" + encodeURIComponent(nextAct.id) : "";
     document.querySelectorAll("[data-ts-register]").forEach(function (a) {
       var where = a.getAttribute("data-ts-register");
+      a.removeAttribute("target");
       if (url) {
-        a.href = url; a.target = "_blank"; a.rel = "noopener"; a.hidden = false;
+        a.href = url; a.hidden = false;
       } else if (where === "next") {
         a.hidden = true;             // nothing to register for yet
       } else {
-        a.href = "#next"; a.removeAttribute("target");
+        a.href = "#next";
       }
     });
   }
@@ -308,7 +332,10 @@
   var job =
     page === "wnf" ? listCollection("activities").then(initWnf) :
     page === "funetics" ? listCollection("activities").then(initFunetics) :
-    page === "tracksocial" ? getDoc("pageContent/trackSocial").then(initTrackSocial) :
+    page === "tracksocial" ? Promise.all([
+      listCollection("activities"),
+      getDoc("pageContent/trackSocial").catch(function () { return null; })
+    ]).then(initTrackSocial) :
     page === "gym" ? getDoc("pageContent/gymClasses").then(initGym) : null;
   if (job) job.catch(function (err) { console.warn("Live content not loaded, showing saved text:", err); });
 })();
