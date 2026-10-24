@@ -1,6 +1,11 @@
 /* ==========================================================================
    NORTHWOOD STADIUM — DESIGN TOKENS
    ========================================================================== */
+/* Anything marked hidden stays hidden, even where a class gives it its own
+   display (buttons, form rows, footer links). Several page scripts show
+   and hide things this way. */
+[hidden] { display: none !important; }
+
 :root {
   /* Colour — Northwood brand palette (brand sheet 1) */
   --c-track:  #DA3832;

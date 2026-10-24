@@ -235,9 +235,9 @@
     var activities = results[0] || [], doc = results[1] || {};
     var block = document.querySelector("#next .ts-next");
     if (!block) return;
+    // No active Track Social (or no upcoming date) shows the "coming soon"
+    // version, with contact details, rather than an old event.
     var tsActs = activities.filter(function (a) { return a.status === "active" && pageOf(a) === "tracksocial.html"; });
-    // Not set up in Manage Activities yet: leave the page exactly as it is
-    if (!tsActs.length) return;
 
     var today = todayIso(), next = null, nextAct = null;
     tsActs.forEach(function (a) {
@@ -246,6 +246,9 @@
       });
     });
 
+    var url = next ? "activitybooking.html?activity=" + encodeURIComponent(nextAct.id) : "";
+    var soon = block.querySelector("[data-ts-soon]");
+    if (soon) soon.hidden = !!next;
     var dateEl = block.querySelector(".ts-date");
     var title = block.querySelector(".ts-next-body h3");
     var rows = {
@@ -271,18 +274,31 @@
       row(rows.activities, doc.activities);
       row(rows.partners, doc.partners);
 
-      // Keep Google's event details in step with the page
-      var ld = document.querySelector('script[type="application/ld+json"]');
+      // Google's event details, only ever for a real upcoming date
       var parts = String(next.time || "").split(/\s*[–-]\s*/);
       var start = to24(parts[0]), end = to24(parts[1]);
-      if (ld && start) {
+      if (start) {
         try {
-          var data = JSON.parse(ld.textContent);
           var off = londonOffset(next.date);
-          data.startDate = next.date + "T" + start + ":00" + off;
+          var data = {
+            "@context": "https://schema.org", "@type": "SportsEvent",
+            "name": "Track Social at Northwood Stadium",
+            "description": "Free monthly community running event for all abilities, with music, food and a social after the run.",
+            "startDate": next.date + "T" + start + ":00" + off,
+            "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+            "eventStatus": "https://schema.org/EventScheduled",
+            "isAccessibleForFree": true,
+            "location": { "@type": "Place", "name": "Northwood Stadium", "address": { "@type": "PostalAddress",
+              "streetAddress": "Keelings Road, Northwood", "addressLocality": "Stoke-on-Trent", "postalCode": "ST1 6PA", "addressCountry": "GB" } },
+            "organizer": { "@type": "Organization", "name": "Northwood Community Sports", "url": "https://northwoodstadium.co.uk/" }
+          };
           if (end) data.endDate = next.date + "T" + end + ":00" + off;
+          if (url) data.offers = { "@type": "Offer", "price": "0", "priceCurrency": "GBP", "availability": "https://schema.org/InStock", "url": "https://northwoodstadium.co.uk/" + url };
+          var ld = document.createElement("script");
+          ld.type = "application/ld+json";
           ld.textContent = JSON.stringify(data);
-        } catch (e) { /* leave it as it was */ }
+          document.head.appendChild(ld);
+        } catch (e) { /* leave it out */ }
       }
     } else {
       // No upcoming date added yet: don't advertise an old one.
@@ -295,7 +311,6 @@
 
     // Register buttons (hero, next event, Get Involved) open the booking
     // page on the Track Social tab, where people register for free.
-    var url = next ? "activitybooking.html?activity=" + encodeURIComponent(nextAct.id) : "";
     document.querySelectorAll("[data-ts-register]").forEach(function (a) {
       var where = a.getAttribute("data-ts-register");
       a.removeAttribute("target");

@@ -15,8 +15,8 @@
   <meta property="og:url" content="https://northwoodstadium.co.uk/tracksocial.html">
   <meta property="og:image" content="https://northwoodstadium.co.uk/images/group.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <!-- SEO: event details for Google. Update startDate each month along with the "Next Track Social" block. -->
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SportsEvent", "name": "Track Social at Northwood Stadium", "description": "Free monthly community running event for all abilities, with music, food and a social after the run.", "startDate": "2026-10-26T18:30:00+00:00", "endDate": "2026-10-26T20:30:00+00:00", "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode", "eventStatus": "https://schema.org/EventScheduled", "isAccessibleForFree": true, "location": {"@type": "Place", "name": "Northwood Stadium", "address": {"@type": "PostalAddress", "streetAddress": "Keelings Road, Northwood", "addressLocality": "Stoke-on-Trent", "postalCode": "ST1 6PA", "addressCountry": "GB"}}, "organizer": {"@type": "Organization", "name": "Northwood Community Sports", "url": "https://northwoodstadium.co.uk/"}}</script>
+  <!-- SEO: Google's event details are added by live-content.js only when
+       there's an upcoming Track Social date in Manage Activities. -->
 
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -139,6 +139,9 @@
     .ts-next-list dd { margin: 3px 0 0; font-weight: 600; font-size: 16px; line-height: 1.45; }
     .ts-next-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
     .ts-next-note { font-size: 13px; color: var(--c-grey-mid); }
+    .ts-next-soon { font-size: 16px; line-height: 1.6; color: var(--c-grey-mid); }
+    .ts-next-soon a { color: var(--ts-pink); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+    .ts-next-soon[hidden] { display: none; }
 
     /* ---------- 5. Running clubs ---------- */
     .ts-clubs-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 56px; align-items: center; }
@@ -385,23 +388,25 @@
     </section>
 
     <!-- ============ 4. OUR NEXT TRACK SOCIAL ============
-         Filled in live from Staff > Page Content (live-content.js).
-         The text below only shows if that can't load. -->
+         live-content.js fills this in from the Track Social activity in
+         Manage Activities (date, time, Register) and Page Content (guest
+         club, activities, partners). The "coming soon" text below is what
+         shows when there's no upcoming date, or if that can't load. -->
     <section class="section ts-section" id="next">
       <div class="section-inner">
         <p class="ts-eyebrow">— Our Next Track Social</p>
         <h2 class="section-title">See You on the Track</h2>
         <div class="ts-next">
           <div class="ts-date">
-            <span class="ts-date-day">Monday</span>
-            <span class="ts-date-num">26</span>
-            <span class="ts-date-month">October 2026</span>
-            <span class="ts-date-time">18:30 – 20:30</span>
+            <span class="ts-date-day">Every</span>
+            <span class="ts-date-num">Last</span>
+            <span class="ts-date-month">Monday of the month</span>
           </div>
           <div class="ts-next-body">
-            <h3>October Track Social</h3>
+            <h3>Next date coming soon</h3>
+            <p class="ts-next-soon" data-ts-soon>We announce each month's date here and on our socials. Questions in the meantime? Email <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> or call <a href="tel:+447547438786">07547 438786</a>.</p>
             <dl class="ts-next-list">
-              <div><dt>Guest running club</dt><dd data-live="tsGuest">Just Run Club</dd></div>
+              <div hidden><dt>Guest running club</dt><dd data-live="tsGuest"></dd></div>
               <div><dt>Entry</dt><dd>Free, all abilities welcome</dd></div>
               <div hidden><dt>Special activities</dt><dd data-live="tsActivities"></dd></div>
               <div hidden><dt>Food, drink &amp; fitness partners</dt><dd data-live="tsPartners"></dd></div>
