@@ -597,6 +597,8 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
 .mybk-cal { margin-top: 0.45rem; background: none; border: none; padding: 0; font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-red); text-decoration: underline; cursor: pointer; }
 .mybk-more { background: none; border: none; padding: 0.25rem 0; font-family: var(--f-body); font-size: 0.82rem; font-weight: 600; color: var(--c-red); text-decoration: underline; cursor: pointer; }
 </style>
+  <!-- Add to Home Screen popup + "Get the App" links -->
+  <script src="add-to-home.js" defer data-auto="off"></script>
 </head>
 <body class="ab-page">
 
@@ -648,7 +650,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
   </div>
 
   <div class="ab-staff-banner hidden" id="customerBanner" style="background:var(--c-red);">
-    <span>Signed in as <strong id="customerBannerName"></strong> — <a href="#" id="myBookingsLink" style="color:white; text-decoration:underline;">My bookings</a> · <a href="#" id="manageFamilyLink" style="color:white; text-decoration:underline;">Manage family</a></span>
+    <span>Signed in as <strong id="customerBannerName"></strong> — <a href="#" id="myBookingsLink" style="color:white; text-decoration:underline;">My bookings</a> · <a href="#" id="manageFamilyLink" style="color:white; text-decoration:underline;">Manage family</a><span data-aths-open-wrap> · <a href="#" data-aths-open style="color:white; text-decoration:underline;">Get the app</a></span></span>
     <button id="customerLogoutBtn">Log out</button>
   </div>
 
@@ -716,6 +718,7 @@ input:focus, textarea:focus, select:focus { outline: none; border-color: var(--a
           <a href="conditions-of-hire.html">Conditions of Hire</a>
           <a href="terms.html">Terms &amp; Conditions</a>
           <a href="privacy.html">Privacy Policy</a>
+          <a href="#" data-aths-open>Get the App</a>
         </div>
       </div>
 
@@ -2143,9 +2146,18 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   const confirmOverlay = document.getElementById("confirmModalOverlay");
   const confirmDoneBtn = document.getElementById("confirmDoneBtn");
 
+  // After a customer (not staff) closes their confirmation, offer the
+  // Add to Home Screen popup once: the moment they're most likely to
+  // want quick access back to their bookings (add-to-home.js decides
+  // whether this device can actually install it).
+  let offerAppAfterConfirm = false;
   function closeBookingConfirmation() {
     confirmOverlay.classList.add("hidden");
     window.scrollTo({ top: 0, behavior: "smooth" });
+    if (offerAppAfterConfirm) {
+      offerAppAfterConfirm = false;
+      setTimeout(() => { if (window.NorthwoodATHS) window.NorthwoodATHS.show("booking"); }, 700);
+    }
   }
   confirmDoneBtn.addEventListener("click", closeBookingConfirmation);
   confirmOverlay.addEventListener("click", (e) => { if (e.target === confirmOverlay) closeBookingConfirmation(); });
@@ -2207,6 +2219,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       calBlock.classList.toggle("hidden", !events.length);
     }
 
+    offerAppAfterConfirm = !b.isStaffMode;
     confirmOverlay.classList.remove("hidden");
     confirmDoneBtn.focus();
   }

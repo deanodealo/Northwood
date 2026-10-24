@@ -15,15 +15,20 @@
 
   const DISMISSED_KEY = 'northwood_aths_dismissed';
   const INSTALL_KEY   = 'northwood_aths_installed';
+  const BOOKING_SHOWN_KEY = 'northwood_aths_after_booking';
 
   function isDismissed() {
-    return sessionStorage.getItem(DISMISSED_KEY) === '1' ||
-           localStorage.getItem(INSTALL_KEY)     === '1';
+    try {
+      return sessionStorage.getItem(DISMISSED_KEY) === '1' ||
+             localStorage.getItem(INSTALL_KEY)     === '1';
+    } catch (e) { return false; }
   }
 
   function dismiss(permanent) {
-    sessionStorage.setItem(DISMISSED_KEY, '1');
-    if (permanent) localStorage.setItem(INSTALL_KEY, '1');
+    try {
+      sessionStorage.setItem(DISMISSED_KEY, '1');
+      if (permanent) localStorage.setItem(INSTALL_KEY, '1');
+    } catch (e) { /* private browsing: nothing to remember */ }
   }
 
   function isIOS() {
@@ -174,29 +179,53 @@
     document.head.appendChild(style);
   }
 
-  /* ── Build card ───────────────────────────────────────────── */
-  function buildCard(isIOSDevice) {
+  /* ── Build card ───────────────────────────────────────────────
+     kind:    'native' (Android/Chrome install button), 'ios' (Share →
+              Add to Home Screen steps) or 'manual' (use the browser menu)
+     context: 'auto' (popup after page load), 'booking' (after a booking)
+              or 'menu' (a "Get the App" link was tapped) */
+  function buildCard(kind, context) {
     injectStyles();
 
     const backdrop = document.createElement('div');
     backdrop.id = 'aths-backdrop';
-    if (!isIOSDevice) backdrop.addEventListener('click', () => hideAll(false));
+    if (kind !== 'ios') backdrop.addEventListener('click', () => hideAll(false));
 
     const card = document.createElement('div');
     card.id = 'aths-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'aths-title');
 
-    const bodyText = isIOSDevice
-      ? `Tap the <strong style="color:#C8102E">Share</strong>
-         <svg style="display:inline-block;vertical-align:middle;margin:0 2px" width="15" height="15"
+    const shareIcon = `<svg style="display:inline-block;vertical-align:middle;margin:0 2px" width="15" height="15"
               viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2.2"
-              stroke-linecap="round" stroke-linejoin="round">
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
            <polyline points="16 6 12 2 8 6"/>
            <line x1="12" y1="2" x2="12" y2="15"/>
-         </svg>
-         button in your browser bar, then choose
-         <strong style="color:#C8102E">"Add to Home Screen"</strong>`
-      : `Get quick access to activity bookings and updates — install the Northwood Stadium app!`;
+         </svg>`;
+
+    const lead = context === 'booking'
+      ? `<strong style="color:#fff">Check your bookings in one tap.</strong> `
+      : '';
+
+    const bodyText =
+      kind === 'ios'
+        ? `${lead}Tap the <strong style="color:#C8102E">Share</strong> ${shareIcon}
+           button in your browser bar, then choose
+           <strong style="color:#C8102E">"Add to Home Screen"</strong>`
+      : kind === 'native'
+        ? `${lead}Get quick access to activity bookings and updates — install the Northwood Stadium app!`
+        : `${lead}Open your browser's menu
+           (<strong style="color:#C8102E">&#8942;</strong> or <strong style="color:#C8102E">&#9776;</strong>)
+           and choose <strong style="color:#C8102E">"Install app"</strong> or
+           <strong style="color:#C8102E">"Add to Home screen"</strong>.`;
+
+    const actions =
+      kind === 'native'
+        ? `<button class="aths-btn aths-btn-primary" id="aths-install">Install</button>
+           <button class="aths-btn aths-btn-secondary" id="aths-later">Not now</button>`
+        : `<button class="aths-btn aths-btn-secondary" id="aths-later" style="flex:1;">${context === 'menu' ? 'Close' : 'Maybe later'}</button>`;
 
     card.innerHTML = `
       <button id="aths-close" aria-label="Close">&times;</button>
@@ -205,22 +234,14 @@
         <p id="aths-title">Add Northwood Stadium<br>to your home screen</p>
       </div>
       <p id="aths-body">${bodyText}</p>
-      ${isIOSDevice ? `
+      ${kind === 'ios' ? `
         <div id="aths-ios-hint">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
           </svg>
-          Look for the share icon in Safari's toolbar
-        </div>
-        <div id="aths-actions">
-          <button class="aths-btn aths-btn-secondary" id="aths-later" style="flex:1;">Maybe later</button>
-        </div>
-      ` : `
-        <div id="aths-actions">
-          <button class="aths-btn aths-btn-primary" id="aths-install">Install</button>
-          <button class="aths-btn aths-btn-secondary" id="aths-later">Not now</button>
-        </div>
-      `}
+          Look for the share icon in your browser's toolbar
+        </div>` : ''}
+      <div id="aths-actions">${actions}</div>
     `;
 
     document.body.appendChild(backdrop);
@@ -229,6 +250,17 @@
     card.querySelector('#aths-close').addEventListener('click', () => hideAll(false));
     card.querySelector('#aths-later').addEventListener('click', () => hideAll(false));
 
+    const install = card.querySelector('#aths-install');
+    if (install) {
+      install.addEventListener('click', async () => {
+        hideAll(false);
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') dismiss(true);
+        deferredPrompt = null;
+      });
+    }
     return card;
   }
 
@@ -240,7 +272,7 @@
     if (backdrop) backdrop.remove();
   }
 
-  /* ── Register service worker ──────────────────────────────── */
+  /* ── Service worker ───────────────────────────────────────── */
   function registerSW() {
     if (!('serviceWorker' in navigator)) return;
     // updateViaCache: 'none' — always fetch sw.js itself fresh, so a new
@@ -268,47 +300,93 @@
       .catch(() => {});
   }
 
+  /* ── Show logic ───────────────────────────────────────────── */
+  let deferredPrompt = null;   // Android/Chrome's saved install prompt
+
+  function isIOSSafari() {
+    return isIOS() && /safari/i.test(navigator.userAgent) && !/crios|fxios|edgios/i.test(navigator.userAgent);
+  }
+
+  // Which version of the card can we usefully show on this device?
+  function cardKind() {
+    if (deferredPrompt) return 'native';
+    if (isIOS()) return 'ios';
+    return 'manual';
+  }
+
+  // Storage that can't break the page (it throws in some private modes)
+  function store(kind, key, value) {
+    try {
+      const st = kind === 'local' ? localStorage : sessionStorage;
+      if (value === undefined) return st.getItem(key);
+      st.setItem(key, value);
+    } catch (e) { return null; }
+  }
+
+  // context: 'auto' | 'booking' | 'menu'
+  //  - 'auto' and 'booking' only show where we can genuinely help (an
+  //    install button on Android, or Safari's steps on iPhone), never
+  //    once the app is installed, and never twice in one visit.
+  //  - 'menu' is someone asking for it, so it always opens (falling back
+  //    to "use your browser menu" instructions on other browsers).
+  function show(context) {
+    if (isInStandaloneMode()) return false;
+    if (document.getElementById('aths-card')) return false;
+    if (context !== 'menu') {
+      if (store('local', INSTALL_KEY) === '1') return false;
+      const kind = cardKind();
+      if (kind === 'manual') return false;
+      if (kind === 'ios' && !isIOSSafari()) return false;
+    }
+    if (context === 'auto' && isDismissed()) return false;
+    if (context === 'booking') {
+      if (store('session', BOOKING_SHOWN_KEY) === '1') return false;
+      store('session', BOOKING_SHOWN_KEY, '1');
+    }
+    buildCard(cardKind(), context);
+    return true;
+  }
+
+  // Public hooks: the booking page calls NorthwoodATHS.show('booking')
+  // after a booking; any element with data-aths-open opens it on demand.
+  window.NorthwoodATHS = { show: show };
+
   /* ── Main ─────────────────────────────────────────────────── */
   function init() {
     registerSW();
 
-    if (isDismissed() || isInStandaloneMode()) return;
+    // "Get the App" links: hidden when already running as the installed app
+    const openers = document.querySelectorAll('[data-aths-open]');
+    openers.forEach(el => {
+      if (isInStandaloneMode()) {
+        el.hidden = true;
+        const wrap = el.closest('[data-aths-open-wrap]');
+        if (wrap) wrap.hidden = true;
+        return;
+      }
+      el.addEventListener('click', e => { e.preventDefault(); show('menu'); });
+    });
+
+    if (isInStandaloneMode()) return;
+
+    // Pages can opt out of the automatic popup (the booking page does, so
+    // it never covers the booking form; it asks after a booking instead).
+    const self = document.querySelector('script[src*="add-to-home.js"]');
+    const autoPopup = !(self && self.getAttribute('data-auto') === 'off');
 
     /* Android / Chrome path */
-    let deferredPrompt = null;
-
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       deferredPrompt = e;
-
-      setTimeout(() => {
-        if (isDismissed()) return;
-
-        const card = buildCard(false);
-
-        card.querySelector('#aths-install').addEventListener('click', async () => {
-          hideAll(false);
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          if (outcome === 'accepted') dismiss(true);
-          deferredPrompt = null;
-        });
-      }, 3000);
+      if (autoPopup) setTimeout(() => show('auto'), 3000);
     });
 
-    window.addEventListener('appinstalled', () => dismiss(true));
+    window.addEventListener('appinstalled', () => { dismiss(true); hideAll(true); });
 
     /* iOS Safari path — no beforeinstallprompt event exists on iOS, so
-       this shows unconditionally after a delay (Safari only, not other
-       iOS browsers like Chrome-on-iOS which can't install PWAs at all). */
-    if (isIOS()) {
-      const isSafari = /safari/i.test(navigator.userAgent) && !/crios|fxios|edgios/i.test(navigator.userAgent);
-      if (isSafari) {
-        setTimeout(() => {
-          if (isDismissed() || isInStandaloneMode()) return;
-          buildCard(true);
-        }, 3000);
-      }
+       this shows after a delay (Safari only, as before). */
+    if (autoPopup && isIOSSafari()) {
+      setTimeout(() => show('auto'), 3000);
     }
   }
 

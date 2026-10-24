@@ -1485,3 +1485,10 @@ a { color: inherit; text-decoration: none; }
   .footer-top { grid-template-columns: repeat(4, 1fr); gap: 40px; }
   .footer-brand { grid-column: 1 / -1; }
 }
+
+/* "Get the App" in the main menu: only in the burger menu on phones and
+   tablets (desktop visitors have it in the footer). add-to-home.js opens
+   the popup, and hides the link when already running as the app. */
+@media (min-width: 1001px) {
+  .main-nav .nav-get-app { display: none; }
+}
