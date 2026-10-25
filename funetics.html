@@ -52,6 +52,7 @@
       --fn-lilac: #AE72F9;       /* the lilac outline on the FUNETICS logo */
       --fn-lilac-pale: #F3EAFE;
       --fn-pink: #E8407A;        /* pink from the poster photo */
+      --fn-pink-ink: #D13A6E;    /* pink behind white text (WCAG AA) */
       --fn-pink-pale: #FDE6EF;
     }
     main { --c-red: var(--fn-purple); --accent: var(--fn-purple); --accent-ink: var(--fn-purple); --accent-tint: var(--fn-lilac-pale); }
@@ -86,7 +87,7 @@
     .btn-pink:hover { background: #CF2A63; transform: translateY(-2px); box-shadow: 0 10px 26px rgba(232,64,122,0.4); }
     .fn-hero-photo { position: relative; aspect-ratio: 4 / 3.4; border-radius: 18px; overflow: hidden; border: 6px solid var(--c-white); box-shadow: 14px 14px 0 var(--fn-lilac); transform: rotate(1.5deg); }
     .fn-hero-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .fn-price-badge { position: absolute; z-index: 3; left: -18px; bottom: -18px; background: var(--fn-pink); color: var(--c-white); border: 5px solid var(--c-white); border-radius: 50%; width: 132px; height: 132px;
+    .fn-price-badge { position: absolute; z-index: 3; left: -18px; bottom: -18px; background: var(--fn-pink-ink); color: var(--c-white); border: 5px solid var(--c-white); border-radius: 50%; width: 132px; height: 132px;
       display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-8deg); box-shadow: 0 10px 26px rgba(0,0,0,0.25); }
     .fn-price-badge b { font-family: var(--f-display); font-weight: 800; font-size: 40px; line-height: 1; }
     .fn-price-badge span { font-family: var(--f-display); font-weight: 800; font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -138,7 +139,7 @@
     .fn-slots b { font-family: var(--f-display); font-weight: 800; font-size: 22px; text-transform: uppercase; }
     .fn-slots small { display: block; color: var(--c-grey-mid); font-size: 13px; margin-top: 2px; }
     .fn-age { background: var(--fn-purple); color: var(--c-white); font-weight: 700; font-size: 14px; padding: 6px 12px; border-radius: 999px; white-space: nowrap; }
-    .fn-session:nth-child(2) .fn-age { background: var(--fn-pink); }
+    .fn-session:nth-child(2) .fn-age { background: var(--fn-pink-ink); }
     .fn-session-foot { margin-top: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; padding-top: 18px; border-top: 1px solid rgba(26,24,24,0.08); }
     .fn-session-price { font-family: var(--f-display); font-weight: 800; font-size: 30px; color: var(--c-black); }
     .fn-session-price small { font-family: var(--f-body); font-size: 14px; color: var(--c-grey-mid); font-weight: 600; }
@@ -571,5 +572,7 @@
 
   <script src="subpage.js"></script>
   <script src="live-content.js" defer></script>
+  <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
+  <script src="dialogs.js" defer></script>
 </body>
 </html>

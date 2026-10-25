@@ -12,7 +12,7 @@
   --c-gym:    #1A1818;
   --c-chalk:  #F3F0EB;
   --c-pitch:  #3F7148;
-  --c-court:  #377BBA;
+  --c-court:  #3678B5;   /* brand #377BBA, 2.5% deeper so white text passes WCAG AA */
 
   /* Roles. Older rules use these names, so they now point at the brand
      colours above. --c-red is the master brand colour: logo, header,
@@ -24,7 +24,7 @@
   --c-red:         var(--c-track);
   --c-red-dark:    #B02A25;   /* hover state only */
   --c-grey-light:  var(--c-chalk);
-  --c-grey-mid:    #6E6E72;
+  --c-grey-mid:    #6B6B6F;   /* deep enough for WCAG AA on chalk */
   --c-grey-line:   rgba(255,255,255,0.12);
   --c-grey-line-dark: rgba(26,24,24,0.10);
 
@@ -870,7 +870,6 @@ a { color: inherit; text-decoration: none; }
 .activity-feature-body {
   font-size: 15px;
   line-height: 1.7;
-  opacity: 0.92;
   max-width: 520px;
   margin-bottom: 28px;
 }
@@ -1575,3 +1574,14 @@ a { color: inherit; text-decoration: none; }
   .crumbs-list li:not(:nth-last-child(-n+2)) { display: none; }
   .crumbs-list li:nth-last-child(2)::before { content: none; }
 }
+
+/* ==========================================================================
+   ACCESSIBILITY HELPERS
+   ========================================================================== */
+/* Text for screen readers only */
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+/* Scrollable areas that keyboard users can tab to (e.g. wide tables on phones) */
+[role="region"][tabindex="0"]:focus-visible { outline: 2px solid var(--accent, var(--c-red)); outline-offset: 3px; }

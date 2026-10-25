@@ -639,7 +639,7 @@ const storage = firebase.storage();
 const ACCENT_PRESETS = [
   { label: "Track red — athletics / general", hex: "#DA3832" },
   { label: "Pitch green — 3G / football",     hex: "#3F7148" },
-  { label: "Court blue — sports hall / indoor", hex: "#377BBA" },
+  { label: "Court blue — sports hall / indoor", hex: "#3678B5" },
   { label: "Gym black — gym / fitness",       hex: "#1A1818" }
 ];
 // Off-brand extras, for activities with their own look (e.g. Funetics).
@@ -662,7 +662,7 @@ function contrastWithWhite(hex) {
   const L = 0.2126 * lum[0] + 0.7152 * lum[1] + 0.0722 * lum[2];
   return 1.05 / (L + 0.05);
 }
-const LEGACY_ACCENTS = { "#2563EB": "#377BBA", "#1E3A8A": "#377BBA", "#7C3AED": "#377BBA", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
+const LEGACY_ACCENTS = { "#377BBA": "#3678B5", "#2563EB": "#3678B5", "#1E3A8A": "#3678B5", "#7C3AED": "#3678B5", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
 function normalizeAccent(hex) {
   const h = String(hex || "").toUpperCase();
   if (LEGACY_ACCENTS[h]) return LEGACY_ACCENTS[h];
@@ -767,7 +767,7 @@ const SEED_ACTIVITIES = [
     id: "funetics",
     name: "Funetics",
     provider: "Funetics Coaching",
-    accentColor: "#377BBA",
+    accentColor: "#3678B5",
     description: "Fun, multi-sport coaching sessions for kids — games-based, no pressure, lots of energy.",
     venue: "Sports Hall, Northwood Stadium",
     ageNote: "5 - 11 years",
@@ -1642,5 +1642,7 @@ const SEED_ACTIVITIES = [
 })();
 </script>
 
+  <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
+  <script src="dialogs.js" defer></script>
 </body>
 </html>

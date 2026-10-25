@@ -79,7 +79,7 @@ a.ab-staff-link { text-decoration: none; display: inline-block; }
   font-size: 0.72rem;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--c-red);
+  color: var(--c-red-dark); /* small text: deeper red for contrast */
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
@@ -611,7 +611,7 @@ label.xf-check { display: flex; align-items: flex-start; gap: 0.6rem; font-weigh
 </head>
 <body class="ab-page">
 
-<div class="ab-topbar">
+<div class="ab-topbar" role="banner">
   <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium" loading="lazy" decoding="async"></a>
   <!-- Public header: shown to customers and visitors -->
   <div class="ab-topbar-nav" id="publicNav">
@@ -645,13 +645,13 @@ label.xf-check { display: flex; align-items: flex-start; gap: 0.6rem; font-weigh
     </div>
   </div>
 
-<div class="ab-wrap">
+<div class="ab-wrap" role="main">
 
   <div class="ab-heading">
     <div class="ab-eyebrow">Northwood Stadium</div>
     <h1 class="ab-title">Book an Activity</h1>
     <p class="ab-sub">Pick an activity below, choose your session, and book your place.</p>
-    <p class="ab-sub" style="margin-top:0.4rem; font-size:0.85rem;">First time booking? <a href="faq.html#how-to-book" style="color:var(--c-red); font-weight:600; text-decoration:underline;">Read our FAQs</a></p>
+    <p class="ab-sub" style="margin-top:0.4rem; font-size:0.85rem;">First time booking? <a href="faq.html#how-to-book" style="color:var(--c-red-dark); font-weight:600; text-decoration:underline;">Read our FAQs</a></p>
   </div>
 
   <div class="ab-staff-banner hidden" id="staffBanner">
@@ -1215,8 +1215,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   // Activity colours are limited to the four brand colours. Activities
   // saved before the rebrand may still hold an old colour, so those are
   // mapped to the nearest brand colour when they're loaded.
-  const BRAND_ACCENTS = ["#DA3832", "#3F7148", "#377BBA", "#1A1818"];
-  const LEGACY_ACCENTS = { "#2563EB": "#377BBA", "#1E3A8A": "#377BBA", "#7C3AED": "#377BBA", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
+  const BRAND_ACCENTS = ["#DA3832", "#3F7148", "#3678B5", "#1A1818"];
+  const LEGACY_ACCENTS = { "#377BBA": "#3678B5", "#2563EB": "#3678B5", "#1E3A8A": "#3678B5", "#7C3AED": "#3678B5", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
   function normalizeAccent(hex) {
     const h = String(hex || "").toUpperCase();
     if (LEGACY_ACCENTS[h]) return LEGACY_ACCENTS[h];
@@ -3204,5 +3204,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
   })();
   </script>
+  <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
+  <script src="dialogs.js" defer></script>
 </body>
 </html>

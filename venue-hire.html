@@ -44,7 +44,7 @@
        without touching styles.css. */
     /* Scoped to <main> so the header, footer and Call Now popup stay Northwood red */
     main {
-      --c-red: #377BBA;        /* Court */
+      --c-red: #3678B5;        /* Court */
       --c-red-dark: #1F4F7D;   /* Court, darkened for gradients and hovers */
       --c-grey-light: #F3F0EB; /* Chalk */
       --c-pitch: #3F7148;      /* Pitch */
@@ -739,5 +739,7 @@
     tabs.forEach((t, i) => { t.tabIndex = i === 0 ? 0 : -1; });
   })();
   </script>
+  <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
+  <script src="dialogs.js" defer></script>
 </body>
 </html>

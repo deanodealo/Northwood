@@ -136,6 +136,7 @@
       border-left: 2.5px solid var(--c-red); border-bottom: 2.5px solid var(--c-red); transform: rotate(-45deg);
     }
     .sp-feat li span { color: var(--c-grey-mid); }
+    .sp-naming .sp-feat li span, .sp-naming-body .sp-feat li span { color: rgba(255,255,255,0.62); }
     .sp-card-btn { width: 100%; }
     .btn-dark {
       display: inline-flex; align-items: center; justify-content: center; gap: 10px;
@@ -185,7 +186,7 @@
       font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 18px; letter-spacing: 0.3px;
       background: var(--c-black); color: var(--c-white); vertical-align: bottom;
     }
-    .sp-table thead th small { display: block; font-family: var(--f-body); font-weight: 600; text-transform: none; font-size: 13px; color: rgba(255,255,255,0.65); letter-spacing: 0; margin-top: 2px; }
+    .sp-table thead th small { display: block; font-family: var(--f-body); font-weight: 600; text-transform: none; font-size: 13px; color: rgba(255,255,255,0.88); letter-spacing: 0; margin-top: 2px; }
     .sp-table thead th.is-premier { background: var(--c-red); }
     .sp-table thead th.is-naming { box-shadow: inset 0 -4px 0 var(--c-gold); }
     .sp-table td { font-variant-numeric: tabular-nums; }
@@ -541,11 +542,11 @@
       <div class="section-inner">
         <p class="section-eyebrow">— Side by Side</p>
         <h2 class="section-title">Compare Packages</h2>
-        <div class="sp-table-wrap">
+        <div class="sp-table-wrap" tabindex="0" role="region" aria-label="Sponsorship packages compared">
           <table class="sp-table">
             <thead>
               <tr>
-                <th scope="col">&nbsp;</th>
+                <th scope="col"><span class="visually-hidden">Package feature</span></th>
                 <th scope="col">Supporter<small>£400 / year</small></th>
                 <th scope="col">Community Partner<small>£750 / year</small></th>
                 <th scope="col" class="is-premier">Premier Partner<small>£1,800 / year</small></th>
@@ -884,5 +885,7 @@
     });
   })();
   </script>
+  <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
+  <script src="dialogs.js" defer></script>
 </body>
 </html>

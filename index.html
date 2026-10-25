@@ -181,7 +181,7 @@
     .wu-lede { color: rgba(255,255,255,0.78); font-size: 17px; line-height: 1.65; max-width: 620px; margin-top: 16px; }
     .wu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 44px; }
     .wu-grid > * { min-width: 0; }
-    .wu-panel { --wu: #377BBA; --wu-deep: #1F4F7D; --wu-soft: #8EC2F0;
+    .wu-panel { --wu: #3678B5; --wu-deep: #1F4F7D; --wu-soft: #8EC2F0;
       display: flex; flex-direction: column; border-radius: 18px; overflow: hidden;
       background: linear-gradient(165deg, var(--wu-deep) 0%, #101826 100%); border: 1px solid rgba(255,255,255,0.08);
       box-shadow: 0 24px 60px rgba(0,0,0,0.35); }
@@ -204,7 +204,7 @@
     .wu-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
     .wu-chips li { border: 1.5px solid rgba(255,255,255,0.22); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.88); }
     .wu-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: auto; padding-top: 10px; }
-    .wu-btn { display: inline-flex; align-items: center; justify-content: center; background: var(--wu, #377BBA); color: var(--c-white); border: 0; cursor: pointer;
+    .wu-btn { display: inline-flex; align-items: center; justify-content: center; background: var(--wu, #3678B5); color: var(--c-white); border: 0; cursor: pointer;
       font-family: var(--f-display); font-weight: 800; font-size: 17px; text-transform: uppercase; letter-spacing: 0.6px; padding: 14px 26px; border-radius: 6px;
       transition: background 0.2s var(--ease), transform 0.2s var(--ease); }
     .wu-btn:hover { background: var(--wu-deep, #1F4F7D); transform: translateY(-2px); }
@@ -1315,8 +1315,8 @@
     // Activity colours are limited to the four brand colours (picked in
     // manage-activities.html). Activities saved before the rebrand may still
     // hold an old colour, so those are mapped to the nearest brand colour.
-    const BRAND_ACCENTS = ["#DA3832", "#3F7148", "#377BBA", "#1A1818"];
-    const LEGACY_ACCENTS = { "#2563EB": "#377BBA", "#1E3A8A": "#377BBA", "#7C3AED": "#377BBA", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
+    const BRAND_ACCENTS = ["#DA3832", "#3F7148", "#3678B5", "#1A1818"];
+    const LEGACY_ACCENTS = { "#377BBA": "#3678B5", "#2563EB": "#3678B5", "#1E3A8A": "#3678B5", "#7C3AED": "#3678B5", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
     function normalizeAccent(hex) {
       const h = String(hex || "").toUpperCase();
       if (LEGACY_ACCENTS[h]) return LEGACY_ACCENTS[h];
@@ -1331,7 +1331,7 @@
     //    from youthclub.html).
     //  - Track Social: free monthly event with its own page.
     const YOUTH_CLUB_CARD = `
-          <div class="activity-feature" style="--accent:#377BBA">
+          <div class="activity-feature" style="--accent:#3678B5">
             <div class="activity-feature-media"><img src="images/youthclub-card.jpg" alt="Youth Club at Northwood" style="object-position: center bottom;"></div>
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Youth Club</h3>
@@ -1463,5 +1463,7 @@
   </script>
 
   <script src="script.js"></script>
+  <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
+  <script src="dialogs.js" defer></script>
 </body>
 </html>
