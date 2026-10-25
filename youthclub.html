@@ -156,6 +156,9 @@
       font-size: clamp(22px, 2.4vw, 28px); line-height: 1.2; color: var(--c-black);
       border-left: 4px solid var(--accent); padding-left: 20px; margin: 28px 0;
     }
+    .yc-tourney { display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; background: var(--c-grey-light); border-left: 4px solid var(--accent); border-radius: 12px; padding: 20px 24px; margin: 8px 0 32px; }
+    .yc-tourney h3 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 24px; line-height: 1.1; margin-bottom: 4px; }
+    .yc-tourney p { color: var(--c-grey-mid); font-size: 16px; }
     .yc-cta {
       background: var(--c-black); color: var(--c-white); text-align: center;
       padding: 100px var(--pad);
@@ -330,6 +333,15 @@
           <li>Table Tennis</li>
           <li>Team Games &amp; More</li>
         </ul>
+
+        <!-- Tournament nights: live scores from tournaments-admin.html -->
+        <div class="yc-tourney">
+          <div>
+            <h3>Tournament night?</h3>
+            <p>Follow the fixtures, results and table live on your phone.</p>
+          </div>
+          <a href="tournament.html" class="yc-book-btn">Live scores</a>
+        </div>
 
         <div class="yc-gallery">
           <div class="yc-photo"><img src="images/3.jpeg" alt="Youth club activity session" loading="lazy"></div>

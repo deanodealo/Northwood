@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tournaments | Northwood Stadium</title>
+<meta name="description" content="Staff tool for running Northwood Stadium's weekly youth club tournaments.">
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<meta name="theme-color" content="#1A1818">
+
+<!-- Firebase (compat SDK — same version and project as the other staff pages) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="tournament-core.js"></script>
+
+<style>
+/* ════════════════════════════════════════════════════
+   TOURNAMENTS — staff tool for the weekly youth club tournaments.
+   Shared staff styles copied from page-content.html so all the staff
+   pages look like one tool; tournament-specific styles at the end.
+   ════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   PAGE CONTENT — staff-only tool for the bits of the site that
+   change regularly (Track Social next-event details, Gym classes).
+   Styles copied from manage-activities.html so the staff pages
+   look like one tool.
+   ══════════════════════════════════════════════════════════ */
+
+.hidden { display: none !important; }
+
+.ma-page { background: var(--c-grey-light); min-height: 100vh; }
+
+/* — topbar, staff modal, form fields — copied to match
+   activitybooking.html exactly so both pages feel like one tool. — */
+.ab-topbar {
+  background: var(--c-black);
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
+}
+.ab-topbar a.ab-logo-link { display: flex; align-items: center; }
+.ab-topbar img { height: 34px; }
+.ab-topbar-nav { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.ab-staff-link {
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+.ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+.ab-staff-link[aria-current="page"] { color: white; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.1); }
+
+.ma-wrap { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+@media (max-width: 600px) { .ma-wrap { padding: 2rem 1.1rem 4rem; } }
+
+.ma-heading { margin-bottom: 2rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.ma-eyebrow {
+  font-family: var(--f-body); font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--c-red); font-weight: 700; margin-bottom: 0.5rem;
+}
+.ma-title { font-family: var(--f-display); font-size: 2.1rem; font-weight: 800; color: var(--c-black); text-transform: uppercase; letter-spacing: 0.5px; }
+.ma-sub { font-family: var(--f-body); color: var(--c-grey-mid); margin-top: 0.4rem; font-size: 0.92rem; }
+
+.ma-add-btn {
+  font-family: var(--f-display); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 0.8rem 1.4rem; border: none; border-radius: 10px; background: var(--c-red); color: white; cursor: pointer;
+  transition: opacity 0.15s; white-space: nowrap;
+}
+.ma-add-btn:hover { opacity: 0.9; }
+
+.ma-empty {
+  text-align: center; font-family: var(--f-body); color: var(--c-grey-mid);
+  padding: 3rem 1.5rem; background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* — staff-gate panel — */
+.ma-gate {
+  max-width: 420px; margin: 4rem auto; background: white; border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  padding: 2.25rem; text-align: center;
+}
+.ma-gate h2 { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 0.6rem; }
+.ma-gate p { font-family: var(--f-body); font-size: 0.9rem; color: var(--c-grey-mid); margin-bottom: 1.5rem; line-height: 1.6; }
+
+/* — form view — */
+.ma-form-card {
+  background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05); padding: 2.25rem;
+}
+@media (max-width: 600px) { .ma-form-card { padding: 1.5rem; } }
+.ma-form-title { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.5rem; }
+
+.ma-section-label {
+  font-family: var(--f-body); font-size: 0.68rem; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--c-grey-mid); font-weight: 700; margin: 1.75rem 0 0.9rem;
+}
+.ma-section-label:first-of-type { margin-top: 0; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; min-width: 0; }
+.form-row > div { min-width: 0; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 600px) { .form-row, .form-row.three { grid-template-columns: 1fr; } }
+
+label {
+  display: block; font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-black); margin-bottom: 0.4rem;
+}
+.field-hint { font-family: var(--f-body); font-size: 0.74rem; color: var(--c-grey-mid); margin-top: 0.3rem; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"],
+input[type="date"], input[type="time"], textarea, select {
+  width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 0.7rem 0.85rem; font-family: var(--f-body); font-size: 0.92rem; color: var(--c-black);
+  background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1); border-radius: 8px; transition: border-color 0.15s, background 0.15s;
+}
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--c-red); background: white; }
+
+/* iOS Safari renders the native date/time picker control with its own
+   internal sizing that ignores width:100% inside narrow grid columns,
+   causing it to overhang past its container on mobile. Stripping the
+   native appearance forces it to respect the box model like a normal
+   input; it still opens the standard date/time picker on tap. */
+input[type="date"], input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.required-mark { color: var(--c-red); }
+
+.checkbox-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem; }
+.checkbox-row input { width: 18px; height: 18px; accent-color: var(--c-red); cursor: pointer; }
+.checkbox-row label { margin: 0; cursor: pointer; }
+
+.ma-session-add-panel { background: var(--c-grey-light); border-radius: 10px; padding: 1.1rem; margin-bottom: 1.25rem; }
+.ma-mini-add-btn {
+  font-family: var(--f-body); font-size: 0.84rem; font-weight: 700; color: white; background: var(--c-black);
+  border: none; border-radius: 8px; padding: 0.65rem 1.1rem; cursor: pointer;
+}
+.ma-mini-add-btn:hover { opacity: 0.9; }
+
+.ma-form-actions { display: flex; gap: 0.7rem; margin-top: 2rem; }
+.ma-submit-btn {
+  flex: 1; padding: 1rem; font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; text-transform: uppercase;
+  letter-spacing: 0.5px; border: none; border-radius: 10px; background: var(--c-red); color: white; cursor: pointer; transition: opacity 0.15s;
+}
+.ma-submit-btn:hover { opacity: 0.9; }
+.ma-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ma-cancel-btn {
+  padding: 1rem 1.5rem; font-family: var(--f-body); font-weight: 600; font-size: 0.92rem; border-radius: 10px;
+  border: 1.5px solid rgba(0,0,0,0.15); background: none; color: var(--c-black); cursor: pointer;
+}
+
+.form-message { margin-top: 1rem; font-family: var(--f-body); font-size: 0.88rem; padding: 0.8rem 1rem; border-radius: 8px; display: none; }
+.form-message.error { display: block; background: #FBEAEA; color: #8C0000; }
+.form-message.success { display: block; background: #E8F5E9; color: #1B5E20; }
+
+/* — staff login modal (same look as activitybooking.html) — */
+.staff-modal-overlay {
+  position: fixed; inset: 0; background: rgba(11,11,12,0.6);
+  display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem; z-index: 100; overflow-y: auto;
+}
+.staff-modal { background: white; border-radius: 14px; padding: 2rem; max-width: 360px; width: 100%; margin: 2rem auto; }
+.staff-modal h3 { font-family: var(--f-display); font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.25rem; }
+.staff-modal .form-message { margin-top: 0.75rem; }
+.staff-modal-actions { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+.staff-modal-actions button { flex: 1; }
+.staff-modal-cancel {
+  background: none; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0.75rem;
+  font-family: var(--f-body); font-weight: 600; cursor: pointer;
+}
+/* — Tournaments specific — */
+.tn-list { display: flex; flex-direction: column; gap: 0.7rem; }
+.tn-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: white; border: 1px solid rgba(0,0,0,0.07); border-radius: 12px; padding: 1rem 1.2rem; font-family: var(--f-body); }
+.tn-row strong { font-family: var(--f-display); font-size: 1.15rem; text-transform: uppercase; }
+.tn-row-meta { font-size: 0.82rem; color: var(--c-grey-mid); }
+.tn-row-actions { display: flex; gap: 0.5rem; }
+.tn-btn { font-family: var(--f-body); font-size: 0.85rem; font-weight: 700; border-radius: 8px; padding: 0.6rem 1rem; cursor: pointer; border: 1.5px solid var(--c-black); background: white; color: var(--c-black); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.tn-btn:hover { background: var(--c-black); color: white; }
+.tn-btn.solid { background: var(--c-black); color: white; }
+.tn-btn.danger { border-color: #B02A25; color: #B02A25; }
+.tn-btn.danger:hover { background: #B02A25; color: white; }
+.tn-tag { font-family: var(--f-body); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: 6px; background: #E8F5E9; color: #1B5E20; margin-left: 0.4rem; vertical-align: 2px; }
+.tn-tag.done { background: #ECEAE6; color: #3D3A37; }
+
+.tn-teams { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.6rem 0 0.4rem; }
+.tn-chip { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--c-black); color: white; font-family: var(--f-body); font-weight: 600; font-size: 0.88rem; padding: 0.4rem 0.4rem 0.4rem 0.8rem; border-radius: 999px; }
+.tn-chip button { width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(255,255,255,0.18); color: white; font-size: 1rem; line-height: 1; cursor: pointer; }
+.tn-chip button:hover { background: #B02A25; }
+.tn-add-row { display: flex; gap: 0.5rem; }
+.tn-add-row input { flex: 1; }
+.tn-pitches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; margin-top: 0.6rem; }
+.tn-choice { display: flex; flex-direction: column; gap: 0.4rem; }
+.tn-choice label { display: flex; gap: 0.6rem; align-items: flex-start; font-weight: 500; font-size: 0.9rem; cursor: pointer; margin: 0; }
+.tn-choice input { width: 18px; height: 18px; accent-color: var(--c-red); margin-top: 0.1rem; flex-shrink: 0; }
+.tn-summary { background: var(--c-grey-light); border-left: 4px solid var(--c-red); border-radius: 8px; padding: 0.9rem 1.1rem; font-family: var(--f-body); font-size: 0.92rem; line-height: 1.55; margin-top: 1.25rem; }
+.tn-summary strong { font-weight: 700; }
+
+/* Run view */
+.tn-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.tn-head-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.tn-toggle { display: flex; align-items: center; gap: 0.5rem; font-family: var(--f-body); font-size: 0.85rem; font-weight: 600; margin: 0; cursor: pointer; }
+.tn-toggle input { width: 18px; height: 18px; accent-color: var(--c-red); }
+.tn-banner { background: #FFF6E5; border-left: 4px solid #D98A00; border-radius: 10px; padding: 1rem 1.2rem; font-family: var(--f-body); font-size: 0.92rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.tn-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.tn-tabs button { font-family: var(--f-body); font-weight: 700; font-size: 0.88rem; padding: 0.6rem 1.1rem; border-radius: 999px; border: 1.5px solid rgba(0,0,0,0.15); background: white; cursor: pointer; }
+.tn-tabs button[aria-selected="true"] { background: var(--c-black); color: white; border-color: var(--c-black); }
+.tn-slot-time { font-family: var(--f-display); font-weight: 800; font-size: 1.15rem; text-transform: uppercase; margin: 1.4rem 0 0.6rem; display: flex; align-items: center; gap: 0.6rem; }
+.tn-slot-time:first-child { margin-top: 0; }
+.tn-match { background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 14px; padding: 0.9rem 1rem 1rem; margin-bottom: 0.7rem; font-family: var(--f-body); }
+.tn-match.is-live { border: 2px solid #1B5E20; }
+.tn-match.is-ft { background: #F7F6F3; }
+.tn-match-top { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; font-weight: 700; color: var(--c-grey-mid); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.6rem; }
+.tn-status { padding: 0.15rem 0.5rem; border-radius: 6px; background: #ECEAE6; color: #3D3A37; }
+.tn-status.live { background: #1B5E20; color: white; }
+.tn-side { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.6rem; padding: 0.35rem 0; }
+.tn-side-name { font-weight: 700; font-size: 1.05rem; overflow-wrap: anywhere; }
+.tn-side-name.tbc { color: var(--c-grey-mid); font-weight: 500; font-style: italic; }
+.tn-score { display: flex; align-items: center; gap: 0.4rem; }
+.tn-score b { min-width: 2.2rem; text-align: center; font-family: var(--f-display); font-size: 1.9rem; line-height: 1; }
+.tn-score button { width: 46px; height: 46px; border-radius: 10px; border: 1.5px solid rgba(0,0,0,0.15); background: white; font-size: 1.5rem; font-weight: 700; cursor: pointer; color: var(--c-black); }
+.tn-score button.plus { background: var(--c-black); color: white; border-color: var(--c-black); }
+.tn-score button:disabled { opacity: 0.3; cursor: default; }
+.tn-match-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; }
+.tn-match-actions .tn-btn { flex: 1; min-height: 44px; }
+.tn-go { background: #1B5E20 !important; border-color: #1B5E20 !important; color: white !important; }
+.tn-pens { margin-top: 0.7rem; padding: 0.7rem 0.8rem; background: #FFF6E5; border-radius: 10px; font-size: 0.88rem; }
+.tn-pens div { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.tn-pens .tn-btn { flex: 1; }
+.tn-table { width: 100%; border-collapse: collapse; font-family: var(--f-body); background: white; border-radius: 12px; overflow: hidden; }
+.tn-table th, .tn-table td { padding: 0.65rem 0.5rem; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.92rem; }
+.tn-table th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--c-grey-mid); background: var(--c-grey-light); }
+.tn-table td:nth-child(2), .tn-table th:nth-child(2) { text-align: left; }
+.tn-table td:nth-child(2) { font-weight: 700; }
+.tn-table td:last-child { font-weight: 800; }
+@media (max-width: 480px) { .tn-hide-sm { display: none; } }
+</style>
+</head>
+<body class="ma-page">
+
+<div class="ab-topbar">
+  <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
+  <div class="ab-topbar-nav">
+    <a href="activitybooking.html" class="ab-staff-link">Booking Page</a>
+    <a href="activitiesadmin.html" class="ab-staff-link">Bookings Admin</a>
+    <a href="manage-activities.html" class="ab-staff-link">Manage Activities</a>
+    <a href="page-content.html" class="ab-staff-link">Page Content</a>
+    <a href="tournaments-admin.html" class="ab-staff-link" aria-current="page">Tournaments</a>
+    <button class="ab-staff-link hidden" id="staffLogoutBtn">Log out</button>
+  </div>
+</div>
+
+<div class="ma-wrap">
+
+  <!-- Staff gate -->
+  <div class="ma-gate" id="staffGate">
+    <h2>Staff Access Required</h2>
+    <p>Tournaments are only available to logged-in Northwood Stadium staff. Log in with your staff account to continue.</p>
+    <button class="ma-add-btn" id="staffGateLoginBtn">Staff Login</button>
+    <div class="form-message" id="gateMsg"></div>
+  </div>
+
+  <!-- ══ LIST ══ -->
+  <div id="listView" class="hidden">
+    <div class="ma-heading">
+      <div>
+        <h1 class="ma-title">Tournaments</h1>
+        <p class="ma-sub">Set up tonight's youth club tournament, enter scores as you go, and the website updates live.</p>
+      </div>
+      <button class="ma-add-btn" id="newBtn">+ New tournament</button>
+    </div>
+    <div class="tn-list" id="tnList"><div class="ma-empty">Loading…</div></div>
+  </div>
+
+  <!-- ══ SETUP ══ -->
+  <div id="setupView" class="hidden">
+    <div class="ma-form-card">
+      <h2 class="ma-form-title">New tournament</h2>
+
+      <div class="form-row">
+        <div><label for="sName">Name</label><input type="text" id="sName" maxlength="60" value="Youth Club Tournament"></div>
+        <div><label for="sDate">Date</label><input type="date" id="sDate"></div>
+      </div>
+      <div class="form-row three">
+        <div><label for="sStart">First kick-off</label><input type="time" id="sStart" value="18:00"></div>
+        <div><label for="sMatch">Match length (minutes)</label><input type="number" id="sMatch" min="1" max="60" value="10" inputmode="numeric"></div>
+        <div><label for="sChange">Gap between matches (minutes)</label><input type="number" id="sChange" min="0" max="30" value="2" inputmode="numeric"></div>
+      </div>
+
+      <div class="ma-section-label">Teams</div>
+      <div class="tn-add-row">
+        <input type="text" id="sTeamName" maxlength="30" placeholder="Team name, e.g. Reds" aria-label="Team name">
+        <button type="button" class="ma-mini-add-btn" id="sTeamAdd">Add</button>
+      </div>
+      <p class="field-hint">Press Enter to add. You can paste several names separated by commas. Team names only: no players' names.</p>
+      <div class="tn-teams" id="sTeams"></div>
+      <button type="button" class="pc-inline-btn tn-btn" id="sColours" style="margin-top:0.3rem;">Add a colour team</button>
+
+      <div class="ma-section-label">Pitches</div>
+      <div class="form-row">
+        <div><label for="sPitchCount">How many pitches?</label>
+          <select id="sPitchCount"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+      </div>
+      <div class="tn-pitches" id="sPitches"></div>
+
+      <div class="ma-section-label">Format</div>
+      <div class="form-row">
+        <div><label for="sGames">Group games per team</label><select id="sGames"></select>
+          <p class="field-hint">Fewer games keeps a big turnout from running late.</p></div>
+        <div>
+          <span style="display:block; font-family:var(--f-body); font-size:0.78rem; font-weight:600; margin-bottom:0.4rem;">After the group games</span>
+          <div class="tn-choice" role="radiogroup" aria-label="After the group games">
+            <label><input type="radio" name="sKo" value="semis" checked> Semi-finals and a final (4+ teams)</label>
+            <label><input type="radio" name="sKo" value="final"> Final only (top two)</label>
+            <label><input type="radio" name="sKo" value="none"> No knockouts</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="tn-summary" id="sSummary" aria-live="polite"></div>
+
+      <div class="ma-form-actions">
+        <button type="button" class="ma-cancel-btn" id="sCancel">Cancel</button>
+        <button type="button" class="ma-submit-btn" id="sCreate">Create fixtures &amp; start</button>
+      </div>
+      <div class="form-message" id="sMsg"></div>
+    </div>
+  </div>
+
+  <!-- ══ RUN ══ -->
+  <div id="runView" class="hidden">
+    <div class="tn-head">
+      <div>
+        <button type="button" class="pc-inline-btn tn-btn" id="rBack" style="margin:0 0 0.8rem;">‹ All tournaments</button>
+        <h1 class="ma-title" id="rTitle"></h1>
+        <p class="ma-sub" id="rSub"></p>
+      </div>
+      <div class="tn-head-actions">
+        <a class="tn-btn" id="rPublic" target="_blank" rel="noopener">Public page ↗</a>
+        <a class="tn-btn" id="rScreen" target="_blank" rel="noopener">Big screen ↗</a>
+      </div>
+    </div>
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center; margin-bottom:1.25rem;">
+      <label class="tn-toggle"><input type="checkbox" id="rPublicToggle"> Show on the website</label>
+      <button type="button" class="tn-btn" id="rFinish">Finish tournament</button>
+    </div>
+    <div id="rBanner"></div>
+    <div class="tn-tabs" role="tablist">
+      <button type="button" role="tab" id="tabMatches" aria-selected="true">Matches</button>
+      <button type="button" role="tab" id="tabTable" aria-selected="false">Table</button>
+    </div>
+    <div id="rMatches"></div>
+    <div id="rTable" class="hidden"></div>
+    <div class="form-message" id="rMsg"></div>
+  </div>
+</div>
+
+<!-- Staff login modal -->
+<div class="staff-modal-overlay hidden" id="staffModalOverlay">
+  <div class="staff-modal">
+    <h3>Staff Login</h3>
+    <div class="form-row single"><label for="staffEmail">Email</label><input type="email" id="staffEmail" autocomplete="username"></div>
+    <div class="form-row single"><label for="staffPassword">Password</label><input type="password" id="staffPassword" autocomplete="current-password"></div>
+    <div class="form-message" id="staffLoginMsg"></div>
+    <div class="staff-modal-actions">
+      <button class="staff-modal-cancel" id="staffModalCancel">Cancel</button>
+      <button class="ma-submit-btn" id="staffModalSubmit">Log In</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   Writes to the "tournaments" collection; tournament.html reads it.
+   Firestore rule needed (public read, staff write):
+     match /tournaments/{id} {
+       allow read: if true;
+       allow write: if isStaff();
+     }
+   Scores are saved per match (fixtures.<id>.hs etc.), so two staff can
+   score different pitches at once without overwriting each other.
+   ═══════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDGSOa02_oHzRARoisN-gA3zzsTTC9U9QQ",
+  authDomain: "northwood-stadium.firebaseapp.com",
+  projectId: "northwood-stadium",
+  storageBucket: "northwood-stadium.firebasestorage.app",
+  messagingSenderId: "146149087447",
+  appId: "1:146149087447:web:f5882364c8a525fa8c3892",
+  measurementId: "G-JKT47Q28YV"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+(function () {
+  "use strict";
+  const T = window.Tourney;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function msg(el, text, type) { el.textContent = text; el.className = "form-message" + (type ? " " + type : ""); }
+  function isoLocal(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+  const niceDate = iso => iso ? new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) : "";
+  const FV = firebase.firestore.FieldValue;
+
+  // ── Views ───────────────────────────────────────────────────
+  const views = ["listView", "setupView", "runView"];
+  function show(v) { views.forEach(x => $(x).classList.toggle("hidden", x !== v)); window.scrollTo(0, 0); }
+
+  // ── Staff auth (same flow as Page Content) ──────────────────
+  const staffGate = $("staffGate"), staffLogoutBtn = $("staffLogoutBtn"), staffModalOverlay = $("staffModalOverlay");
+  let staffEmailAddr = "";
+  $("staffGateLoginBtn").addEventListener("click", () => staffModalOverlay.classList.remove("hidden"));
+  $("staffModalCancel").addEventListener("click", () => staffModalOverlay.classList.add("hidden"));
+  staffModalOverlay.addEventListener("click", e => { if (e.target === staffModalOverlay) staffModalOverlay.classList.add("hidden"); });
+  $("staffModalSubmit").addEventListener("click", async () => {
+    const email = $("staffEmail").value.trim(), password = $("staffPassword").value, m = $("staffLoginMsg");
+    msg(m, "");
+    if (!email || !password) { msg(m, "Enter your email and password.", "error"); return; }
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+      if (!staffDoc.exists) { await auth.signOut(); msg(m, "This account isn't set up for staff access.", "error"); return; }
+      staffModalOverlay.classList.add("hidden");
+    } catch (err) { msg(m, "Login failed — check your details and try again.", "error"); }
+  });
+  staffLogoutBtn.addEventListener("click", () => auth.signOut());
+
+  auth.onAuthStateChanged(async user => {
+    function lockOut(text) {
+      staffGate.classList.remove("hidden"); views.forEach(v => $(v).classList.add("hidden")); staffLogoutBtn.classList.add("hidden");
+      if (text) msg($("gateMsg"), text, "error");
+    }
+    if (!user) { lockOut(); return; }
+    let staffDoc;
+    try { staffDoc = await db.collection("staff").doc(user.uid).get(); } catch (err) { staffDoc = { exists: false }; }
+    if (!staffDoc.exists) { lockOut("That account doesn't have staff access."); return; }
+    staffEmailAddr = user.email;
+    staffGate.classList.add("hidden");
+    staffLogoutBtn.title = `Logged in as ${user.email}`;
+    staffLogoutBtn.classList.remove("hidden");
+    const open = new URLSearchParams(location.search).get("t");
+    if (open) openRun(open); else loadList();
+  });
+
+  // ══ LIST ═══════════════════════════════════════════════════
+  async function loadList() {
+    show("listView");
+    const el = $("tnList");
+    try {
+      const snap = await db.collection("tournaments").orderBy("date", "desc").limit(30).get();
+      if (snap.empty) { el.innerHTML = `<div class="ma-empty">No tournaments yet. Press "New tournament" to set up tonight's.</div>`; return; }
+      el.innerHTML = snap.docs.map(d => {
+        const t = d.data();
+        const n = (t.teamOrder || []).length;
+        return `<div class="tn-row">
+          <div><strong>${esc(t.name)}</strong>${t.status === "finished" ? `<span class="tn-tag done">Finished</span>` : `<span class="tn-tag">Live</span>`}
+            <div class="tn-row-meta">${esc(niceDate(t.date))} · ${n} teams · ${(t.pitches || []).length} pitch${(t.pitches || []).length === 1 ? "" : "es"}${t.public === false ? " · hidden from website" : ""}</div></div>
+          <div class="tn-row-actions">
+            <button type="button" class="tn-btn solid" data-open="${d.id}">Open</button>
+            <button type="button" class="tn-btn danger" data-del="${d.id}" data-name="${esc(t.name)}">Delete</button>
+          </div></div>`;
+      }).join("");
+      el.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () => openRun(b.dataset.open)));
+      el.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", async () => {
+        if (!confirm(`Delete "${b.dataset.name}"? Its fixtures and results will be removed for good.`)) return;
+        await db.collection("tournaments").doc(b.dataset.del).delete();
+        loadList();
+      }));
+    } catch (err) {
+      console.error(err);
+      el.innerHTML = `<div class="ma-empty">Couldn't load tournaments. Check you're online and refresh the page.</div>`;
+    }
+  }
+  $("newBtn").addEventListener("click", startSetup);
+
+  // ══ SETUP ══════════════════════════════════════════════════
+  const COLOURS = ["Reds", "Blues", "Greens", "Yellows", "Oranges", "Purples", "Whites", "Blacks", "Pinks", "Greys", "Golds", "Silvers"];
+  let teams = [];
+
+  function startSetup() {
+    teams = [];
+    $("sDate").value = isoLocal(new Date());
+    $("sName").value = "Youth Club Tournament";
+    msg($("sMsg"), "");
+    renderPitchInputs();
+    renderTeams();
+    show("setupView");
+  }
+  function addTeams(raw) {
+    raw.split(",").map(s => s.trim()).filter(Boolean).forEach(name => {
+      if (teams.length >= 32) return;
+      if (teams.some(t => t.toLowerCase() === name.toLowerCase())) return;
+      teams.push(name.slice(0, 30));
+    });
+    renderTeams();
+  }
+  $("sTeamAdd").addEventListener("click", () => { addTeams($("sTeamName").value); $("sTeamName").value = ""; $("sTeamName").focus(); });
+  $("sTeamName").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("sTeamAdd").click(); } });
+  $("sColours").addEventListener("click", () => { const next = COLOURS.find(c => !teams.includes(c)); if (next) addTeams(next); });
+
+  function renderTeams() {
+    $("sTeams").innerHTML = teams.length
+      ? teams.map((t, i) => `<span class="tn-chip">${esc(t)}<button type="button" data-rm="${i}" aria-label="Remove ${esc(t)}">×</button></span>`).join("")
+      : `<span class="field-hint">No teams yet.</span>`;
+    $("sTeams").querySelectorAll("[data-rm]").forEach(b => b.addEventListener("click", () => { teams.splice(Number(b.dataset.rm), 1); renderTeams(); }));
+    renderGamesOptions();
+  }
+  function renderPitchInputs() {
+    const n = Number($("sPitchCount").value);
+    const current = [...$("sPitches").querySelectorAll("input")].map(i => i.value);
+    $("sPitches").innerHTML = Array.from({ length: n }, (_, i) =>
+      `<div><label for="sPitch${i}">Pitch ${i + 1} name</label><input type="text" id="sPitch${i}" maxlength="24" value="${esc(current[i] || "Pitch " + (i + 1))}"></div>`).join("");
+    $("sPitches").querySelectorAll("input").forEach(i => i.addEventListener("input", renderSummary));
+    renderSummary();
+  }
+  $("sPitchCount").addEventListener("change", renderPitchInputs);
+
+  function renderGamesOptions() {
+    const sel = $("sGames"), prev = sel.value;
+    const max = T.maxRounds(teams.length);
+    const opts = [];
+    if (max) opts.push(`<option value="${max}">Everyone plays everyone (${teams.length % 2 ? max - 1 : max} games each)</option>`);
+    // Label each choice with the real number of games (odd numbers of teams mean one sits out each round).
+    const ids = teams.map((_, i) => "t" + (i + 1));
+    for (let g = max - 1; g >= 1; g--) {
+      const s = T.summary({ teamOrder: ids, teams: {}, pitches: ["P"], gamesPerTeam: g, knockout: "none", startTime: "18:00", matchMins: 10, changeMins: 0 });
+      if (s.minGames < 1) continue;
+      const label = s.minGames === s.maxGames ? `${s.minGames} game${s.minGames === 1 ? "" : "s"} each` : `${s.minGames} or ${s.maxGames} games each`;
+      if (opts.some(o => o.includes(`>${label}<`))) continue;
+      opts.push(`<option value="${g}">${label}</option>`);
+    }
+    sel.innerHTML = opts.join("") || `<option value="0">Add at least 2 teams</option>`;
+    if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+    renderSummary();
+  }
+  ["sStart", "sMatch", "sChange", "sGames"].forEach(id => $(id).addEventListener("input", renderSummary));
+  $("sGames").addEventListener("change", renderSummary);
+  document.querySelectorAll('[name="sKo"]').forEach(r => r.addEventListener("change", renderSummary));
+
+  function setupSettings() {
+    return {
+      teamOrder: teams.map((_, i) => "t" + (i + 1)),
+      pitches: [...$("sPitches").querySelectorAll("input")].map((i, n) => i.value.trim() || "Pitch " + (n + 1)),
+      startTime: $("sStart").value || "18:00",
+      matchMins: Math.min(60, Math.max(1, Number($("sMatch").value) || 10)),
+      changeMins: Math.min(30, Math.max(0, Number($("sChange").value) || 0)),
+      gamesPerTeam: Number($("sGames").value) || 1,
+      knockout: (document.querySelector('[name="sKo"]:checked') || {}).value || "semis"
+    };
+  }
+  function renderSummary() {
+    const box = $("sSummary");
+    if (teams.length < 2) { box.innerHTML = "Add at least 2 teams to see the fixtures."; return; }
+    const s = T.summary(setupSettings());
+    const ko = s.knockout === "semis" ? "2 semi-finals and a final" : s.knockout === "final" ? "a final" : "no knockouts";
+    const games = s.minGames === s.maxGames ? `${s.maxGames} games each` : `${s.minGames} or ${s.maxGames} games each`;
+    box.innerHTML = `<strong>${teams.length} teams</strong>, ${games}: <strong>${s.groupMatches} group matches</strong>, then ${ko}.<br>
+      Starts ${T.niceTime(setupSettings().startTime)}, finishes about <strong>${T.niceTime(s.finish)}</strong>.` +
+      (setupSettings().knockout === "semis" && teams.length < 4 ? `<br>Semi-finals need 4 teams, so it'll be a final between the top two.` : "");
+  }
+
+  $("sCancel").addEventListener("click", loadList);
+  $("sCreate").addEventListener("click", async () => {
+    const m = $("sMsg"), btn = $("sCreate");
+    msg(m, "");
+    if (teams.length < 2) { msg(m, "Add at least 2 teams.", "error"); return; }
+    if (!$("sDate").value) { msg(m, "Choose a date.", "error"); return; }
+    const settings = setupSettings();
+    const built = T.buildFixtures(settings);
+    const teamMap = {};
+    settings.teamOrder.forEach((id, i) => { teamMap[id] = { name: teams[i] }; });
+    btn.disabled = true; btn.textContent = "Creating…";
+    try {
+      const ref = await db.collection("tournaments").add({
+        name: $("sName").value.trim() || "Youth Club Tournament",
+        date: $("sDate").value,
+        startTime: settings.startTime, matchMins: settings.matchMins, changeMins: settings.changeMins,
+        pitches: settings.pitches, gamesPerTeam: built.rounds, knockout: built.knockout,
+        teams: teamMap, teamOrder: settings.teamOrder, fixtures: built.fixtures,
+        status: "live", public: true,
+        createdBy: staffEmailAddr, createdAt: FV.serverTimestamp(), updatedAt: FV.serverTimestamp()
+      });
+      openRun(ref.id);
+    } catch (err) {
+      console.error(err);
+      msg(m, "Couldn't save the tournament. Check you're online and try again.", "error");
+    } finally {
+      btn.disabled = false; btn.textContent = "Create fixtures & start";
+    }
+  });
+
+  // ══ RUN ════════════════════════════════════════════════════
+  let current = null, currentId = null, unsub = null, tab = "matches";
+  function openRun(id) {
+    if (unsub) unsub();
+    currentId = id;
+    history.replaceState(null, "", "?t=" + encodeURIComponent(id));
+    $("rPublic").href = "tournament.html";
+    $("rScreen").href = "tournament.html?screen=1";
+    show("runView");
+    unsub = db.collection("tournaments").doc(id).onSnapshot(snap => {
+      if (!snap.exists) { msg($("rMsg"), "This tournament has been deleted.", "error"); return; }
+      current = snap.data();
+      autoFillFinal();
+      renderRun();
+    }, err => { console.error(err); msg($("rMsg"), "Lost connection. Check you're online.", "error"); });
+  }
+  $("rBack").addEventListener("click", () => { if (unsub) unsub(); unsub = null; history.replaceState(null, "", location.pathname); loadList(); });
+
+  const ref = () => db.collection("tournaments").doc(currentId);
+  async function save(update) {
+    try { await ref().update(Object.assign(update, { updatedAt: FV.serverTimestamp() })); msg($("rMsg"), ""); }
+    catch (err) { console.error(err); msg($("rMsg"), "That didn't save. Check you're online and try again.", "error"); }
+  }
+  const teamName = id => (current.teams[id] || {}).name || "TBC";
+
+  $("rPublicToggle").addEventListener("change", e => save({ public: e.target.checked }));
+  $("rFinish").addEventListener("click", () => {
+    const done = current.status === "finished";
+    if (!done && !confirm("Finish this tournament? The website will show the final results. You can reopen it if needed.")) return;
+    save({ status: done ? "live" : "finished" });
+  });
+  $("tabMatches").addEventListener("click", () => { tab = "matches"; renderRun(); });
+  $("tabTable").addEventListener("click", () => { tab = "table"; renderRun(); });
+
+  // When both semis are decided, put the winners into the final.
+  function autoFillFinal() {
+    const f = current.fixtures.final;
+    if (!f || !f.from || !f.from.home.winnerOf || f.home) return;
+    const ko = T.knockoutTeams(current).final;
+    if (ko && ko.home && ko.away) save({ "fixtures.final.home": ko.home, "fixtures.final.away": ko.away });
+  }
+  async function fillFromTable() {
+    const ko = T.knockoutTeams(current), upd = {};
+    Object.keys(ko).forEach(id => {
+      const f = current.fixtures[id];
+      if (f.from.home.pos) { upd[`fixtures.${id}.home`] = ko[id].home; upd[`fixtures.${id}.away`] = ko[id].away; }
+    });
+    await save(upd);
+  }
+
+  function renderRun() {
+    const t = current;
+    $("rTitle").textContent = t.name;
+    $("rSub").textContent = `${niceDate(t.date)} · ${t.teamOrder.length} teams · ${t.matchMins}-minute matches · ${t.status === "finished" ? "Finished" : "Live"}`;
+    $("rPublicToggle").checked = t.public !== false;
+    $("rFinish").textContent = t.status === "finished" ? "Reopen tournament" : "Finish tournament";
+    $("tabMatches").setAttribute("aria-selected", tab === "matches");
+    $("tabTable").setAttribute("aria-selected", tab === "table");
+    $("rMatches").classList.toggle("hidden", tab !== "matches");
+    $("rTable").classList.toggle("hidden", tab !== "table");
+
+    // Banner: time to set the knockouts?
+    const firstKo = Object.values(t.fixtures).find(f => f.from && f.from.home.pos);
+    const banner = $("rBanner");
+    if (firstKo && !firstKo.home) {
+      const done = T.groupDone(t);
+      banner.innerHTML = `<div class="tn-banner"><span>${done ? "Group games finished." : "Group games still being played."} ${t.knockout === "semis" ? "Semi-finals: 1st v 4th and 2nd v 3rd." : "Final: 1st v 2nd."}</span>
+        <button type="button" class="tn-btn solid" id="rFill">${t.knockout === "semis" ? "Set semi-finals from table" : "Set final from table"}</button></div>`;
+      $("rFill").addEventListener("click", () => {
+        if (!done && !confirm("Not all group games are finished. Set the knockouts from the table as it stands now?")) return;
+        fillFromTable();
+      });
+    } else banner.innerHTML = "";
+
+    // Table
+    const rows = T.table(t);
+    $("rTable").innerHTML = `<table class="tn-table"><thead><tr><th>#</th><th>Team</th><th>P</th><th class="tn-hide-sm">W</th><th class="tn-hide-sm">D</th><th class="tn-hide-sm">L</th><th>GD</th><th>Pts</th></tr></thead><tbody>` +
+      rows.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r.name)}</td><td>${r.p}</td><td class="tn-hide-sm">${r.w}</td><td class="tn-hide-sm">${r.d}</td><td class="tn-hide-sm">${r.l}</td><td>${r.gd > 0 ? "+" : ""}${r.gd}</td><td>${r.pts}</td></tr>`).join("") +
+      `</tbody></table><p class="field-hint" style="margin-top:0.6rem;">Points, then goal difference, then goals scored. Only finished games count.</p>`;
+
+    // Matches, grouped by kick-off time
+    const list = T.ordered(t);
+    let html = "", lastSlot = null;
+    list.forEach(f => {
+      if (f.slot !== lastSlot) { html += `<h2 class="tn-slot-time">${T.niceTime(f.time)}${f.stage !== "group" ? " · " + esc(f.label) : ""}</h2>`; lastSlot = f.slot; }
+      html += matchCard(f);
+    });
+    $("rMatches").innerHTML = html;
+    wireMatches();
+  }
+
+  function matchCard(f) {
+    const ready = f.home && f.away;
+    const side = (team, key, src) => `<div class="tn-side">
+      <span class="tn-side-name${team ? "" : " tbc"}">${team ? esc(teamName(team)) : esc(T.placeholder(src))}${f.pens && f.pens === team ? " (won on pens)" : ""}</span>
+      <span class="tn-score">
+        <button type="button" data-dec="${f.id}" data-k="${key}" aria-label="Take a goal off ${team ? esc(teamName(team)) : ""}" ${!ready || f.status === "ft" || !(Number(f[key]) > 0) ? "disabled" : ""}>−</button>
+        <b aria-label="${team ? esc(teamName(team)) : ""} score">${Number(f[key]) || 0}</b>
+        <button type="button" class="plus" data-inc="${f.id}" data-k="${key}" aria-label="Goal for ${team ? esc(teamName(team)) : ""}" ${!ready || f.status === "ft" ? "disabled" : ""}>+</button>
+      </span></div>`;
+    const level = Number(f.hs) === Number(f.as);
+    const needsPens = f.stage !== "group" && f.status === "live" && level;
+    let actions = "";
+    if (ready) {
+      if (f.status === "upcoming") actions = `<button type="button" class="tn-btn tn-go" data-status="${f.id}" data-to="live">Kick off</button>`;
+      else if (f.status === "live" && !needsPens) actions = `<button type="button" class="tn-btn solid" data-status="${f.id}" data-to="ft">Full time</button>`;
+      else if (f.status === "ft") actions = `<button type="button" class="tn-btn" data-status="${f.id}" data-to="live">Reopen to correct the score</button>`;
+    }
+    const pens = needsPens ? `<div class="tn-pens">Level at full time? Choose who won on penalties:
+      <div><button type="button" class="tn-btn solid" data-pens="${f.id}" data-team="${f.home}">${esc(teamName(f.home))}</button>
+      <button type="button" class="tn-btn solid" data-pens="${f.id}" data-team="${f.away}">${esc(teamName(f.away))}</button></div></div>` : "";
+    return `<div class="tn-match${f.status === "live" ? " is-live" : ""}${f.status === "ft" ? " is-ft" : ""}">
+      <div class="tn-match-top"><span>${esc(f.pitch)}${f.stage !== "group" ? " · " + esc(f.label) : ""}</span>
+        <span class="tn-status${f.status === "live" ? " live" : ""}">${f.status === "live" ? "Playing" : f.status === "ft" ? "Full time" : "To play"}</span></div>
+      ${side(f.home, "hs", f.from && f.from.home)}${side(f.away, "as", f.from && f.from.away)}
+      ${actions ? `<div class="tn-match-actions">${actions}</div>` : ""}${pens}
+    </div>`;
+  }
+
+  function wireMatches() {
+    const box = $("rMatches");
+    box.querySelectorAll("[data-inc]").forEach(b => b.addEventListener("click", () => {
+      const id = b.dataset.inc, f = current.fixtures[id], upd = { [`fixtures.${id}.${b.dataset.k}`]: FV.increment(1) };
+      if (f.status === "upcoming") upd[`fixtures.${id}.status`] = "live"; // a goal means it's kicked off
+      save(upd);
+    }));
+    box.querySelectorAll("[data-dec]").forEach(b => b.addEventListener("click", () => {
+      save({ [`fixtures.${b.dataset.dec}.${b.dataset.k}`]: FV.increment(-1) });
+    }));
+    box.querySelectorAll("[data-status]").forEach(b => b.addEventListener("click", () => {
+      const upd = { [`fixtures.${b.dataset.status}.status`]: b.dataset.to };
+      if (b.dataset.to === "live") upd[`fixtures.${b.dataset.status}.pens`] = null;
+      save(upd);
+    }));
+    box.querySelectorAll("[data-pens]").forEach(b => b.addEventListener("click", () => {
+      save({ [`fixtures.${b.dataset.pens}.pens`]: b.dataset.team, [`fixtures.${b.dataset.pens}.status`]: "ft" });
+    }));
+  }
+})();
+</script>
+<script src="dialogs.js" defer></script>
+</body>
+</html>

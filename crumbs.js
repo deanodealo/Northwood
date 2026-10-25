@@ -37,6 +37,7 @@
     "funetics.html":           { trail: [HOME, WHATS_ON], name: "Funetics", tone: "dark" },
     "tracksocial.html":        { trail: [HOME, WHATS_ON], name: "Track Social", tone: "dark" },
     "youthclub.html":          { trail: [HOME, WHATS_ON], name: "Youth Club", tone: "dark" },
+    "tournament.html":         { trail: [HOME, WHATS_ON, ["Youth Club", "youthclub.html"]], name: "Tournament", tone: "dark" },
     "venue-hire.html":         { trail: [HOME], name: "Events & Venue Hire", tone: "dark" },
     "events.html":             { trail: [HOME, EVENTS], name: "Event & School Bookings", tone: "dark" },
     "sponsorship.html":        { trail: [HOME], name: "Sponsorship", tone: "dark" },
