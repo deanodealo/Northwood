@@ -591,6 +591,8 @@ label.xf-check { display: flex; align-items: flex-start; gap: 0.6rem; font-weigh
 .mybk-tag.paid, .mybk-tag.collected { background: #E8F5E9; color: #1B5E20; }
 .mybk-tag.unpaid { background: #FFF4E5; color: #8A4B00; }
 .mybk-tag.free { background: #EEF2FF; color: #2E3A8C; }
+.mybk-tag.cancelled { background: #ECEAE6; color: #3D3A37; }
+.mybk-card.is-cancelled { background: #F7F6F3; border-style: dashed; }
 .mybk-empty { font-family: var(--f-body); font-size: 0.88rem; color: var(--c-grey-mid); padding: 0.5rem 0; }
 .cal-block { margin: 0.25rem 0 0.5rem; }
 .cal-btn {
@@ -1843,8 +1845,12 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     const when = b.sessionDate
       ? new Date(b.sessionDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
       : "";
-    const status = b.paymentStatus || "unpaid";
-    const tagLabel = status === "paid" ? "Paid online"
+    // Cancelled by staff (see Bookings Admin): still listed so the customer
+    // can see it's been cancelled, but with no calendar button.
+    const cancelled = b.status === "cancelled";
+    const status = cancelled ? "cancelled" : (b.paymentStatus || "unpaid");
+    const tagLabel = cancelled ? "Cancelled"
+                   : status === "paid" ? "Paid online"
                    : status === "collected" ? "Paid at venue"
                    : status === "free" ? "Free"
                    : "Pay at venue";
@@ -1855,9 +1861,10 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     if (names) metaParts.push(`For: ${names}`);
     if (b.amount) metaParts.push(`£${Number(b.amount).toFixed(2)}`);
     if (typeof b.bookingRef === "string" && b.bookingRef) metaParts.push(`<span style="white-space:nowrap;">Ref: <strong>${esc(b.bookingRef)}</strong></span>`);
+    if (b.refundedAmount) metaParts.push(`Refunded £${Number(b.refundedAmount).toFixed(2)}`);
     if (b.squareReceiptUrl && /^https:\/\//.test(b.squareReceiptUrl)) metaParts.push(`<a href="${esc(b.squareReceiptUrl)}" target="_blank" rel="noopener" style="color:var(--c-red); font-weight:600;">Receipt</a>`);
     return `
-      <div class="mybk-card${isPast ? " is-past" : ""}" ${accent}>
+      <div class="mybk-card${isPast ? " is-past" : ""}${cancelled ? " is-cancelled" : ""}" ${accent}>
         <div class="mybk-top">
           <div>
             <div class="mybk-name">${esc(b.activityName || "Activity")}</div>
@@ -1866,7 +1873,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           <span class="mybk-tag ${esc(status)}">${tagLabel}</span>
         </div>
         ${metaParts.length ? `<div class="mybk-meta">${metaParts.join(" · ")}</div>` : ""}
-        ${!isPast ? `<button type="button" class="mybk-cal" data-cal-id="${esc(b.id)}">Add to calendar</button>` : ""}
+        ${!isPast && !cancelled ? `<button type="button" class="mybk-cal" data-cal-id="${esc(b.id)}">Add to calendar</button>` : ""}
       </div>`;
   }
 

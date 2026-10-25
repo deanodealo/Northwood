@@ -23,7 +23,8 @@
     "confirmModalOverlay",   // booking confirmation
     "myBookingsOverlay",     // My Bookings
     "staffModalOverlay",     // staff log in
-    "callModal"              // Call Us
+    "callModal",             // Call Us
+    "cancelBookingOverlay"   // Bookings Admin: cancel a booking
   ];
   var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), ' +
                   'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';

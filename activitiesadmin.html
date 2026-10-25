@@ -151,6 +151,41 @@
 }
 .mark-collected-btn:hover { background: var(--c-black); color: white; }
 
+/* — cancellations — */
+.tag-cancelled { background: #ECEAE6; color: #3D3A37; }
+.booking-row.is-cancelled { background: #F7F6F3; border-style: dashed; }
+.booking-row-cancel-note { font-size: 0.76rem; color: #8C0000; margin-top: 0.25rem; }
+.booking-row.is-cancelled .booking-row-cancel-note { color: #3D3A37; }
+.cancel-booking-btn {
+  font-family: var(--f-body); font-size: 0.75rem; font-weight: 600;
+  padding: 0.4rem 0.75rem; border-radius: 6px; border: 1.5px solid #B02A25;
+  background: white; color: #B02A25; cursor: pointer;
+}
+.cancel-booking-btn:hover { background: #B02A25; color: white; }
+
+.cx-overlay { position: fixed; inset: 0; background: rgba(11,11,12,0.6); z-index: 300; display: flex; align-items: flex-start; justify-content: center; padding: 24px; overflow-y: auto; }
+.cx-modal { background: white; border-radius: 14px; width: 100%; max-width: 500px; padding: 1.6rem; font-family: var(--f-body); color: var(--c-black); margin: auto 0; }
+.cx-modal h2 { font-family: var(--f-display); font-weight: 800; font-size: 1.4rem; text-transform: uppercase; margin-bottom: 0.3rem; }
+.cx-sub { font-size: 0.85rem; color: var(--c-grey-mid); margin-bottom: 1.1rem; line-height: 1.5; }
+.cx-group { border: 0; margin: 0 0 1.1rem; padding: 0; }
+.cx-group legend, .cx-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.45rem; display: block; }
+.cx-option { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.9rem; padding: 0.45rem 0; cursor: pointer; line-height: 1.4; }
+.cx-option input { width: 18px; height: 18px; margin-top: 0.1rem; accent-color: #B02A25; flex-shrink: 0; }
+.cx-option small { display: block; color: var(--c-grey-mid); font-size: 0.78rem; }
+.cx-amount { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.35rem; }
+.cx-amount input, .cx-modal textarea { font-family: var(--f-body); font-size: 0.9rem; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0.5rem 0.6rem; }
+.cx-amount input { width: 7rem; }
+.cx-modal textarea { width: 100%; min-height: 64px; resize: vertical; }
+.cx-amount input:focus, .cx-modal textarea:focus { outline: none; border-color: #B02A25; box-shadow: 0 0 0 3px rgba(176,42,37,0.2); }
+.cx-note { font-size: 0.8rem; background: #FFF6E5; border-left: 3px solid #D98A00; padding: 0.55rem 0.7rem; border-radius: 6px; margin-bottom: 1rem; line-height: 1.45; }
+.cx-summary { font-size: 0.88rem; background: var(--c-grey-light); border-radius: 8px; padding: 0.7rem 0.85rem; margin-bottom: 1rem; line-height: 1.5; }
+.cx-msg { font-size: 0.85rem; padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 1rem; background: #FBEAEA; color: #8C0000; }
+.cx-actions { display: flex; gap: 0.6rem; }
+.cx-actions button { flex: 1; padding: 0.8rem; border-radius: 8px; font-family: var(--f-body); font-weight: 700; font-size: 0.9rem; cursor: pointer; }
+.cx-keep { background: white; border: 1.5px solid rgba(0,0,0,0.15); color: var(--c-black); }
+.cx-confirm { background: #B02A25; border: 0; color: white; }
+.cx-confirm:disabled { opacity: 0.6; cursor: wait; }
+
 .aa-empty { text-align: center; font-family: var(--f-body); color: var(--c-grey-mid); padding: 3rem 1rem; }
 .aa-list-count { font-family: var(--f-body); font-size: 0.8rem; color: var(--c-grey-mid); margin-bottom: 0.6rem; }
 .aa-list-more { text-align: center; margin-top: 1rem; }
@@ -191,6 +226,9 @@
 </style>
 </head>
 <body class="aa-page">
+<!-- Cancel booking dialog (filled in by openCancelDialog) + result toast -->
+<div class="cx-overlay hidden" id="cancelBookingOverlay"></div>
+<div id="adminToast" class="hidden" role="status" style="position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:310; background:var(--c-black); color:white; font-family:var(--f-body); font-size:0.9rem; padding:0.8rem 1.2rem; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.3); max-width:calc(100% - 32px);"></div>
 
 <div class="ab-topbar">
   <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
@@ -255,6 +293,7 @@
       <button class="aa-filter-btn" data-status="paid">Paid Online</button>
       <button class="aa-filter-btn" data-status="collected">Collected at Venue</button>
       <button class="aa-filter-btn" data-status="free">Free</button>
+      <button class="aa-filter-btn" data-status="cancelled">Cancelled</button>
     </div>
     <div class="aa-filters">
       <label style="font-family:var(--f-body);font-size:0.8rem;font-weight:600;color:var(--c-black);">From:</label>
@@ -633,7 +672,8 @@ const auth = firebase.auth();
       if (dateFilter !== "all" && b.sessionDate !== dateFilter) return false;
       if (dateFrom && b.sessionDate && b.sessionDate < dateFrom) return false;
       if (dateTo && b.sessionDate && b.sessionDate > dateTo) return false;
-      if (statusFilter !== "all" && b.paymentStatus !== statusFilter) return false;
+      if (statusFilter === "cancelled") { if (!isCancelledBooking(b)) return false; }
+      else if (statusFilter !== "all" && (b.paymentStatus !== statusFilter || isCancelledBooking(b))) return false;
       if (searchTerm && !bookingSearchText(b).includes(searchTerm)) return false;
       return true;
     });
@@ -645,6 +685,26 @@ const auth = firebase.auth();
   // newer contact+attendees shape.
   function attendeeCountOf(b) {
     return b.attendeeCount || 1;
+  }
+
+  // Cancelled bookings are kept (never deleted) so history and reports
+  // stay complete — see cancelActivityBooking.js. They don't count as
+  // places taken or money owed, but any money kept (paid minus refunded)
+  // still counts as income.
+  function isCancelledBooking(b) {
+    return b.status === "cancelled";
+  }
+  function activeBookings(list) {
+    return list.filter(b => !isCancelledBooking(b));
+  }
+  function incomeOf(list) {
+    return list
+      .filter(b => b.paymentStatus === "paid" || b.paymentStatus === "collected")
+      .reduce((sum, b) => sum + Math.max(0, (b.amount || 0) - (b.refundedAmount || 0)), 0);
+  }
+  function outstandingOf(list) {
+    return activeBookings(list).filter(b => b.paymentStatus === "unpaid")
+      .reduce((sum, b) => sum + (b.amount || 0), 0);
   }
 
   function bookingContactName(b) {
@@ -718,11 +778,9 @@ const auth = firebase.auth();
     if (activityFilter === "all" || dateFilter === "all") { grid.innerHTML = ""; return; }
 
     const rows = allBookings.filter(b => b.activityId === activityFilter && b.sessionDate === dateFilter);
-    const booked = rows.reduce((sum, b) => sum + attendeeCountOf(b), 0);
-    const income = rows.filter(b => b.paymentStatus === "paid" || b.paymentStatus === "collected")
-      .reduce((sum, b) => sum + (b.amount || 0), 0);
-    const outstanding = rows.filter(b => b.paymentStatus === "unpaid")
-      .reduce((sum, b) => sum + (b.amount || 0), 0);
+    const booked = activeBookings(rows).reduce((sum, b) => sum + attendeeCountOf(b), 0);
+    const income = incomeOf(rows);
+    const outstanding = outstandingOf(rows);
     const activityLabel = (ACTIVITY_LOOKUP[activityFilter] && ACTIVITY_LOOKUP[activityFilter].name) || activityFilter;
     const dateLabel = new Date(dateFilter + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
     const time = rows.length ? rows[0].sessionTime : "";
@@ -758,7 +816,7 @@ const auth = firebase.auth();
     const activity = ACTIVITY_LOOKUP[activityFilter];
     if (!activity || !activity.attendanceRegister) { section.innerHTML = ""; return; }
 
-    const rows = allBookings.filter(b => b.activityId === activityFilter && b.sessionDate === dateFilter);
+    const rows = activeBookings(allBookings.filter(b => b.activityId === activityFilter && b.sessionDate === dateFilter));
 
     // One row per PERSON. Bookings made through the current booking flow
     // always have an `attendees` array (even a solo adult booking gets a
@@ -864,14 +922,10 @@ const auth = firebase.auth();
 
   function renderSummary() {
     const scope = scopedToActivity();
-    const totalBookings = scope.length;
-    const totalIncome = scope
-      .filter(b => b.paymentStatus === "paid" || b.paymentStatus === "collected")
-      .reduce((sum, b) => sum + (b.amount || 0), 0);
-    const outstanding = scope
-      .filter(b => b.paymentStatus === "unpaid")
-      .reduce((sum, b) => sum + (b.amount || 0), 0);
-    const unpaidCount = scope.filter(b => b.paymentStatus === "unpaid").length;
+    const totalBookings = activeBookings(scope).length;
+    const totalIncome = incomeOf(scope);
+    const outstanding = outstandingOf(scope);
+    const unpaidCount = activeBookings(scope).filter(b => b.paymentStatus === "unpaid").length;
 
     document.getElementById("summaryGrid").innerHTML = `
       <div class="summary-box"><h2>${totalBookings}</h2><p>Total Bookings</p></div>
@@ -934,18 +988,23 @@ const auth = firebase.auth();
       const tagLabel = b.paymentStatus === "paid" ? "Paid Online" : b.paymentStatus === "collected" ? "Collected at Venue" : b.paymentStatus === "free" ? "Free" : "Unpaid";
       const dateLabel = b.sessionDate ? new Date(b.sessionDate + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "";
       const attendeeLine = attendeeSummary(b);
+      const cancelled = isCancelledBooking(b);
+      const cancelNote = cancellationNote(b);
 
       return `
-        <div class="booking-row">
+        <div class="booking-row${cancelled ? " is-cancelled" : ""}">
           <div class="booking-row-main">
             <strong>${bookingContactName(b)}</strong>${typeof b.bookingRef === "string" && b.bookingRef ? `<span class="booking-ref" title="Booking reference">${b.bookingRef}</span>` : ""} · ${b.activityName || b.activityId} — ${dateLabel} ${b.sessionTime || ""}
             ${attendeeLine ? `<div class="booking-row-meta">${attendeeLine}</div>` : ""}
             <div class="booking-row-meta">${bookingContactPhone(b)}${bookingContactEmail(b) ? " · " + bookingContactEmail(b) : ""}${bookingContactPostcode(b) ? " · " + bookingContactPostcode(b) : ""} · £${(b.amount || 0).toFixed(2)} · booked by ${b.bookedBy || "public"}${b.staffEmail ? " (" + b.staffEmail + ")" : ""}</div>
             ${bookingContactExtraSummary(b) ? `<div class="booking-row-meta">${bookingContactExtraSummary(b)}</div>` : ""}
+            ${cancelNote ? `<div class="booking-row-cancel-note">${cancelNote}</div>` : ""}
           </div>
           <div class="booking-row-actions">
+            ${cancelled ? `<span class="booking-tag tag-cancelled">Cancelled</span>` : ""}
             <span class="booking-tag ${tagClass}">${tagLabel}</span>
-            ${b.paymentStatus === "unpaid" ? `<button class="mark-collected-btn" data-id="${b.id}">Mark Collected</button>` : ""}
+            ${b.paymentStatus === "unpaid" && !cancelled ? `<button class="mark-collected-btn" data-id="${b.id}">Mark Collected</button>` : ""}
+            ${!cancelled ? `<button class="cancel-booking-btn" data-cancel-id="${b.id}">Cancel</button>` : ""}
           </div>
         </div>
       `;
@@ -955,6 +1014,10 @@ const auth = firebase.auth();
     if (more) more.addEventListener("click", () => {
       listShown += LIST_PAGE_SIZE;
       renderBookingsList();
+    });
+
+    listEl.querySelectorAll("[data-cancel-id]").forEach(btn => {
+      btn.addEventListener("click", () => openCancelDialog(btn.dataset.cancelId, btn));
     });
 
     listEl.querySelectorAll(".mark-collected-btn").forEach(btn => {
@@ -972,6 +1035,289 @@ const auth = firebase.auth();
     });
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     CANCEL A BOOKING (+ refund)
+     ───────────────────────────────────────────────────────────
+     The "Cancel" button on each booking opens this dialog. All the
+     real work is done by the cancelActivityBooking Cloud Function
+     (functions/cancelActivityBooking.js): it checks staff login, frees
+     the places, refunds the card through Square, records who/when/why
+     and emails the customer. The dialog first asks it for a dry run, so
+     the figures shown (what's cancelled, the most that can be refunded)
+     are the server's own, not a guess made here.
+     ═══════════════════════════════════════════════════════════ */
+  const CANCEL_FUNCTION_URL = "https://europe-west2-northwood-stadium.cloudfunctions.net/cancelActivityBooking";
+  const cxOverlay = document.getElementById("cancelBookingOverlay");
+  const fmt = pence => "£" + (pence / 100).toFixed(2);
+  const escHtml = v => String(v == null ? "" : v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const shortDate = iso => iso ? new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) : "";
+
+  // Shown under a booking that has had people cancelled or money refunded.
+  function cancellationNote(b) {
+    const parts = [];
+    if (isCancelledBooking(b)) {
+      parts.push(`Cancelled ${b.cancelledAt ? shortDate(String(b.cancelledAt).slice(0, 10)) : ""}${b.cancelledBy ? " by " + escHtml(b.cancelledBy) : ""}${b.cancelReason ? " — " + escHtml(b.cancelReason) : ""}`);
+    } else if (Array.isArray(b.cancelledAttendees) && b.cancelledAttendees.length) {
+      parts.push("Cancelled: " + b.cancelledAttendees.map(a => escHtml(a.name)).join(", "));
+    }
+    if (b.refundedAmount) {
+      const venue = (b.refunds || []).some(r => r.method === "venue");
+      parts.push(`Refunded £${Number(b.refundedAmount).toFixed(2)}${venue ? " at the venue" : " to card"}`);
+    }
+    return parts.join(" · ");
+  }
+
+  function newKey() {
+    const a = new Uint8Array(12);
+    crypto.getRandomValues(a);
+    return "cxl_" + Array.from(a, x => x.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function callCancel(body) {
+    const token = await auth.currentUser.getIdToken();
+    const res = await fetch(CANCEL_FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify(body)
+    });
+    let out = {};
+    try { out = await res.json(); } catch (e) { /* not JSON */ }
+    if (!res.ok || !out.success) {
+      const err = new Error(out.error || "Something went wrong. Please try again.");
+      err.code = out.code;
+      throw err;
+    }
+    return out;
+  }
+
+  let cx = null; // the dialog's state while it's open
+
+  async function openCancelDialog(bookingId, opener) {
+    const b = allBookings.find(x => x.id === bookingId);
+    if (!b) return;
+    const today = localTodayIso();
+    const laterSessions = typeof b.bookingRef === "string" && b.bookingRef
+      ? allBookings.filter(x => x.bookingRef === b.bookingRef && x.id !== b.id && !isCancelledBooking(x) && (x.sessionDate || "") >= today && (x.sessionDate || "") >= (b.sessionDate || "")).length
+      : 0;
+    cx = {
+      b, opener, laterSessions,
+      scope: "session",
+      people: (b.attendees || []).map((a, i) => i),
+      refundType: null, amount: "", reason: "", notify: !!bookingContactEmail(b),
+      plan: null, busy: false, error: "", lastSig: null, lastKey: null, planSeq: 0
+    };
+    document.getElementById("adminToast").classList.add("hidden");
+    cxOverlay.innerHTML = `<div class="cx-modal"><h2>Cancel booking</h2><p class="cx-sub">Checking the booking…</p></div>`;
+    cxOverlay.classList.remove("hidden");
+    await refreshPlan();
+  }
+
+  function closeCancelDialog() {
+    cxOverlay.classList.add("hidden");
+    cxOverlay.innerHTML = "";
+    cx = null;
+  }
+  cxOverlay.addEventListener("click", e => { if (e.target === cxOverlay && cx && !cx.busy) closeCancelDialog(); });
+
+  async function refreshPlan() {
+    if (!cx) return;
+    const seq = ++cx.planSeq;
+    try {
+      const out = await callCancel({ bookingId: cx.b.id, scope: cx.scope, attendeeIndexes: cx.people, dryRun: true });
+      if (!cx || seq !== cx.planSeq) return;
+      cx.plan = out.plan;
+      cx.error = "";
+      if (cx.refundType === null || (cx.refundType !== "none" && cx.plan.maxRefundPence === 0)) {
+        cx.refundType = cx.plan.maxRefundPence > 0 ? "full" : "none";
+      }
+    } catch (err) {
+      if (!cx || seq !== cx.planSeq) return;
+      cx.plan = null;
+      cx.error = err.message;
+    }
+    renderCancelDialog();
+  }
+
+  function refundPence() {
+    if (!cx.plan || cx.refundType === "none") return 0;
+    if (cx.refundType === "full") return cx.plan.maxRefundPence;
+    const p = Math.round(parseFloat(String(cx.amount).replace(/[£,\s]/g, "")) * 100);
+    return Number.isFinite(p) ? p : 0;
+  }
+
+  function renderCancelDialog() {
+    if (!cx) return;
+    const { b, plan } = cx;
+    const attendees = b.attendees || [];
+    const who = cx.people.length === attendees.length || !attendees.length
+      ? "everyone on this booking"
+      : cx.people.map(i => attendees[i] && attendees[i].name).filter(Boolean).join(", ");
+
+    let refundBlock = "";
+    if (plan && plan.refundMethod !== "none") {
+      const venue = plan.refundMethod === "venue";
+      refundBlock = `
+        <fieldset class="cx-group">
+          <legend>Refund</legend>
+          ${venue ? `<p class="cx-note">This was paid at the venue, so nothing is refunded automatically. Use this to record money you've handed back at the desk.</p>` : ""}
+          <label class="cx-option"><input type="radio" name="cxRefund" value="full" ${cx.refundType === "full" ? "checked" : ""}>
+            <span>Full refund: ${fmt(plan.maxRefundPence)}${venue ? " (given at the venue)" : "<small>Back to the card they paid with, through Square</small>"}</span></label>
+          <label class="cx-option"><input type="radio" name="cxRefund" value="partial" ${cx.refundType === "partial" ? "checked" : ""}>
+            <span>Part refund${cx.refundType === "partial" ? `<span class="cx-amount">£<input type="text" inputmode="decimal" id="cxAmount" value="${escHtml(cx.amount)}" aria-label="Refund amount in pounds" placeholder="0.00"></span><small>Up to ${fmt(plan.maxRefundPence)}</small>` : ""}</span></label>
+          <label class="cx-option"><input type="radio" name="cxRefund" value="none" ${cx.refundType === "none" ? "checked" : ""}>
+            <span>No refund</span></label>
+        </fieldset>`;
+    } else if (plan && plan.paymentMissing) {
+      refundBlock = `<p class="cx-note">This card payment's details weren't saved with the booking, so it can't be refunded from here. Cancel it, then refund it by hand in the Square Dashboard if needed.</p>`;
+    } else if (plan && b.paymentStatus === "unpaid") {
+      refundBlock = `<p class="cx-note">Nothing has been paid yet, so there's nothing to refund.${cx.people.length < attendees.length ? " They'll owe less for the people who are still booked." : ""}</p>`;
+    }
+
+    const refundP = refundPence();
+    const sessions = plan ? plan.sessions : [];
+    const sessionsText = sessions.length > 1
+      ? `${sessions.length} sessions (${shortDate(sessions[0].date)} – ${shortDate(sessions[sessions.length - 1].date)})`
+      : shortDate(b.sessionDate) + (b.sessionTime ? ", " + escHtml(b.sessionTime) : "");
+    const email = bookingContactEmail(b);
+    const summary = plan ? `Cancelling <strong>${escHtml(who)}</strong> from ${escHtml(b.activityName || "")} on ${sessionsText}.` +
+      (refundP > 0 ? ` Refund <strong>${fmt(refundP)}</strong>${plan.refundMethod === "card" ? " to their card" : " recorded as given at the venue"}.` : "") +
+      (cx.notify && email ? ` An email goes to ${escHtml(email)}.` : "") : "";
+
+    // The dialog is redrawn when a choice changes, so remember what had
+    // focus and put it back afterwards (keyboard users keep their place).
+    const had = document.activeElement && cxOverlay.contains(document.activeElement) ? document.activeElement : null;
+    const focusSel = had ? (had.id ? "#" + had.id
+      : had.dataset.cxPerson != null ? `[data-cx-person="${had.dataset.cxPerson}"]`
+      : had.name ? `[name="${had.name}"][value="${had.value}"]` : null) : null;
+
+    const confirmLabel = cx.busy ? "Working…" : refundP > 0 ? `Cancel & refund ${fmt(refundP)}` : "Cancel booking";
+
+    cxOverlay.innerHTML = `
+      <div class="cx-modal" role="dialog" aria-modal="true" aria-labelledby="cxTitle">
+        <h2 id="cxTitle">Cancel booking</h2>
+        <p class="cx-sub">${escHtml(bookingContactName(b))}${typeof b.bookingRef === "string" && b.bookingRef ? " · " + escHtml(b.bookingRef) : ""} · ${escHtml(b.activityName || "")} · ${shortDate(b.sessionDate)}</p>
+
+        ${attendees.length > 1 ? `
+        <fieldset class="cx-group">
+          <legend>Who's cancelling?</legend>
+          ${attendees.map((a, i) => `<label class="cx-option"><input type="checkbox" data-cx-person="${i}" ${cx.people.includes(i) ? "checked" : ""}>
+            <span>${escHtml(a.name)}<small>${a.type === "adult" ? "Adult" : a.age != null ? "Age " + escHtml(a.age) : "Child"}</small></span></label>`).join("")}
+        </fieldset>` : ""}
+
+        ${cx.laterSessions ? `
+        <fieldset class="cx-group">
+          <legend>Which sessions?</legend>
+          <label class="cx-option"><input type="radio" name="cxScope" value="session" ${cx.scope === "session" ? "checked" : ""}>
+            <span>Just this session<small>${shortDate(b.sessionDate)}${b.sessionTime ? ", " + escHtml(b.sessionTime) : ""}</small></span></label>
+          <label class="cx-option"><input type="radio" name="cxScope" value="all" ${cx.scope === "all" ? "checked" : ""}>
+            <span>This and the rest of the booking<small>${cx.laterSessions + 1} upcoming sessions on ${escHtml(b.bookingRef)}</small></span></label>
+        </fieldset>` : ""}
+
+        ${refundBlock}
+
+        <label class="cx-label" for="cxReason">Reason <span style="font-weight:400;text-transform:none;">(optional, shown to the customer)</span></label>
+        <textarea id="cxReason" maxlength="300" placeholder="e.g. Unwell, can no longer attend">${escHtml(cx.reason)}</textarea>
+
+        ${email ? `<label class="cx-option" style="margin:0.6rem 0 1rem;"><input type="checkbox" id="cxNotify" ${cx.notify ? "checked" : ""}>
+          <span>Email the customer to confirm<small>${escHtml(email)}</small></span></label>` : `<p class="cx-sub" style="margin-top:0.6rem;">No email on this booking, so the customer won't be notified automatically.</p>`}
+
+        ${summary ? `<div class="cx-summary">${summary}</div>` : ""}
+        ${cx.error ? `<div class="cx-msg" role="alert">${escHtml(cx.error)}</div>` : ""}
+
+        <div class="cx-actions">
+          <button type="button" class="cx-keep" id="cxKeep" data-close-modal ${cx.busy ? "disabled" : ""}>Keep booking</button>
+          <button type="button" class="cx-confirm" id="cxConfirm" ${cx.busy || !plan ? "disabled" : ""}>${confirmLabel}</button>
+        </div>
+      </div>`;
+
+    // Wire up
+    cxOverlay.querySelectorAll("[data-cx-person]").forEach(cb => cb.addEventListener("change", () => {
+      const i = Number(cb.dataset.cxPerson);
+      cx.people = cb.checked ? [...new Set([...cx.people, i])].sort((a, z) => a - z) : cx.people.filter(x => x !== i);
+      if (!cx.people.length) { cx.plan = null; cx.error = "Tick at least one person to cancel."; renderCancelDialog(); return; }
+      refreshPlan();
+    }));
+    cxOverlay.querySelectorAll('[name="cxScope"]').forEach(r => r.addEventListener("change", () => { cx.scope = r.value; refreshPlan(); }));
+    cxOverlay.querySelectorAll('[name="cxRefund"]').forEach(r => r.addEventListener("change", () => {
+      cx.refundType = r.value; cx.error = ""; renderCancelDialog();
+      const amt = document.getElementById("cxAmount"); if (amt) amt.focus();
+    }));
+    const amt = document.getElementById("cxAmount");
+    if (amt) amt.addEventListener("input", () => {
+      cx.amount = amt.value;
+      const btn = document.getElementById("cxConfirm");
+      const p = refundPence();
+      if (btn && !cx.busy) btn.textContent = p > 0 ? `Cancel & refund ${fmt(p)}` : "Cancel booking";
+    });
+    const reason = document.getElementById("cxReason");
+    reason.addEventListener("input", () => { cx.reason = reason.value; });
+    const notify = document.getElementById("cxNotify");
+    if (notify) notify.addEventListener("change", () => { cx.notify = notify.checked; renderCancelDialog(); });
+    document.getElementById("cxKeep").addEventListener("click", closeCancelDialog);
+    document.getElementById("cxConfirm").addEventListener("click", confirmCancel);
+
+    const back = focusSel && cxOverlay.querySelector(focusSel);
+    if (back && !back.disabled) back.focus();
+    else if (!cxOverlay.contains(document.activeElement)) {
+      const first = cxOverlay.querySelector("input, textarea, button:not([disabled])");
+      if (first) first.focus();
+    }
+  }
+
+  async function confirmCancel() {
+    if (!cx || !cx.plan || cx.busy) return;
+    const refundP = refundPence();
+    if (cx.refundType === "partial" && (refundP < 1 || refundP > cx.plan.maxRefundPence)) {
+      cx.error = `Enter a refund between £0.01 and ${fmt(cx.plan.maxRefundPence)}, or choose Full or No refund.`;
+      renderCancelDialog();
+      return;
+    }
+    const body = {
+      bookingId: cx.b.id,
+      scope: cx.scope,
+      attendeeIndexes: cx.people,
+      refund: cx.plan.refundMethod === "none" ? { type: "none" } : { type: cx.refundType, amountPence: refundP },
+      reason: cx.reason.trim(),
+      notifyCustomer: cx.notify
+    };
+    // Same choices as a failed attempt → same key, so a retry can never
+    // refund twice. Different choices → a fresh key.
+    const sig = JSON.stringify(body);
+    if (sig !== cx.lastSig) { cx.lastSig = sig; cx.lastKey = newKey(); }
+    body.idempotencyKey = cx.lastKey;
+
+    cx.busy = true; cx.error = ""; renderCancelDialog();
+    try {
+      const out = await callCancel(body);
+      const attendees = cx.b.attendees || [];
+      const whoDone = cx.people.length < attendees.length
+        ? cx.people.map(i => attendees[i] && attendees[i].name).filter(Boolean).join(", ") + " cancelled"
+        : "Booking cancelled";
+      closeCancelDialog();
+      const bits = [whoDone + (out.sessionsCancelled > 1 ? ` from ${out.sessionsCancelled} sessions` : "")];
+      if (out.refundPence) bits.push(`${fmt(out.refundPence)} refunded${out.refundMethod === "card" ? " to card" : " (at venue)"}`);
+      if (out.emailed) bits.push("customer emailed");
+      showAdminToast(bits.join(" · ") + ".");
+      const keep = listShown;
+      if (fullHistoryLoaded) await loadFullHistory(); else await loadBookings();
+      listShown = keep;
+      renderBookingsList();
+    } catch (err) {
+      if (!cx) return;
+      cx.busy = false;
+      cx.error = err.message;
+      renderCancelDialog();
+    }
+  }
+
+  function showAdminToast(text) {
+    const t = document.getElementById("adminToast");
+    t.textContent = text;
+    t.classList.remove("hidden");
+    clearTimeout(showAdminToast._t);
+    showAdminToast._t = setTimeout(() => t.classList.add("hidden"), 6000);
+  }
+
   document.getElementById("exportCsvBtn").addEventListener("click", () => {
     const rows = filteredBookings();
     // One pair of columns per custom question defined on any activity (e.g.
@@ -979,7 +1325,7 @@ const auth = firebase.auth();
     // answer, "Attendees" listing each child's answer against their name,
     // since a booking can cover several children with different answers.
     const extraHeaderPairs = ALL_EXTRA_FIELDS.flatMap(f => [`${f.label} (Contact)`, `${f.label} (Attendees)`]);
-    const header = ["Booking Ref","Contact Name","Email","Phone","Postcode","Activity","Provider","Session Date","Session Time","Attendees","Adults","Children","Amount","Payment Method","Payment Status","Attended","Booked By","Staff Email", ...extraHeaderPairs];
+    const header = ["Booking Ref","Contact Name","Email","Phone","Postcode","Activity","Provider","Session Date","Session Time","Attendees","Adults","Children","Amount","Payment Method","Payment Status","Booking Status","Refunded","Cancelled People","Attended","Booked By","Staff Email", ...extraHeaderPairs];
     const csvRows = [header.join(",")];
 
     rows.forEach(b => {
@@ -1004,7 +1350,9 @@ const auth = firebase.auth();
       const line = [
         typeof b.bookingRef === "string" ? b.bookingRef : "", bookingContactName(b), bookingContactEmail(b), bookingContactPhone(b), bookingContactPostcode(b), b.activityName, b.provider, b.sessionDate, b.sessionTime,
         attendeeCountOf(b), adults, kidNames,
-        (b.amount || 0).toFixed(2), b.paymentMethod, b.paymentStatus, attendedSummary, b.bookedBy, b.staffEmail || "", ...extraValues
+        (b.amount || 0).toFixed(2), b.paymentMethod, b.paymentStatus,
+        isCancelledBooking(b) ? "Cancelled" : "Active", (b.refundedAmount || 0).toFixed(2),
+        (b.cancelledAttendees || []).map(a => a.name).join("; "), attendedSummary, b.bookedBy, b.staffEmail || "", ...extraValues
       ].map(v => `"${String(v || "").replace(/"/g, '""')}"`);
       csvRows.push(line.join(","));
     });
@@ -1150,13 +1498,13 @@ const auth = firebase.auth();
   }
 
   function buildRow(profile, bookings, isRegistered) {
-    const paidBookings = bookings.filter(b => b.paymentStatus === "paid" || b.paymentStatus === "collected");
+    const active = activeBookings(bookings);
     return {
       ...profile,
       isRegistered,
       bookings,
-      bookingCount: bookings.length,
-      totalSpent: paidBookings.reduce((sum, b) => sum + (b.amount || 0), 0),
+      bookingCount: active.length,
+      totalSpent: incomeOf(bookings), // what they've paid, less any refunds
       activities: [...new Set(bookings.map(b => b.activityName).filter(Boolean))]
     };
   }
@@ -1292,5 +1640,6 @@ const auth = firebase.auth();
 })();
 </script>
 
+<script src="dialogs.js" defer></script>
 </body>
 </html>
