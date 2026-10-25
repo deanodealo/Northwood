@@ -1403,7 +1403,16 @@
         // case-sensitive (an older save may hold e.g. "WNF.html").
         const infoPage = (a.infoPage || "").toLowerCase();
         const hasPage = /^[a-z0-9_-]+\.html(#[a-z0-9_-]+)?$/.test(infoPage);
-        const link = hasPage
+        // Sub-brands with their own button (as supplied by Northwood): colour,
+        // text colour and label. Keyed by the activity's More info page.
+        // Funetics pink is the deeper #D13A6E so white text passes WCAG AA.
+        const SUB_BRAND_BUTTONS = {
+          "funetics.html": { bg: "#D13A6E", ink: "#FFFFFF", label: "Explore Funetics" }
+        };
+        const sub = hasPage && SUB_BRAND_BUTTONS[infoPage.replace(/#.*$/, "")];
+        const link = sub
+          ? `<a href="${escAttr(infoPage)}" class="activity-feature-link" style="--btn-bg:${sub.bg}; --btn-ink:${sub.ink};">${sub.label}</a>`
+          : hasPage
           ? `<a href="${escAttr(infoPage)}" class="activity-feature-link">Find out more &amp; book</a>`
           : `<a href="activitybooking.html?activity=${encodeURIComponent(a.id)}" class="activity-feature-link">Book your session</a>`;
         return `
