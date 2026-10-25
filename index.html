@@ -115,6 +115,11 @@
     .hero-title .ptw-2 { animation: ptwHit 0.7s cubic-bezier(.2,.8,.2,1) 0.75s forwards; }
     .hero-title .ptw-3 { animation: ptwHit 0.7s cubic-bezier(.2,.8,.2,1) 1.35s forwards; }
 
+    /* Aerial hero photo: real colour, dimmed slightly so the headline reads.
+       (The old stock image used opacity 0.7 + saturate 1.5, which over-cooks
+       a bright aerial.) */
+    .hero-img--aerial { opacity: 0.8; filter: saturate(1.05) contrast(1.02); object-position: center 55%; }
+
     @media (prefers-reduced-motion: reduce) {
       .hero-title .ptw-word { opacity: 1 !important; animation: none !important; transform: none !important; }
     }
@@ -408,7 +413,7 @@
     <!-- ============ HERO ============ -->
     <section class="hero" id="hero">
       <div class="hero-media" aria-hidden="true">
-        <img src="https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=2000&auto=format&fit=crop" alt="" class="hero-img" fetchpriority="high">
+        <img src="images/drone.JPG" alt="" class="hero-img hero-img--aerial" fetchpriority="high">
         <div class="hero-scrim"></div>
         <div class="hero-lines" aria-hidden="true"></div>
         <div class="track-graphic hero-track" aria-hidden="true"></div>
