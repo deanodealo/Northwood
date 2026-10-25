@@ -868,16 +868,37 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 28px;
 }
 
+/* Solid button in the Track Social button style (chunky uppercase,
+   rounded corners). White by default with text in the card's own colour,
+   so it stands out on any activity colour. A card can set --btn-bg /
+   --btn-ink inline to use its own sub-brand button (e.g. Track Social pink). */
 .activity-feature-link {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--c-white);
+  align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  transition: transform 0.2s var(--ease);
+  justify-content: center;
+  background: var(--btn-bg, var(--c-white));
+  color: var(--btn-ink, var(--accent));
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  padding: 13px 24px;
+  border-radius: 6px;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), filter 0.2s var(--ease);
 }
 
-.activity-feature-link:hover { transform: translateX(4px); }
+.activity-feature-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(11,11,12,0.28);
+  filter: brightness(0.94);
+}
+
+@media (max-width: 560px) {
+  .activity-feature-link { align-self: stretch; text-align: center; }
+}
 
 /* Each card's colour comes from its activity's brand colour, set
    inline by the home page script (manage-activities.html picks it). */

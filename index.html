@@ -1336,7 +1336,7 @@
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Youth Club</h3>
               <p class="activity-feature-body">Regular youth club sessions with sport, games and activities in a safe, friendly space for young people to meet and get active.</p>
-              <a href="youthclub.html" class="activity-feature-link">Find out more &amp; register →</a>
+              <a href="youthclub.html" class="activity-feature-link">Find out more &amp; register</a>
             </div>
           </div>
         `;
@@ -1348,7 +1348,7 @@
             <div class="activity-feature-content">
               <h3 class="activity-feature-title">Track Social</h3>
               <p class="activity-feature-body">A free monthly community running event for all abilities, with music, food and a social after the run.</p>
-              <a href="tracksocial.html" class="activity-feature-link">Find out more &amp; register →</a>
+              <a href="tracksocial.html" class="activity-feature-link" style="--btn-bg:#C00BBE; --btn-ink:#fff;">Explore Track Social</a>
             </div>
           </div>
         `;
@@ -1404,8 +1404,8 @@
         const infoPage = (a.infoPage || "").toLowerCase();
         const hasPage = /^[a-z0-9_-]+\.html(#[a-z0-9_-]+)?$/.test(infoPage);
         const link = hasPage
-          ? `<a href="${escAttr(infoPage)}" class="activity-feature-link">Find out more &amp; book →</a>`
-          : `<a href="activitybooking.html?activity=${encodeURIComponent(a.id)}" class="activity-feature-link">Click here to book your session →</a>`;
+          ? `<a href="${escAttr(infoPage)}" class="activity-feature-link">Find out more &amp; book</a>`
+          : `<a href="activitybooking.html?activity=${encodeURIComponent(a.id)}" class="activity-feature-link">Book your session</a>`;
         return `
           <div class="activity-feature" style="--accent:${normalizeAccent(a.accentColor)}">
             <div class="activity-feature-media">${media}</div>
