@@ -1528,3 +1528,50 @@ a { color: inherit; text-decoration: none; }
    and menu links have their own display rules, which would otherwise
    override that and leave a link that does nothing. */
 [data-aths-open][hidden], [data-aths-open-wrap][hidden] { display: none !important; }
+
+/* ==========================================================================
+   BREADCRUMBS + BACK LINK (added by crumbs.js on every public subpage)
+   Sits just under the fixed header, over the top padding of the page's
+   first section. "dark" = white text over a photo/dark hero,
+   "light" = dark text on a light page.
+   ========================================================================== */
+.crumbs {
+  position: absolute; left: 0; right: 0; top: var(--header-h); z-index: 5;
+  padding: 16px var(--pad) 0;
+  font-family: var(--f-body); font-size: 13px; font-weight: 500; line-height: 1.4;
+}
+.crumbs-inner { max-width: var(--max-w); margin: 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+.crumbs-back {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--f-display); font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.6px;
+  padding: 5px 12px 5px 8px; border-radius: 999px;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.crumbs-back svg { width: 14px; height: 14px; }
+.crumbs-list { list-style: none; display: flex; flex-wrap: wrap; align-items: center; margin: 0; padding: 0; min-width: 0; }
+.crumbs-list li { display: inline-flex; align-items: center; }
+.crumbs-list li + li::before { content: "\203A"; margin: 0 8px; opacity: 0.6; font-size: 15px; }
+.crumbs-list a { text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color 0.2s var(--ease); }
+.crumbs-list a:hover { text-decoration-color: currentColor; }
+.crumbs-list [aria-current="page"] { font-weight: 700; }
+
+.crumbs--dark { color: rgba(255,255,255,0.78); }
+.crumbs--dark .crumbs-list [aria-current="page"] { color: var(--c-white); }
+.crumbs--dark .crumbs-back { color: var(--c-white); border: 1px solid rgba(255,255,255,0.35); background: rgba(11,11,12,0.25); }
+.crumbs--dark .crumbs-back:hover { border-color: var(--c-white); background: rgba(255,255,255,0.1); }
+
+.crumbs--light { color: var(--c-grey-mid); }
+.crumbs--light .crumbs-list [aria-current="page"] { color: var(--c-black); }
+.crumbs--light .crumbs-back { color: var(--c-black); border: 1px solid rgba(11,11,12,0.2); background: var(--c-white); }
+.crumbs--light .crumbs-back:hover { border-color: var(--c-black); }
+
+/* Booking page: sits in the page heading instead of under a site header */
+.crumbs--inline { position: static; padding: 0; margin-bottom: 18px; }
+
+@media (max-width: 600px) {
+  .crumbs { padding-top: 12px; font-size: 12px; }
+  /* On phones the trail can get long: keep the Back button and just the
+     page's parent + current page. */
+  .crumbs-list li:not(:nth-last-child(-n+2)) { display: none; }
+  .crumbs-list li:nth-last-child(2)::before { content: none; }
+}
