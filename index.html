@@ -1296,6 +1296,7 @@
   })();
   </script>
 
+  <script src="activity-card.js"></script>
   <script>
   /* ═══════════════════════════════════════════════════════════
      HOME PAGE ACTIVITIES — reads the same "activities" Firestore
@@ -1308,14 +1309,8 @@
   (function () {
     const featuresEl = document.getElementById("activitiesFeatures");
 
-    function escAttr(str) {
-      return String(str == null ? "" : str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
-    }
-
-    // Activity colours are limited to the four brand colours (picked in
-    // manage-activities.html). Activities saved before the rebrand may still
-    // hold an old colour, so those are mapped to the nearest brand colour.
-    const BRAND_ACCENTS = ["#DA3832", "#3F7148", "#3678B5", "#1A1818"];
+    // Activities saved before the rebrand may still hold an old colour,
+    // so those are mapped to the nearest brand colour.
     const LEGACY_ACCENTS = { "#377BBA": "#3678B5", "#2563EB": "#3678B5", "#1E3A8A": "#3678B5", "#7C3AED": "#3678B5", "#0D9488": "#3F7148", "#15803D": "#3F7148", "#374151": "#1A1818", "#C2410C": "#DA3832", "#BE123C": "#DA3832" };
     function normalizeAccent(hex) {
       const h = String(hex || "").toUpperCase();
@@ -1330,30 +1325,37 @@
     //  - Youth Club: registration is handled by a third party (eequ, linked
     //    from youthclub.html).
     //  - Track Social: free monthly event with its own page.
-    const YOUTH_CLUB_CARD = `
-          <div class="activity-feature" style="--accent:#3678B5">
-            <div class="activity-feature-media"><img src="images/youthclub-card.jpg" alt="Youth Club at Northwood" style="object-position: center bottom;"></div>
-            <div class="activity-feature-content">
-              <h3 class="activity-feature-title">Youth Club</h3>
-              <p class="activity-feature-body">Regular youth club sessions with sport, games and activities in a safe, friendly space for young people to meet and get active.</p>
-              <a href="youthclub.html" class="activity-feature-link">Find out more &amp; register</a>
-            </div>
-          </div>
-        `;
-    // The Track Social logo is a transparent wordmark, so it sits whole
-    // (contain, not cover) on a black panel rather than being cropped.
-    const TRACK_SOCIAL_CARD = `
-          <div class="activity-feature" style="--accent:#1A1818">
-            <div class="activity-feature-media" style="background:#1A1818; display:flex; align-items:center; justify-content:center; padding:32px;"><img src="images/track-social-logo.png" alt="Track Social at Northwood Stadium" style="object-fit:contain; height:auto; max-height:260px;"></div>
-            <div class="activity-feature-content">
-              <h3 class="activity-feature-title">Track Social</h3>
-              <p class="activity-feature-body">A free monthly community running event for all abilities, with music, food and a social after the run.</p>
-              <a href="tracksocial.html" class="activity-feature-link" style="--btn-bg:#C00BBE; --btn-ink:#fff;">Explore Track Social</a>
-            </div>
-          </div>
-        `;
-    const PERMANENT_CARDS = YOUTH_CLUB_CARD + TRACK_SOCIAL_CARD;
+    const PERMANENT_CARDS = [
+      {
+        title: "Youth Club",
+        href: "youthclub.html",
+        buttonLabel: "Explore Youth Club",
+        panel: "#1A1818", highlight: "#DA3832",
+        imageUrl: "images/youthclub-thumbs-up.jpg", imagePosition: "38% center",
+        logoUrl: "images/youthclub-logo.png",
+        schedule: "Mondays & Fridays · 4–6pm · Free",
+        body: "Sport, games and youth work in a safe, friendly space for young people to meet and get active."
+      },
+      {
+        title: "Track Social",
+        href: "tracksocial.html",
+        buttonLabel: "Explore Track Social",
+        panel: "#0E0D12", highlight: "#C00BBE",
+        imageUrl: "images/track-social.jpg", imagePosition: "center",
+        logoUrl: "images/track-social-logo.png",
+        schedule: "Last Monday of every month · 6:30–8:30pm · Free",
+        body: "Our free monthly community running event, with a guest running club, music, food and a social afterwards. All abilities welcome."
+      }
+    ].map(ActivityCard.html).join("");
     const MSG_STYLE = 'color:var(--c-grey-mid); font-family:var(--f-body);';
+
+    // Activity's own More info page (e.g. funetics.html), or "" if none.
+    // Lower-cased because page files are lower-case and GitHub Pages is
+    // case-sensitive (an older save may hold e.g. "WNF.html").
+    function infoPageOf(a) {
+      const p = (a.infoPage || "").toLowerCase();
+      return /^[a-z0-9_-]+\.html(#[a-z0-9_-]+)?$/.test(p) ? p : "";
+    }
 
     function renderHomeActivities(activities) {
       if (!activities.length) {
@@ -1363,12 +1365,11 @@
       }
       // Activities that share a More info page (e.g. WNF set up as one
       // activity per age group, all pointing at wnf.html) show as ONE card.
-      // The first one created supplies the image and description, and the
-      // title is the part of their names they have in common ("WNF").
-      const pageOf = a => {
-        const p = (a.infoPage || "").toLowerCase();
-        return /^[a-z0-9_-]+\.html(#[a-z0-9_-]+)?$/.test(p) ? p.replace(/#.*$/, "") : "";
-      };
+      // Each card detail (photo, logo, "when" line, text, colours, button)
+      // comes from the first of them that has it filled in, so staff only
+      // need to set the card up on one of them. The title is the part of
+      // their names they have in common ("WNF").
+      const pageOf = a => infoPageOf(a).replace(/#.*$/, "");
       const commonTitle = members => {
         if (members.length === 1) return members[0].name;
         const words = members.map(m => String(m.name || "").trim().split(/\s+/));
@@ -1380,51 +1381,40 @@
         return common.join(" ").replace(/[\s\-–—:(·|]+$/, "").replace(/[\s\-–—:(·|]*\b(ages?|age group|group)$/i, "").replace(/[\s\-–—:(·|]+$/, "") || members[0].name;
       };
       const seenPages = new Set();
-      const cards = [];
+      const groups = [];
       // Pages that already have a permanent card above (Track Social has
       // its own branded card), so their activities don't add a second one.
-      const PERMANENT_PAGES = new Set(["tracksocial.html"]);
+      const PERMANENT_PAGES = new Set(["tracksocial.html", "youthclub.html"]);
       activities.forEach(a => {
         const page = pageOf(a);
-        if (!page) { cards.push({ a, title: a.name }); return; }
+        if (!page) { groups.push({ members: [a], title: a.name }); return; }
         if (PERMANENT_PAGES.has(page)) return;
         if (seenPages.has(page)) return;
         seenPages.add(page);
-        cards.push({ a, title: commonTitle(activities.filter(x => pageOf(x) === page)) });
+        const members = activities.filter(x => pageOf(x) === page);
+        groups.push({ members, title: commonTitle(members) });
       });
 
-      featuresEl.innerHTML = PERMANENT_CARDS + cards.map(({ a, title }) => {
-        const media = a.imageUrl ? `<img src="${a.imageUrl}" alt="${escAttr(title)}">` : "";
-        // Activities with their own page (the "More info page" set in Manage
-        // Activities, e.g. funetics.html) link there, and customers book
+      featuresEl.innerHTML = PERMANENT_CARDS + groups.map(({ members, title }) => {
+        const first = members[0];
+        const pick = key => { const m = members.find(x => x[key]); return m ? m[key] : ""; };
+        // Activities with their own page link there, and customers book
         // from that page. Otherwise go straight to booking, opened on this
         // activity's tab.
-        // Lower-cased because page files are lower-case and GitHub Pages is
-        // case-sensitive (an older save may hold e.g. "WNF.html").
-        const infoPage = (a.infoPage || "").toLowerCase();
-        const hasPage = /^[a-z0-9_-]+\.html(#[a-z0-9_-]+)?$/.test(infoPage);
-        // Sub-brands with their own button (as supplied by Northwood): colour,
-        // text colour and label. Keyed by the activity's More info page.
-        // Funetics pink is the deeper #D13A6E so white text passes WCAG AA.
-        const SUB_BRAND_BUTTONS = {
-          "funetics.html": { bg: "#D13A6E", ink: "#FFFFFF", label: "Explore Funetics" }
-        };
-        const sub = hasPage && SUB_BRAND_BUTTONS[infoPage.replace(/#.*$/, "")];
-        const link = sub
-          ? `<a href="${escAttr(infoPage)}" class="activity-feature-link" style="--btn-bg:${sub.bg}; --btn-ink:${sub.ink};">${sub.label}</a>`
-          : hasPage
-          ? `<a href="${escAttr(infoPage)}" class="activity-feature-link">Find out more &amp; book</a>`
-          : `<a href="activitybooking.html?activity=${encodeURIComponent(a.id)}" class="activity-feature-link">Book your session</a>`;
-        return `
-          <div class="activity-feature" style="--accent:${normalizeAccent(a.accentColor)}">
-            <div class="activity-feature-media">${media}</div>
-            <div class="activity-feature-content">
-              <h3 class="activity-feature-title">${title}</h3>
-              <p class="activity-feature-body">${a.description || ""}</p>
-              ${link}
-            </div>
-          </div>
-        `;
+        const page = infoPageOf(first);
+        const href = page || `activitybooking.html?activity=${encodeURIComponent(first.id)}`;
+        const defaultLabel = page ? `Explore ${title}` : "Book your session";
+        return ActivityCard.html({
+          title,
+          href,
+          buttonLabel: pick("cardButtonLabel") || defaultLabel,
+          panel: normalizeAccent(first.accentColor),
+          highlight: pick("highlightColor"),
+          imageUrl: pick("imageUrl"),
+          logoUrl: pick("logoUrl"),
+          schedule: pick("cardSchedule"),
+          body: pick("description")
+        });
       }).join("");
     }
 
@@ -1476,4 +1466,4 @@
   <script src="dialogs.js" defer></script>
   <script src="tournament-live.js" defer></script>
 </body>
-</html>
+</html>

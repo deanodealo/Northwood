@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="activity-card.js"></script>
 
 <style>
 /* ══════════════════════════════════════════════════════════
@@ -237,6 +238,14 @@ input[type="date"], input[type="time"] {
   position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%;
   background: var(--c-black); color: white; border: none; cursor: pointer; font-size: 0.9rem; line-height: 1;
 }
+/* — homepage card — */
+.ma-logo-preview-wrap { position: relative; display: inline-block; margin-bottom: 1.25rem; padding: 14px 18px; border-radius: 10px; background: var(--logo-bg, #1A1818); }
+.ma-logo-preview { max-width: 260px; max-height: 110px; display: block; }
+.ma-card-preview { max-width: 640px; margin: 0.4rem 0 1.5rem; }
+.ma-card-preview .activity-feature { min-height: 400px; box-shadow: 0 10px 24px rgba(11,11,12,0.12); }
+.ma-card-preview .activity-feature-link { pointer-events: none; }
+.ma-swatch-none { background: repeating-linear-gradient(45deg, #fff 0 5px, #e6e1da 5px 10px) !important; }
+.ma-swatch-none.selected::after { color: var(--c-black); }
 .ma-upload-progress { font-family: var(--f-body); font-size: 0.78rem; color: var(--c-grey-mid); margin-top: 0.4rem; }
 
 /* — sessions editor — */
@@ -382,7 +391,7 @@ input[type="date"], input[type="time"] {
           <label>More info page (optional)</label>
           <input type="text" id="fInfoPage" placeholder="e.g. funetics.html">
         </div>
-        <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">If this activity has its own page on the website, enter its file name here. The homepage card will then say "Find out more &amp; book" and open that page, and customers book from there. Leave blank to send customers straight to the booking page.</p>
+        <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">If this activity has its own page on the website, enter its file name here. The homepage card's button will then open that page, and customers book from there. Leave blank to send customers straight to the booking page.</p>
         <div class="form-row">
           <div>
             <label>Age Note (optional)</label>
@@ -427,11 +436,38 @@ input[type="date"], input[type="time"] {
         <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">Leave blank for no block discount. A block is <strong>every upcoming session</strong> on the list below: customers who book all of them in one go pay this price per session instead of the normal price, per person (e.g. 7 sessions at £6 = £42 each). The booking page shows a "Block book &amp; save" button for it. If any upcoming session is full, the block offer is withdrawn.</p>
 
         <div class="ma-section-label">Colour Scheme</div>
-        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Pick the colour of the facility this activity runs in — Pitch green for 3G / football, Court blue for the sports hall, Gym black for the gym, Track red for athletics or anything else. Activities with their own branding (like Funetics) can use an extra colour or a custom one. Used for the activity's tab, booking card and home page card.</p>
+        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Pick the colour of the facility this activity runs in — Pitch green for 3G / football, Court blue for the sports hall, Gym black for the gym, Track red for athletics or anything else. Activities with their own branding (like Funetics or WNF) can use an extra colour or a custom one. Used for the activity's tab, booking card and the background of its homepage card.</p>
         <div class="ma-swatches" id="colorSwatches"></div>
 
         <div class="ma-section-label">Photo (optional)</div>
+        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Shown on the left of the homepage card and on the booking page. A landscape photo works best; it's cropped to fit.</p>
         <div id="imageUploadArea"></div>
+
+        <div class="ma-section-label">Homepage Card</div>
+        <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">How this activity looks in What's On on the homepage — the preview below updates as you type. It also uses the photo above and the Description. If several activities share a More info page (like the WNF age groups) they show as one card, and each detail comes from the first of them that has it filled in, so you only need to set the card up on one.</p>
+
+        <label style="display:block; margin-bottom:0.4rem;">Logo (optional)</label>
+        <p class="field-hint" style="margin:0 0 0.6rem;">Shown in place of the activity name. Use a PNG with a see-through background so it sits cleanly on the card colour.</p>
+        <div id="logoUploadArea"></div>
+
+        <div class="form-row">
+          <div>
+            <label>"When" line (optional)</label>
+            <input type="text" id="fCardSchedule" maxlength="90" placeholder="e.g. Wednesdays · 5–8pm · Ages 4–6, 7–9, 10+">
+          </div>
+          <div>
+            <label>Button text (optional)</label>
+            <input type="text" id="fCardButtonLabel" maxlength="30" placeholder="e.g. Explore WNF">
+          </div>
+        </div>
+        <p class="field-hint" style="margin:-0.9rem 0 0.9rem;">The "when" line sits under the logo in capitals. Leave the button text blank for "Explore …" (or "Book your session" if the activity has no page of its own).</p>
+
+        <label style="display:block; margin-bottom:0.4rem;">Highlight colour (optional)</label>
+        <p class="field-hint" style="margin:0 0 0.6rem;">Used for the card's outline, the "when" line and the button — e.g. Funetics pink on a Funetics purple card. Choose "None" for a plain white button.</p>
+        <div class="ma-swatches" id="highlightSwatches"></div>
+
+        <label style="display:block; margin:0.6rem 0 0.4rem;">Preview</label>
+        <div class="ma-card-preview" id="cardPreview"></div>
 
         <div class="ma-section-label">Sessions</div>
         <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Every date customers can book onto. Past sessions are hidden from the booking page automatically, and folded away below so this list stays short.</p>
@@ -1044,6 +1080,11 @@ const SEED_ACTIVITIES = [
   const slugPreview = document.getElementById("slugPreview");
   const colorSwatchesEl = document.getElementById("colorSwatches");
   const imageUploadArea = document.getElementById("imageUploadArea");
+  const logoUploadArea = document.getElementById("logoUploadArea");
+  const highlightSwatchesEl = document.getElementById("highlightSwatches");
+  const cardPreviewEl = document.getElementById("cardPreview");
+  const fCardSchedule = document.getElementById("fCardSchedule");
+  const fCardButtonLabel = document.getElementById("fCardButtonLabel");
   const sessionListEl = document.getElementById("sessionList");
   const formMsg = document.getElementById("formMsg");
   const formCancelBtn = document.getElementById("formCancelBtn");
@@ -1054,6 +1095,10 @@ const SEED_ACTIVITIES = [
   let currentAccent = ACCENT_PRESETS[0].hex;
   let currentImageUrl = null;
   let pendingImageFile = null; // resized Blob waiting to be uploaded on Save
+  let currentLogoUrl = null;
+  let pendingLogoFile = null; // resized PNG Blob waiting to be uploaded on Save
+  let currentHighlight = ""; // "" = none (white button)
+  let previewImageSrc = null, previewLogoSrc = null; // object URLs for pending files
   let bookedCountsForEdit = {}; // sessionId -> live booked count, only populated when editing
   let currentExtraFields = []; // custom questions for this activity — see CUSTOM QUESTIONS block above
 
@@ -1218,6 +1263,121 @@ const SEED_ACTIVITIES = [
       currentAccent = custom.value.toUpperCase();
       renderColorSwatches();
     });
+    updateCardPreview();
+  }
+
+  // Highlight colour for the homepage card (outline, "when" line, button).
+  function renderHighlightSwatches() {
+    const all = [...ACCENT_PRESETS, ...EXTRA_PRESETS];
+    const swatch = p => `
+      <div class="ma-swatch${p.hex === currentHighlight ? " selected" : ""}" style="background:${p.hex}" data-hex="${p.hex}" title="${p.label}"></div>`;
+    const isPreset = !currentHighlight || all.some(p => p.hex === currentHighlight);
+    highlightSwatchesEl.innerHTML =
+      `<div class="ma-swatch ma-swatch-none${currentHighlight ? "" : " selected"}" data-hex="" title="None — white button"></div>` +
+      all.map(swatch).join("") +
+      `<label class="ma-swatch-custom${isPreset ? "" : " selected"}" title="Pick any colour">
+         <input type="color" id="customHighlight" value="${isPreset ? "#d13a6e" : currentHighlight.toLowerCase()}"> Custom…
+       </label>`;
+    highlightSwatchesEl.querySelectorAll(".ma-swatch").forEach(el => {
+      el.addEventListener("click", () => {
+        currentHighlight = el.dataset.hex;
+        renderHighlightSwatches();
+      });
+    });
+    const custom = document.getElementById("customHighlight");
+    custom.addEventListener("change", () => {
+      currentHighlight = custom.value.toUpperCase();
+      renderHighlightSwatches();
+    });
+    updateCardPreview();
+  }
+
+  // Live preview, drawn by the same code as the homepage (activity-card.js).
+  function updateCardPreview() {
+    if (!cardPreviewEl) return;
+    const infoPage = fInfoPage.value.trim().replace(/^\.?\//, "").toLowerCase();
+    const hasPage = /^[a-z0-9_-]+\.html(#[a-z0-9_-]+)?$/.test(infoPage);
+    const title = fName.value.trim() || "Activity name";
+    if (previewImageSrc) { URL.revokeObjectURL(previewImageSrc); previewImageSrc = null; }
+    if (previewLogoSrc) { URL.revokeObjectURL(previewLogoSrc); previewLogoSrc = null; }
+    if (pendingImageFile) previewImageSrc = URL.createObjectURL(pendingImageFile);
+    if (pendingLogoFile) previewLogoSrc = URL.createObjectURL(pendingLogoFile);
+    const logoWrap = logoUploadArea.querySelector(".ma-logo-preview-wrap");
+    if (logoWrap) logoWrap.style.setProperty("--logo-bg", currentAccent);
+    cardPreviewEl.innerHTML = ActivityCard.html({
+      title,
+      href: "#",
+      buttonLabel: fCardButtonLabel.value.trim() || (hasPage ? `Explore ${title}` : "Book your session"),
+      panel: currentAccent,
+      highlight: currentHighlight,
+      imageUrl: previewImageSrc || currentImageUrl,
+      logoUrl: previewLogoSrc || currentLogoUrl,
+      schedule: fCardSchedule.value.trim(),
+      body: fDescription.value.trim()
+    });
+  }
+  [fName, fDescription, fInfoPage, fCardSchedule, fCardButtonLabel].forEach(el => el.addEventListener("input", updateCardPreview));
+
+  function renderLogoArea() {
+    if (currentLogoUrl || pendingLogoFile) {
+      const src = pendingLogoFile ? URL.createObjectURL(pendingLogoFile) : currentLogoUrl;
+      logoUploadArea.innerHTML = `
+        <div class="ma-logo-preview-wrap" style="--logo-bg:${currentAccent}">
+          <img class="ma-logo-preview" src="${src}" alt="Logo">
+          <button type="button" class="ma-image-remove" id="removeLogoBtn" title="Remove logo">✕</button>
+        </div>
+      `;
+      document.getElementById("removeLogoBtn").addEventListener("click", () => {
+        currentLogoUrl = null;
+        pendingLogoFile = null;
+        renderLogoArea();
+      });
+    } else {
+      logoUploadArea.innerHTML = `
+        <label class="ma-dropzone" id="logoDropzone" for="logoFileInput">
+          <p><strong>Click to upload a logo</strong>, or drag one here.<br>PNG with a see-through background works best.</p>
+          <input type="file" id="logoFileInput" accept="image/png, image/webp, image/jpeg">
+        </label>
+      `;
+      const dz = document.getElementById("logoDropzone");
+      const input = document.getElementById("logoFileInput");
+      input.addEventListener("change", () => { if (input.files[0]) handleLogoFile(input.files[0]); });
+      dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("dragover"); });
+      dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+      dz.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dz.classList.remove("dragover");
+        if (e.dataTransfer.files[0]) handleLogoFile(e.dataTransfer.files[0]);
+      });
+    }
+    updateCardPreview();
+  }
+
+  // Logos stay PNG (keeps the see-through background), max 800px wide.
+  function handleLogoFile(file) {
+    if (!file.type.startsWith("image/")) {
+      formMsg.textContent = "Please choose an image file for the logo.";
+      formMsg.className = "form-message error";
+      return;
+    }
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = () => {
+        const scale = Math.min(1, 800 / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          pendingLogoFile = blob;
+          currentLogoUrl = null;
+          renderLogoArea();
+        }, "image/png");
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 
   function renderImageArea() {
@@ -1234,6 +1394,7 @@ const SEED_ACTIVITIES = [
         pendingImageFile = null;
         renderImageArea();
       });
+      updateCardPreview();
     } else {
       imageUploadArea.innerHTML = `
         <label class="ma-dropzone" id="dropzone" for="imageFileInput">
@@ -1251,6 +1412,7 @@ const SEED_ACTIVITIES = [
         dropzone.classList.remove("dragover");
         if (e.dataTransfer.files[0]) handleImageFile(e.dataTransfer.files[0]);
       });
+      updateCardPreview();
     }
   }
 
@@ -1428,6 +1590,10 @@ const SEED_ACTIVITIES = [
     currentAccent = ACCENT_PRESETS[0].hex;
     currentImageUrl = null;
     pendingImageFile = null;
+    currentLogoUrl = null;
+    pendingLogoFile = null;
+    currentHighlight = "";
+    fCardSchedule.value = ""; fCardButtonLabel.value = "";
     bookedCountsForEdit = {};
     currentExtraFields = [];
     fName.value = ""; fProvider.value = ""; fVenue.value = ""; fDescription.value = ""; fInfoPage.value = "";
@@ -1474,6 +1640,10 @@ const SEED_ACTIVITIES = [
       fAttendanceRegister.checked = !!activity.attendanceRegister;
       currentAccent = activity.accentColor || ACCENT_PRESETS[0].hex;
       currentImageUrl = activity.imageUrl || null;
+      currentLogoUrl = activity.logoUrl || null;
+      currentHighlight = /^#[0-9A-F]{6}$/i.test(activity.highlightColor || "") ? activity.highlightColor.toUpperCase() : "";
+      fCardSchedule.value = activity.cardSchedule || "";
+      fCardButtonLabel.value = activity.cardButtonLabel || "";
       currentSessions = (activity.sessions || []).map(s => ({ ...s }));
       currentExtraFields = (activity.extraFields || []).map(f => ({ ...f }));
 
@@ -1500,6 +1670,8 @@ const SEED_ACTIVITIES = [
     }
     renderColorSwatches();
     renderImageArea();
+    renderHighlightSwatches();
+    renderLogoArea();
     renderSessionList();
     renderQuestionList();
     listView.classList.add("hidden");
@@ -1605,6 +1777,13 @@ const SEED_ACTIVITIES = [
         await ref.put(pendingImageFile, { contentType: "image/jpeg" });
         imageUrl = await ref.getDownloadURL();
       }
+      let logoUrl = currentLogoUrl;
+      if (pendingLogoFile) {
+        formSaveBtn.textContent = "Uploading logo…";
+        const ref = storage.ref(`activity-images/${activityId}/logo-${Date.now()}.png`);
+        await ref.put(pendingLogoFile, { contentType: "image/png" });
+        logoUrl = await ref.getDownloadURL();
+      }
 
       const payload = {
         name, provider, venue,
@@ -1618,6 +1797,10 @@ const SEED_ACTIVITIES = [
         blockMinSessions, blockPrice,
         accentColor: currentAccent,
         imageUrl: imageUrl || null,
+        logoUrl: logoUrl || null,
+        highlightColor: currentHighlight || null,
+        cardSchedule: fCardSchedule.value.trim() || null,
+        cardButtonLabel: fCardButtonLabel.value.trim() || null,
         sessions: currentSessions,
         extraFields: currentExtraFields,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1646,4 +1829,4 @@ const SEED_ACTIVITIES = [
   <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
   <script src="dialogs.js" defer></script>
 </body>
-</html>
+</html>

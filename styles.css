@@ -822,98 +822,133 @@ a { color: inherit; text-decoration: none; }
   .about-details { gap: 28px; }
 }
 
-/* ---- Activities (feature modules — one per live activity) ---- */
+/* ---- Activities ("What's On" cards — one per live activity) ----
+   Markup comes from activity-card.js. Photo on the left, coloured
+   panel on the right with a logo, "when" line, text and button.
+   Two cards per row on wide screens, one per row below that, and the
+   photo stacks above the panel on phones. */
 .activities-features {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 32px;
   margin-top: 56px;
 }
+@media (min-width: 1180px) {
+  .activities-features { grid-template-columns: 1fr 1fr; }
+}
+/* Status messages ("Loading activities…") span the whole row */
+.activities-features > p { grid-column: 1 / -1; }
 
 .activity-feature {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 460px;
   border-radius: 20px;
   overflow: hidden;
+  background: var(--accent);
+  border: 3px solid var(--hl, var(--accent));
   box-shadow: 0 16px 36px rgba(11,11,12,0.12);
 }
+.activity-feature.no-media { grid-template-columns: 1fr; min-height: 0; }
+.activity-feature.no-media .activity-feature-media { display: none; }
 
 .activity-feature-media {
-  flex: 1 1 45%;
-  min-height: 320px;
+  position: relative;
+  min-height: 0;
+  background: rgba(0,0,0,0.25);
 }
-
 .activity-feature-media img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+/* Divider between photo and panel in the highlight colour */
+.activity-feature.has-highlight .activity-feature-media { border-right: 3px solid var(--hl); }
 
 .activity-feature-content {
-  flex: 1 1 55%;
-  padding: 48px;
+  padding: 36px 34px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   color: var(--c-white);
+  min-width: 0;
 }
 
 .activity-feature-title {
   font-family: var(--f-display);
   font-weight: 800;
   text-transform: uppercase;
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(26px, 3vw, 36px);
   line-height: 1.05;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+}
+.activity-feature-title.has-logo { line-height: 0; }
+.activity-feature-logo {
+  display: block;
+  max-width: min(100%, 300px);
+  max-height: 130px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.activity-feature-when {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  line-height: 1.45;
+  /* a lighter tint of the highlight so it reads on a dark panel */
+  color: color-mix(in srgb, var(--hl, #FFFFFF) 65%, #FFFFFF);
+  margin-bottom: 16px;
 }
 
 .activity-feature-body {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.7;
   max-width: 520px;
   margin-bottom: 28px;
 }
 
-/* Solid button in the Track Social button style (chunky uppercase,
-   rounded corners). White by default with text in the card's own colour,
-   so it stands out on any activity colour. A card can set --btn-bg /
-   --btn-ink inline to use its own sub-brand button (e.g. Track Social pink). */
+/* Chunky uppercase button. White with text in the card's colour by
+   default; in the highlight colour when the activity has one. */
 .activity-feature-link {
   align-self: flex-start;
+  margin-top: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   background: var(--btn-bg, var(--c-white));
   color: var(--btn-ink, var(--accent));
   font-family: var(--f-display);
   font-weight: 800;
-  font-size: 16px;
+  font-size: 17px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   line-height: 1.2;
-  padding: 13px 24px;
+  padding: 14px 26px;
   border-radius: 6px;
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), filter 0.2s var(--ease);
 }
-
 .activity-feature-link:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(11,11,12,0.28);
   filter: brightness(0.94);
 }
 
-@media (max-width: 560px) {
-  .activity-feature-link { align-self: stretch; text-align: center; }
-}
-
-/* Each card's colour comes from its activity's brand colour, set
-   inline by the home page script (manage-activities.html picks it). */
-.activity-feature { background: var(--accent); }
-
-@media (max-width: 800px) {
-  .activity-feature { flex-direction: column; }
-  .activity-feature-media { min-height: 220px; }
-  .activity-feature-content { padding: 32px 28px; }
+@media (max-width: 680px) {
+  .activity-feature { grid-template-columns: 1fr; min-height: 0; }
+  .activity-feature-media { height: 240px; }
+  .activity-feature.has-highlight .activity-feature-media { border-right: 0; border-bottom: 3px solid var(--hl); }
+  .activity-feature-content { padding: 28px 24px 30px; }
+  .activity-feature-logo { max-height: 110px; }
+  .activity-feature-link { align-self: stretch; }
 }
 
 .offer {
