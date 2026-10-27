@@ -531,6 +531,8 @@ input[type="date"], input[type="time"] {
           <button type="button" class="ma-mini-add-btn" id="singleAddBtn">Add This Date</button>
         </div>
 
+        <div class="form-message" id="sessionMsg" style="margin-top:0.8rem;"></div>
+
         <div class="ma-section-label">Custom Questions</div>
         <p class="field-hint" style="margin:-0.5rem 0 0.9rem;">Extra questions shown on the booking page for this activity only — e.g. ethnicity monitoring for Youth Club. Answers save onto each person's profile, so returning customers (and their saved family members) aren't asked again next time — including for any other activity that uses the same question.</p>
         <div class="ma-session-list" id="questionList"></div>
@@ -1573,6 +1575,26 @@ const SEED_ACTIVITIES = [
     });
   });
 
+  // Messages for adding sessions show right under the add buttons (the
+  // main form message is at the very bottom, out of sight from here).
+  function sessionNote(text, kind) {
+    const el = document.getElementById("sessionMsg");
+    el.textContent = text;
+    el.className = "form-message" + (kind ? " " + kind : "");
+  }
+  // Session ids are "{activityId}-{date}", so an activity can only have one
+  // session per day. Explain that clearly, as it's easy to hit when adding
+  // another age group at a different time on the same evening.
+  function sameDayNote(date) {
+    const s = currentSessions.find(x => x.date === date);
+    const when = new Date(date + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+    return `${when} is already on this activity${s && s.time ? ` (${s.time})` : ""}. Each activity can only have one session per day — to run another group at a different time that evening, add it as its own activity (e.g. "WNF Ages 7-9") with the same More info page.`;
+  }
+  // Local yyyy-mm-dd (toISOString() is UTC, which is a day early during BST).
+  function isoLocal(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
   function addSession(date, startTime, endTime, capacity) {
     const id = `${editingId || "new"}-${date}`;
     if (currentSessions.some(s => s.date === date)) return false; // skip duplicates
@@ -1590,11 +1612,10 @@ const SEED_ACTIVITIES = [
     const capacity = document.getElementById("genCapacity").value;
     const startTime = document.getElementById("genStartTime").value;
     const endTime = document.getElementById("genEndTime").value;
-    formMsg.textContent = ""; formMsg.className = "form-message";
+    sessionNote("");
 
     if (!startDate || !startTime || !endTime) {
-      formMsg.textContent = "Fill in the first date, start time and end time before generating sessions.";
-      formMsg.className = "form-message error";
+      sessionNote("Fill in the first date, start time and end time before generating sessions.", "error");
       return;
     }
     let added = 0, skipped = 0;
@@ -1602,14 +1623,13 @@ const SEED_ACTIVITIES = [
     for (let i = 0; i < weeks; i++) {
       const d = new Date(base);
       d.setDate(d.getDate() + i * 7);
-      const iso = d.toISOString().slice(0, 10);
+      const iso = isoLocal(d);
       if (addSession(iso, startTime, endTime, capacity)) added++; else skipped++;
     }
     renderSessionList();
-    formMsg.textContent = skipped
-      ? `Added ${added} session${added === 1 ? "" : "s"} (${skipped} skipped — already on the date${skipped === 1 ? "" : "s"} list).`
-      : `Added ${added} weekly session${added === 1 ? "" : "s"}.`;
-    formMsg.className = "form-message success";
+    sessionNote(skipped
+      ? `Added ${added} session${added === 1 ? "" : "s"}; ${skipped} skipped because ${skipped === 1 ? "that date is" : "those dates are"} already on this activity (one session per day per activity — another group at a different time needs its own activity).`
+      : `Added ${added} weekly session${added === 1 ? "" : "s"}.`, added ? "success" : "error");
   });
 
   document.getElementById("singleAddBtn").addEventListener("click", () => {
@@ -1617,22 +1637,16 @@ const SEED_ACTIVITIES = [
     const capacity = document.getElementById("singleCapacity").value;
     const startTime = document.getElementById("singleStartTime").value;
     const endTime = document.getElementById("singleEndTime").value;
-    formMsg.textContent = ""; formMsg.className = "form-message";
+    sessionNote("");
 
     if (!date || !startTime || !endTime) {
-      formMsg.textContent = "Fill in the date, start time and end time.";
-      formMsg.className = "form-message error";
+      sessionNote("Fill in the date, start time and end time.", "error");
       return;
     }
+    const clash = currentSessions.some(s => s.date === date) ? sameDayNote(date) : "";
     const ok = addSession(date, startTime, endTime, capacity);
     renderSessionList();
-    if (!ok) {
-      formMsg.textContent = "That date is already on the sessions list.";
-      formMsg.className = "form-message error";
-    } else {
-      formMsg.textContent = "Session added.";
-      formMsg.className = "form-message success";
-    }
+    sessionNote(ok ? "Session added." : clash, ok ? "success" : "error");
   });
 
   // ── Open / close the form ────────────────────────────────────
@@ -1656,6 +1670,7 @@ const SEED_ACTIVITIES = [
     fAttendanceRegister.checked = false;
     slugPreview.textContent = "";
     formMsg.textContent = ""; formMsg.className = "form-message";
+    sessionNote("");
   }
 
   // Price label is a separate field (not just "£{price}") because some
