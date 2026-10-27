@@ -235,6 +235,19 @@
     /* ============ WHAT'S ON OFFER ============ */
     /* 3G tile has two buttons: individual slot + team bookings */
     .offer-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    /* Desktop/tablet: the two buttons sit side by side, and every card's
+       button row lines up — cards without the link underneath keep an
+       empty space the same height, so their buttons aren't pushed lower. */
+    .offer-link { line-height: 20px; }
+    @media (min-width: 561px) {
+      .offer-actions { flex-wrap: nowrap; }
+      .offer-actions .btn-small { flex: 0 1 auto; white-space: nowrap; padding-left: 14px; padding-right: 14px; text-align: center; }
+      .offer-body:not(:has(.offer-link))::after { content: ""; display: block; height: 32px; }
+    }
+    @media (min-width: 1240px) {
+      .offer-body { padding: 24px 20px; }
+      .offer-actions .btn-small { font-size: 14px; padding-left: 11px; padding-right: 11px; }
+    }
     .btn-small-outline { background: transparent; color: var(--c-black); box-shadow: inset 0 0 0 1.5px var(--c-black); }
     .btn-small-outline:hover { background: var(--c-red); color: var(--c-white); box-shadow: none; }
   </style>
