@@ -1311,7 +1311,11 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   function applyRequestedActivity() {
     if (requestedActivityHandled) return;
     requestedActivityHandled = true;
-    const match = activeActivities.find(a => a.id.toLowerCase() === requestedActivity || toSlug(a.name) === toSlug(requestedActivity));
+    // Also matches on the activity's More info page, so ?activity=wnf
+    // finds whatever is set up with wnf.html, whatever it's called.
+    const byPage = a => groupKeyOf(a) === "page:" + toSlug(requestedActivity) + ".html";
+    const byIdOrName = a => a.id.toLowerCase() === requestedActivity || toSlug(a.name) === toSlug(requestedActivity);
+    const match = activeActivities.find(byIdOrName) || activeActivities.find(byPage);
     if (match) {
       const members = groupMembers(match);
       if (members.length > 1) {
@@ -1328,7 +1332,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     }
     // Asked for an activity that isn't open (e.g. switched off between
     // terms): say so, rather than silently showing a different activity.
-    const known = ACTIVITIES.find(a => a.id.toLowerCase() === requestedActivity || toSlug(a.name) === toSlug(requestedActivity));
+    const known = ACTIVITIES.find(byIdOrName) || ACTIVITIES.find(byPage);
     const label = known ? known.name : "That activity";
     const box = document.getElementById("activityUnavailable");
     box.textContent = `${label} isn't taking bookings right now. Please check back soon, or email info@northwoodstadium.co.uk.` +
