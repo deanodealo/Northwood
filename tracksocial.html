@@ -146,7 +146,7 @@
     /* ---------- 5. Running clubs ---------- */
     .ts-clubs-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 56px; align-items: center; }
     .ts-clubs-grid > * { min-width: 0; }
-    .ts-club-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .ts-club-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
     .ts-club { background: var(--c-white); border-radius: 14px; padding: 22px 16px 20px; text-align: center; box-shadow: 0 8px 22px rgba(14,11,16,0.07); display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; }
     .ts-club-logo { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: var(--ts-ink); color: var(--c-white);
       font-family: var(--f-display); font-weight: 800; font-size: 22px; letter-spacing: 0.5px; border: 3px solid var(--ts-pink); }
@@ -212,6 +212,7 @@
     .ts-faq details[open] summary::after { content: "–"; }
     .ts-faq details p { padding: 0 22px 20px; color: var(--c-grey-mid); font-size: 15px; line-height: 1.7; }
 
+    .ts-quotes[hidden] { display: none; }
     .tbc { background: #FFF1B8; color: #5C4400; border-radius: 3px; padding: 0 4px; font-weight: 600; }
 
     @media (max-width: 1100px) {
@@ -435,9 +436,10 @@
         <div>
           <!-- CLUB LOGOS: swap each .ts-club-logo div for <img src="images/club-NAME.png" alt="NAME logo" class="ts-club-logo" loading="lazy" decoding="async"> -->
           <div class="ts-club-cards">
-            <div class="ts-club"><div class="ts-club-logo">MARA</div><b>MARA Run Club</b><a href="#" target="_blank" rel="noopener"><span class="tbc">[Instagram link]</span></a></div>
-            <div class="ts-club"><div class="ts-club-logo">JRC</div><b>Just Run Club</b><a href="#" target="_blank" rel="noopener"><span class="tbc">[Instagram link]</span></a></div>
-            <div class="ts-club"><div class="ts-club-logo">LAG</div><b>Like A Girl Run Club</b><a href="#" target="_blank" rel="noopener"><span class="tbc">[Instagram link]</span></a></div>
+            <div class="ts-club"><div class="ts-club-logo">MARA</div><b>MARA Run Club</b><a href="https://www.instagram.com/mararunclub" target="_blank" rel="noopener">@mararunclub</a></div>
+            <div class="ts-club"><div class="ts-club-logo">JRC</div><b>Just Run Club</b><a href="https://www.instagram.com/justrunclubuk" target="_blank" rel="noopener">@justrunclubuk</a></div>
+            <div class="ts-club"><div class="ts-club-logo">LAG</div><b>Like A Girl Run Club</b><a href="https://www.instagram.com/likeagirlrunclub" target="_blank" rel="noopener">@likeagirlrunclub</a></div>
+            <div class="ts-club"><div class="ts-club-logo">FIT</div><b>Stoke F.I.T.</b><a href="https://www.instagram.com/stokef.i.t" target="_blank" rel="noopener">@stokef.i.t</a></div>
           </div>
           <div class="ts-club-cta">
             <b>Want your running club to lead a Track Social?</b>
@@ -487,8 +489,9 @@
           <figure><img src="images/candid.jpg" alt="A smiling runner during the Track Social warm-up" style="object-position: 45% 30%;" loading="lazy" decoding="async"></figure>
           <figure><img src="images/warm-up.jpg" alt="A long line of runners doing a lunge warm-up down the Northwood track" style="object-position: 65% center;" loading="lazy" decoding="async"></figure>
         </div>
-        <!-- TESTIMONIALS: replace with real quotes (first name + club or "first-timer") -->
-        <div class="ts-quotes">
+        <!-- TESTIMONIALS: hidden until Northwood send real quotes.
+             Replace the placeholders (first name + club or "first-timer"), then delete the "hidden" attribute below to show them. -->
+        <div class="ts-quotes" hidden>
           <blockquote><p><span class="tbc">[Participant quote]</span></p><cite>— <span class="tbc">[Name, first-timer]</span></cite></blockquote>
           <blockquote><p><span class="tbc">[Participant quote]</span></p><cite>— <span class="tbc">[Name, running club]</span></cite></blockquote>
           <blockquote><p><span class="tbc">[Participant quote]</span></p><cite>— <span class="tbc">[Name, partner business]</span></cite></blockquote>
@@ -507,9 +510,10 @@
           <details><summary>How do I register?</summary><p>Tap "Register for Free" on this page. It takes a minute on your phone and helps us know how many people to expect.</p></details>
           <details><summary>What should I wear?</summary><p>Comfortable sports clothing and running trainers. Bring a layer for afterwards and a water bottle. Spikes aren't needed.</p></details>
           <details><summary>Where is it?</summary><p>Northwood Stadium, Keelings Road, Northwood, Stoke-on-Trent ST1 6PA. Head for the athletics track in front of the grandstand.</p></details>
-          <details><summary>Is there parking?</summary><p>Yes, there's an on-site car park. <span class="tbc">[confirm any parking charges on the night]</span></p></details>
-          <details><summary>Is it accessible?</summary><p><span class="tbc">[confirm accessible parking, step-free access to the track and accessible toilets]</span> If you have a question about access, get in touch before the event and we'll help.</p></details>
-          <details><summary>Can children take part?</summary><p><span class="tbc">[confirm minimum age and whether under-16s need an adult running with them]</span></p></details>
+          <details><summary>Where do we meet?</summary><p>Meet at the grandstand, in front of the athletics track.</p></details>
+          <details><summary>Is there parking?</summary><p>Yes. Park at the Keelings Road Car Park, which costs £1.50 for 4 hours.</p></details>
+          <details><summary>Is it accessible?</summary><p>Yes. The venue, grandstand and track are all accessible for wheelchair users, and we have accessible toilets on site. If you have any other questions about access, get in touch before the event and we'll help.</p></details>
+          <details><summary>Can children take part?</summary><p>Yes. Children aged 4 and over are welcome to take part in the Track Social.</p></details>
         </div>
       </div>
     </section>
