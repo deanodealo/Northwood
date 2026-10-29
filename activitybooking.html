@@ -730,6 +730,7 @@ label.xf-check { display: flex; align-items: flex-start; gap: 0.6rem; font-weigh
           <a href="conditions-of-hire.html">Conditions of Hire</a>
           <a href="terms.html">Terms &amp; Conditions</a>
           <a href="privacy.html">Privacy Policy</a>
+          <a href="refunds.html">Refund Policy</a>
           <a href="#" data-aths-open>Get the App</a>
         </div>
       </div>
@@ -2412,7 +2413,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           <div class="block-book" id="blockBook" data-ids="${escAttr(blockOffer.ids.join(","))}">
             <div class="block-book-text">
               <strong>Block book &amp; save £${(blockOffer.savePence / 100).toFixed(2)}</strong>
-              All ${blockOffer.label} (${blockOffer.range}) for £${(blockOffer.totalPence / 100).toFixed(2)} per person instead of £${((blockOffer.totalPence + blockOffer.savePence) / 100).toFixed(2)}.
+              All ${blockOffer.label} (${blockOffer.range}) for £${(blockOffer.totalPence / 100).toFixed(2)} per person instead of £${((blockOffer.totalPence + blockOffer.savePence) / 100).toFixed(2)}. <a href="refunds.html" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">Refund policy</a>
             </div>
             <button type="button" class="block-book-btn" id="blockBookBtn">Block book all ${blockOffer.count}</button>
           </div>` : ""}
