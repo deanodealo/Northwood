@@ -13,7 +13,7 @@
 
 // Bump this whenever sw.js changes, so phones swap to the new version
 // and clear out the old cache.
-const CACHE_NAME = 'northwood-v3';
+const CACHE_NAME = 'northwood-v4';
 const PRECACHE = [
   './',
   './index.html',
@@ -62,7 +62,14 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fresh
       .then(response => {
-        if (response.ok) {
+        // If GitHub redirected the page (e.g. /contact -> /contact/), hand the
+        // browser a proper redirect instead of the followed response. Safari
+        // refuses a page that a service worker fetched through a redirect
+        // ("Response served by service worker has redirections").
+        if (response.redirected && req.mode === 'navigate') {
+          return Response.redirect(response.url, 302);
+        }
+        if (response.ok && !response.redirected) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
         }
