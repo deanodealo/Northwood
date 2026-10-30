@@ -153,6 +153,8 @@
     }
     .sp-naming > * { min-width: 0; }
     .sp-naming .sp-media { border-radius: 0; min-height: 360px; }
+    .sp-naming .sp-media-pair { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 3px; contain: size; }
+    .sp-naming .sp-media-pair > img { min-height: 0; }
     .sp-naming-body { padding: 40px 40px 44px; display: flex; flex-direction: column; }
     .sp-naming-tag {
       align-self: flex-start; color: var(--c-gold); border: 1px solid var(--c-gold); background: var(--c-gold-soft);
@@ -269,6 +271,8 @@
       .sp-price-grid { grid-template-columns: 1fr; max-width: 560px; }
       .sp-naming { grid-template-columns: 1fr; }
       .sp-naming .sp-media { min-height: 0; aspect-ratio: 16 / 9; }
+      .sp-naming .sp-media-pair { aspect-ratio: auto; grid-template-rows: auto auto; contain: none; }
+      .sp-naming .sp-media-pair > img { aspect-ratio: 16 / 9; }
       .sp-split, .sp-gb-head { grid-template-columns: 1fr; gap: 36px; }
       .sp-prog-grid { grid-template-columns: 1fr 1fr; }
     }
@@ -498,13 +502,9 @@
 
         <!-- Top tier: Grandstand naming -->
         <div class="sp-naming">
-          <div class="sp-media">
-            <!-- PHOTO TO COME: grandstand front-on, showing where the naming fascia would sit -->
-            <div class="sp-ph" role="img" aria-label="Photo to come: the grandstand, front-on">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg>
-              <span class="sp-ph-title">Grandstand, front-on</span>
-              <span class="sp-ph-spec">Straight-on view showing the roof fascia where the naming sign would go · landscape · min 2000px</span>
-            </div>
+          <div class="sp-media sp-media-pair">
+            <img src="images/grandstand-front.jpg" alt="The Northwood Stadium grandstand, front-on, showing the roof fascia where a naming partner's sign would go" loading="lazy" style="object-position: 60% 55%;">
+            <img src="images/grandstand-side.jpg" alt="The grandstand from the far end of the track, with its floodlight and tree-lined backdrop" loading="lazy" style="object-position: center 72%;">
           </div>
           <div class="sp-naming-body">
             <span class="sp-naming-tag">One partner only</span>
