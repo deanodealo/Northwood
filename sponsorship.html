@@ -129,6 +129,7 @@
     .sp-price-grid .price-card { padding: 30px 26px; }
     .price-card .price { font-variant-numeric: tabular-nums; }
     .price-card .per { min-height: 2.6em; }
+    .price .sp-vat { font-size: 0.42em; font-weight: 700; letter-spacing: 0.3px; vertical-align: 0.15em; margin-left: 4px; opacity: 0.75; }
     .sp-feat { list-style: none; display: grid; gap: 10px; margin: 22px 0 26px; padding-top: 20px; border-top: 1px solid rgba(11,11,12,0.08); flex: 1; }
     .sp-feat li { position: relative; padding-left: 26px; font-size: 15px; line-height: 1.5; }
     .sp-feat li::before {
@@ -456,7 +457,7 @@
           <div class="price-card">
             <h3>Supporter</h3>
             <p class="who">Get your name on the board</p>
-            <div class="price" data-price="400">£400</div>
+            <div class="price" data-price="400">£400<span class="sp-vat">+VAT</span></div>
             <p class="per">per year</p>
             <ul class="sp-feat">
               <li>1 board, standard position <span>(track or 3G)</span></li>
@@ -470,7 +471,7 @@
           <div class="price-card">
             <h3>Community Partner</h3>
             <p class="who">More boards, more visibility</p>
-            <div class="price" data-price="750">£750</div>
+            <div class="price" data-price="750">£750<span class="sp-vat">+VAT</span></div>
             <p class="per">per year</p>
             <ul class="sp-feat">
               <li>2 boards, standard positions <span>(track or 3G)</span></li>
@@ -487,7 +488,7 @@
             <span class="badge">Limited to 6 partners</span>
             <h3>Premier Partner</h3>
             <p class="who">The best positions in the venue</p>
-            <div class="price" data-price="1800" data-no-discount>£1,800</div>
+            <div class="price" data-price="1800" data-no-discount>£1,800<span class="sp-vat">+VAT</span></div>
             <p class="per">per year</p>
             <ul class="sp-feat">
               <li>4 boards in premium positions</li>
@@ -547,9 +548,9 @@
             <thead>
               <tr>
                 <th scope="col"><span class="visually-hidden">Package feature</span></th>
-                <th scope="col">Supporter<small>£400 / year</small></th>
-                <th scope="col">Community Partner<small>£750 / year</small></th>
-                <th scope="col" class="is-premier">Premier Partner<small>£1,800 / year</small></th>
+                <th scope="col">Supporter<small>£400 / year +VAT</small></th>
+                <th scope="col">Community Partner<small>£750 / year +VAT</small></th>
+                <th scope="col" class="is-premier">Premier Partner<small>£1,800 / year +VAT</small></th>
                 <th scope="col" class="is-naming">Grandstand Naming<small>On application</small></th>
               </tr>
             </thead>
@@ -679,9 +680,9 @@
                 <legend><span class="form-section-num">2</span>Package</legend>
                 <span class="group-label" id="sp-pkg-label">Which package are you interested in? <span class="req">*</span></span>
                 <div class="option-cards sp-pkg-options" data-require-one role="radiogroup" aria-labelledby="sp-pkg-label">
-                  <label class="option-card"><input type="radio" name="Package" value="Supporter" id="pkg-supporter"><span class="oc-title">Supporter</span><span class="oc-sub">1 board</span><span class="oc-price">£400 / year</span></label>
-                  <label class="option-card"><input type="radio" name="Package" value="Community Partner" id="pkg-community"><span class="oc-title">Community Partner</span><span class="oc-sub">2 boards + 20 passes</span><span class="oc-price">£750 / year</span></label>
-                  <label class="option-card"><input type="radio" name="Package" value="Premier Partner" id="pkg-premier"><span class="oc-tag">Limited</span><span class="oc-title">Premier Partner</span><span class="oc-sub">4 premium boards + 50 passes</span><span class="oc-price">£1,800 / year</span></label>
+                  <label class="option-card"><input type="radio" name="Package" value="Supporter" id="pkg-supporter"><span class="oc-title">Supporter</span><span class="oc-sub">1 board</span><span class="oc-price">£400 / year +VAT</span></label>
+                  <label class="option-card"><input type="radio" name="Package" value="Community Partner" id="pkg-community"><span class="oc-title">Community Partner</span><span class="oc-sub">2 boards + 20 passes</span><span class="oc-price">£750 / year +VAT</span></label>
+                  <label class="option-card"><input type="radio" name="Package" value="Premier Partner" id="pkg-premier"><span class="oc-tag">Limited</span><span class="oc-title">Premier Partner</span><span class="oc-sub">4 premium boards + 50 passes</span><span class="oc-price">£1,800 / year +VAT</span></label>
                   <label class="option-card"><input type="radio" name="Package" value="Grandstand Naming Partner" id="pkg-naming"><span class="oc-title">Grandstand Naming</span><span class="oc-sub">Naming rights, 2-year minimum</span><span class="oc-price">Price on application</span></label>
                   <label class="option-card"><input type="radio" name="Package" value="Not sure yet" id="pkg-unsure"><span class="oc-title">Not sure yet</span><span class="oc-sub">We'll help you choose</span></label>
                 </div>
@@ -759,10 +760,6 @@
           <details>
             <summary>How do the free gym and track passes work?</summary>
             <p>Passes are for your employees and are valid for 12 months from the start of your sponsorship. Each pass is a day pass, giving a member of your staff access to the venue's gym and track for the day.</p>
-          </details>
-          <details>
-            <summary>Do prices include VAT?</summary>
-            <p><span class="tbc">[Confirm VAT position with the finance team]</span></p>
           </details>
         </div>
       </div>
@@ -850,6 +847,7 @@
     // ── Package prices: 1 year vs 2 years (10% off, not Premier) ─
     const termBtns = document.querySelectorAll(".sp-term button");
     const fmt = n => "£" + n.toLocaleString("en-GB");
+    const VAT = '<span class="sp-vat">+VAT</span>';
     function setTerm(term) {
       termBtns.forEach(b => b.setAttribute("aria-pressed", b.dataset.term === term ? "true" : "false"));
       document.querySelectorAll(".price[data-price]").forEach(el => {
@@ -857,14 +855,14 @@
         const per = el.nextElementSibling;
         // Premier Partner has no 2-year discount (data-no-discount)
         if (term === "2" && el.hasAttribute("data-no-discount")) {
-          el.textContent = fmt(yearly);
+          el.innerHTML = fmt(yearly) + VAT;
           per.textContent = "per year · no 2-year discount on this package";
         } else if (term === "2") {
           const perYear = Math.round(yearly * 0.9);
-          el.textContent = fmt(perYear);
+          el.innerHTML = fmt(perYear) + VAT;
           per.textContent = "per year on a 2-year deal (" + fmt(perYear * 2) + " total, save " + fmt(yearly * 2 - perYear * 2) + ")";
         } else {
-          el.textContent = fmt(yearly);
+          el.innerHTML = fmt(yearly) + VAT;
           per.textContent = "per year";
         }
       });
