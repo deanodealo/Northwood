@@ -45,6 +45,7 @@
     "faq.html":                { trail: [HOME], name: "FAQs", tone: "light" },
     "terms.html":              { trail: [HOME], name: "Terms & Conditions", tone: "light" },
     "privacy.html":            { trail: [HOME], name: "Privacy Policy", tone: "light" },
+    "refunds.html":            { trail: [HOME], name: "Refund Policy", tone: "light" },
     "conditions-of-hire.html": { trail: [HOME], name: "Conditions of Hire", tone: "dark" }
   };
 
@@ -63,13 +64,21 @@
   // because on github.io other sites share the origin.)
   var base = path.slice(0, path.lastIndexOf("/") + 1);
   var cameFromSite = false;
+  // Opened in a NEW TAB from a page on this site (e.g. the "Refund policy"
+  // link on the booking page). There's no history to go back through, so
+  // Back closes this tab and returns them to the tab they came from, with
+  // their booking still as they left it.
+  var newTabFromSite = false;
+  var refHref = "";
   try {
     if (document.referrer) {
       var ref = new URL(document.referrer);
-      cameFromSite = ref.origin === location.origin &&
+      var fromSite = ref.origin === location.origin &&
         ref.pathname.indexOf(base) === 0 &&
-        ref.pathname !== path &&
-        history.length > 1;
+        ref.pathname !== path;
+      cameFromSite = fromSite && history.length > 1;
+      newTabFromSite = fromSite && history.length <= 1;
+      if (fromSite) refHref = ref.href;
     }
   } catch (e) { /* bad referrer - just use the parent page */ }
 
@@ -93,6 +102,13 @@
   // Back to the exact previous page when it was on this site.
   nav.querySelector(".crumbs-back").addEventListener("click", function (e) {
     if (cameFromSite) { e.preventDefault(); history.back(); }
+    else if (newTabFromSite) {
+      e.preventDefault();
+      window.close();
+      // If the browser won't close the tab (some don't), go to the page
+      // they came from in this tab instead.
+      setTimeout(function () { location.href = refHref; }, 300);
+    }
   });
 
   var spot = page.inline && document.querySelector(page.inline);
