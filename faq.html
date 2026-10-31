@@ -83,7 +83,7 @@
   <!-- Breadcrumb + Back link under the header -->
   <script src="crumbs.js" defer></script>
 </head>
-<body>
+<body data-live-page="faq">
 
   <!-- ============ HEADER / NAV ============ -->
   <header class="site-header" id="siteHeader">
@@ -142,6 +142,10 @@
         <h1 class="section-title">Frequently Asked Questions</h1>
         <p class="faq-lede">Quick answers on booking activities, accounts, family members and payments. Tap a question to see the answer.</p>
 
+        <!-- FAQs: replaced live from Staff > FAQs (faq-admin.html) once staff
+             have saved there. What's written below is the fallback, and what
+             the editor loads the first time. -->
+        <div data-live="faqs">
         <nav class="faq-quicknav" aria-label="Jump to section">
           <a href="#faq-accounts">Accounts</a>
           <a href="#faq-booking">Booking</a>
@@ -357,6 +361,8 @@
           </div>
         </details>
 
+        </div>
+
         <div class="faq-more">
           <h3>Can't find your answer?</h3>
           <p>Get in touch at <a href="mailto:info@northwoodstadium.co.uk">info@northwoodstadium.co.uk</a> or call <a href="tel:07547438786">07547 438786</a> — we're happy to help.</p>
@@ -474,5 +480,8 @@
   </script>
   <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
   <script src="dialogs.js" defer></script>
+  <!-- Live FAQs from Staff > FAQs -->
+  <script src="faq-format.js" defer></script>
+  <script src="live-content.js" defer></script>
 </body>
 </html>

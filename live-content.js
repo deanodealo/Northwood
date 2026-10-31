@@ -1,6 +1,6 @@
 /* ==========================================================================
    NORTHWOOD — LIVE PAGE CONTENT
-   Used by tracksocial.html, gym.html, wnf.html and funetics.html
+   Used by tracksocial.html, gym.html, wnf.html, funetics.html and faq.html
    (each has <body data-live-page="...">).
 
    - Track Social: the next date and the Register buttons come from the
@@ -9,6 +9,10 @@
      activities and partners come from Page Content. The Gym fitness class
      timetable also comes from Page Content (the "pageContent" collection,
      edited by staff on page-content.html).
+   - FAQs: the questions and answers on faq.html come from Staff > FAQs
+     (pageContent/faqs, edited on faq-admin.html). Answer formatting is in
+     faq-format.js. Until staff first save there, the page shows the FAQs
+     written into faq.html.
    - WNF and Funetics dates and prices come straight from their activities
      in Manage Activities (any active activity whose "More info page" is
      wnf.html / funetics.html), so the page always matches what the
@@ -343,6 +347,40 @@
     }).join("");
   }
 
+  /* ── FAQs (pageContent/faqs) ───────────────────────────────── */
+  function initFaq(doc) {
+    var box = document.querySelector('[data-live="faqs"]');
+    if (!box || !doc || !Array.isArray(doc.sections) || !window.NWFaq) return;
+    var F = window.NWFaq;
+    var sections = doc.sections.map(function (sec) {
+      return {
+        id: sec.id, title: sec.title, nav: sec.nav,
+        items: (sec.items || []).filter(function (it) { return it && it.q && it.a; })
+      };
+    }).filter(function (sec) { return sec.title && sec.items.length; });
+    if (!sections.length) return;    // nothing saved: keep the page's own FAQs
+
+    var nav = sections.length > 1
+      ? '<nav class="faq-quicknav" aria-label="Jump to section">' + sections.map(function (sec) {
+          return '<a href="#' + F.esc(sec.id) + '">' + F.esc(sec.nav || sec.title) + "</a>";
+        }).join("") + "</nav>"
+      : "";
+    box.innerHTML = nav + sections.map(function (sec) {
+      return '<h2 class="faq-group" id="' + F.esc(sec.id) + '">' + F.esc(sec.title) + "</h2>" +
+        sec.items.map(function (it) {
+          return '<details class="faq-item" id="' + F.esc(it.id) + '"><summary>' + F.esc(it.q) + "</summary>" +
+            '<div class="faq-answer">' + F.toHtml(it.a) + "</div></details>";
+        }).join("");
+    }).join("");
+
+    // Links like faq.html#receipt: open that answer now it's been redrawn.
+    if (location.hash) {
+      var el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (el && el.tagName === "DETAILS") { el.open = true; el.scrollIntoView({ block: "start" }); }
+      else if (el) el.scrollIntoView({ block: "start" });
+    }
+  }
+
   /* ── Run the right one for this page ────────────────────────── */
   var job =
     page === "wnf" ? listCollection("activities").then(initWnf) :
@@ -351,6 +389,7 @@
       listCollection("activities"),
       getDoc("pageContent/trackSocial").catch(function () { return null; })
     ]).then(initTrackSocial) :
-    page === "gym" ? getDoc("pageContent/gymClasses").then(initGym) : null;
+    page === "gym" ? getDoc("pageContent/gymClasses").then(initGym) :
+    page === "faq" ? getDoc("pageContent/faqs").then(initFaq) : null;
   if (job) job.catch(function (err) { console.warn("Live content not loaded, showing saved text:", err); });
 })();

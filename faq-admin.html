@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQs | Northwood Stadium</title>
+<meta name="description" content="Staff tool for editing the FAQs page at Northwood Stadium.">
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<meta name="theme-color" content="#1A1818">
+
+<!-- Firebase (compat SDK — same version and project as activitybooking.html) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<style>
+/* ══════════════════════════════════════════════════════════
+   FAQs — staff-only tool for adding, editing, reordering and
+   removing the questions on faq.html.
+   Styles copied from manage-activities.html so the staff pages
+   look like one tool.
+   ══════════════════════════════════════════════════════════ */
+
+.hidden { display: none !important; }
+
+.ma-page { background: var(--c-grey-light); min-height: 100vh; }
+
+/* — topbar, staff modal, form fields — copied to match
+   activitybooking.html exactly so both pages feel like one tool. — */
+.ab-topbar {
+  background: var(--c-black);
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
+}
+.ab-topbar a.ab-logo-link { display: flex; align-items: center; }
+.ab-topbar img { height: 34px; }
+.ab-topbar-nav { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.ab-staff-link {
+  font-family: var(--f-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+.ab-staff-link:hover { color: white; border-color: rgba(255,255,255,0.5); }
+.ab-staff-link[aria-current="page"] { color: white; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.1); }
+
+.ma-wrap { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+@media (max-width: 600px) { .ma-wrap { padding: 2rem 1.1rem 4rem; } }
+
+.ma-heading { margin-bottom: 2rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.ma-eyebrow {
+  font-family: var(--f-body); font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--c-red); font-weight: 700; margin-bottom: 0.5rem;
+}
+.ma-title { font-family: var(--f-display); font-size: 2.1rem; font-weight: 800; color: var(--c-black); text-transform: uppercase; letter-spacing: 0.5px; }
+.ma-sub { font-family: var(--f-body); color: var(--c-grey-mid); margin-top: 0.4rem; font-size: 0.92rem; }
+
+.ma-add-btn {
+  font-family: var(--f-display); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 0.8rem 1.4rem; border: none; border-radius: 10px; background: var(--c-red); color: white; cursor: pointer;
+  transition: opacity 0.15s; white-space: nowrap;
+}
+.ma-add-btn:hover { opacity: 0.9; }
+
+.ma-empty {
+  text-align: center; font-family: var(--f-body); color: var(--c-grey-mid);
+  padding: 3rem 1.5rem; background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* — staff-gate panel — */
+.ma-gate {
+  max-width: 420px; margin: 4rem auto; background: white; border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  padding: 2.25rem; text-align: center;
+}
+.ma-gate h2 { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 0.6rem; }
+.ma-gate p { font-family: var(--f-body); font-size: 0.9rem; color: var(--c-grey-mid); margin-bottom: 1.5rem; line-height: 1.6; }
+
+/* — form view — */
+.ma-form-card {
+  background: white; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05); padding: 2.25rem;
+}
+@media (max-width: 600px) { .ma-form-card { padding: 1.5rem; } }
+.ma-form-title { font-family: var(--f-display); font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.5rem; }
+
+.ma-section-label {
+  font-family: var(--f-body); font-size: 0.68rem; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--c-grey-mid); font-weight: 700; margin: 1.75rem 0 0.9rem;
+}
+.ma-section-label:first-of-type { margin-top: 0; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; min-width: 0; }
+.form-row > div { min-width: 0; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 600px) { .form-row, .form-row.three { grid-template-columns: 1fr; } }
+
+label {
+  display: block; font-family: var(--f-body); font-size: 0.78rem; font-weight: 600; color: var(--c-black); margin-bottom: 0.4rem;
+}
+.field-hint { font-family: var(--f-body); font-size: 0.74rem; color: var(--c-grey-mid); margin-top: 0.3rem; }
+input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"],
+input[type="date"], input[type="time"], textarea, select {
+  width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 0.7rem 0.85rem; font-family: var(--f-body); font-size: 0.92rem; color: var(--c-black);
+  background: var(--c-grey-light); border: 1.5px solid rgba(0,0,0,0.1); border-radius: 8px; transition: border-color 0.15s, background 0.15s;
+}
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--c-red); background: white; }
+
+/* iOS Safari renders the native date/time picker control with its own
+   internal sizing that ignores width:100% inside narrow grid columns,
+   causing it to overhang past its container on mobile. Stripping the
+   native appearance forces it to respect the box model like a normal
+   input; it still opens the standard date/time picker on tap. */
+input[type="date"], input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.required-mark { color: var(--c-red); }
+
+.checkbox-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem; }
+.checkbox-row input { width: 18px; height: 18px; accent-color: var(--c-red); cursor: pointer; }
+.checkbox-row label { margin: 0; cursor: pointer; }
+
+.ma-session-add-panel { background: var(--c-grey-light); border-radius: 10px; padding: 1.1rem; margin-bottom: 1.25rem; }
+.ma-mini-add-btn {
+  font-family: var(--f-body); font-size: 0.84rem; font-weight: 700; color: white; background: var(--c-black);
+  border: none; border-radius: 8px; padding: 0.65rem 1.1rem; cursor: pointer;
+}
+.ma-mini-add-btn:hover { opacity: 0.9; }
+
+.ma-form-actions { display: flex; gap: 0.7rem; margin-top: 2rem; }
+.ma-submit-btn {
+  flex: 1; padding: 1rem; font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; text-transform: uppercase;
+  letter-spacing: 0.5px; border: none; border-radius: 10px; background: var(--c-red); color: white; cursor: pointer; transition: opacity 0.15s;
+}
+.ma-submit-btn:hover { opacity: 0.9; }
+.ma-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ma-cancel-btn {
+  padding: 1rem 1.5rem; font-family: var(--f-body); font-weight: 600; font-size: 0.92rem; border-radius: 10px;
+  border: 1.5px solid rgba(0,0,0,0.15); background: none; color: var(--c-black); cursor: pointer;
+}
+
+.form-message { margin-top: 1rem; font-family: var(--f-body); font-size: 0.88rem; padding: 0.8rem 1rem; border-radius: 8px; display: none; }
+.form-message.error { display: block; background: #FBEAEA; color: #8C0000; }
+.form-message.success { display: block; background: #E8F5E9; color: #1B5E20; }
+
+/* — staff login modal (same look as activitybooking.html) — */
+.staff-modal-overlay {
+  position: fixed; inset: 0; background: rgba(11,11,12,0.6);
+  display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem; z-index: 100; overflow-y: auto;
+}
+.staff-modal { background: white; border-radius: 14px; padding: 2rem; max-width: 360px; width: 100%; margin: 2rem auto; }
+.staff-modal h3 { font-family: var(--f-display); font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--c-black); margin-bottom: 1.25rem; }
+.staff-modal .form-message { margin-top: 0.75rem; }
+.staff-modal-actions { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+.staff-modal-actions button { flex: 1; }
+.staff-modal-cancel {
+  background: none; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0.75rem;
+  font-family: var(--f-body); font-weight: 600; cursor: pointer;
+}
+/* — FAQs editor — */
+.pc-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.pc-view-link { font-family: var(--f-body); font-size: 0.82rem; font-weight: 700; color: var(--c-red); text-decoration: underline; white-space: nowrap; }
+.pc-saved { font-family: var(--f-body); font-size: 0.78rem; color: var(--c-grey-mid); margin-top: 0.5rem; }
+.fq-help { border-left: 4px solid var(--c-red); margin-bottom: 1.5rem; padding: 1.4rem 1.6rem; }
+.fq-help h2 { font-family: var(--f-display); font-size: 1.15rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.6rem; }
+.fq-help ul { font-family: var(--f-body); font-size: 0.86rem; color: var(--c-black); line-height: 1.7; padding-left: 1.1rem; margin: 0; }
+.fq-help code { font-size: 0.85em; background: var(--c-grey-light); padding: 1px 5px; border-radius: 4px; }
+.fq-list { display: flex; flex-direction: column; gap: 1.5rem; }
+.fq-sec-head, .fq-item-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+.fq-sec-num { font-family: var(--f-display); font-weight: 800; font-size: 1.3rem; text-transform: uppercase; color: var(--c-black); }
+.fq-item-num { font-family: var(--f-display); font-weight: 800; font-size: 1rem; text-transform: uppercase; color: var(--c-black); }
+.fq-tools { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+.fq-tools button, .fq-tools select {
+  font-family: var(--f-body); font-size: 0.76rem; font-weight: 600; background: white; border: 1.5px solid rgba(0,0,0,0.12);
+  border-radius: 6px; padding: 0.35rem 0.6rem; cursor: pointer; color: var(--c-black); width: auto;
+}
+.fq-tools button:disabled { opacity: 0.35; cursor: default; }
+.fq-tools .fq-remove { color: #8C0000; }
+.fq-item { background: var(--c-grey-light); border-radius: 12px; padding: 1.1rem; margin-bottom: 0.9rem; }
+.fq-item input[type="text"], .fq-item textarea { background: white; }
+.fq-item textarea { min-height: 110px; resize: vertical; line-height: 1.55; }
+.fq-item .form-row:last-of-type { margin-bottom: 0.4rem; }
+.fq-preview { margin-top: 0.6rem; }
+.fq-preview summary { font-family: var(--f-body); font-size: 0.78rem; font-weight: 700; color: var(--c-red); cursor: pointer; }
+.fq-preview-body { margin-top: 0.6rem; background: white; border-radius: 8px; padding: 0.9rem 1rem; font-family: var(--f-body); font-size: 0.9rem; line-height: 1.6; color: #333; }
+.fq-preview-body p { margin: 0 0 0.6rem; } .fq-preview-body p:last-child { margin-bottom: 0; }
+.fq-preview-body ul, .fq-preview-body ol { margin: 0 0 0.6rem; padding-left: 1.3rem; }
+.fq-preview-body a { color: var(--c-red); font-weight: 600; }
+.fq-empty { font-family: var(--f-body); font-size: 0.88rem; color: var(--c-grey-mid); padding: 1rem; background: var(--c-grey-light); border-radius: 10px; margin-bottom: 0.9rem; }
+.fq-add-sec { margin-top: 1.5rem; }
+.fq-savebar {
+  position: sticky; bottom: 0; z-index: 5; margin-top: 2rem; background: white; border-radius: 14px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.06); padding: 1rem 1.25rem;
+}
+.fq-savebar .ma-form-actions { margin-top: 0; }
+.fq-savebar .form-message { margin-top: 0.75rem; }
+.fq-dirty { font-family: var(--f-body); font-size: 0.8rem; font-weight: 700; color: #8C5A00; margin-top: 0.5rem; }
+</style>
+</head>
+<body class="ma-page">
+
+<div class="ab-topbar">
+  <a href="index.html" class="ab-logo-link"><img src="images/logoblack.png" alt="Northwood Stadium"></a>
+  <div class="ab-topbar-nav">
+    <a href="activitybooking.html" class="ab-staff-link">Booking Page</a>
+    <a href="activitiesadmin.html" class="ab-staff-link">Bookings Admin</a>
+    <a href="manage-activities.html" class="ab-staff-link">Manage Activities</a>
+    <a href="page-content.html" class="ab-staff-link">Page Content</a>
+    <a href="faq-admin.html" class="ab-staff-link" aria-current="page">FAQs</a>
+    <a href="tournaments-admin.html" class="ab-staff-link">Tournaments</a>
+    <button class="ab-staff-link hidden" id="staffLogoutBtn">Log out</button>
+  </div>
+</div>
+
+<div class="ma-wrap">
+
+  <!-- Staff gate: shown until a staff login is confirmed -->
+  <div class="ma-gate" id="staffGate">
+    <h2>Staff Access Required</h2>
+    <p>FAQs is only available to logged-in Northwood Stadium staff. Log in with your staff account to continue.</p>
+    <button class="ma-add-btn" id="staffGateLoginBtn">Staff Login</button>
+    <div class="form-message" id="gateMsg"></div>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <div class="ma-heading">
+      <div>
+        <div class="ma-eyebrow">Northwood Stadium · Staff</div>
+        <h1 class="ma-title">FAQs</h1>
+        <p class="ma-sub">Add, edit, reorder or remove the questions on the FAQs page. Changes go live as soon as you save.</p>
+      </div>
+      <a href="faq.html" class="pc-view-link" target="_blank" rel="noopener">View FAQs page ↗</a>
+    </div>
+
+    <section class="ma-form-card fq-help" aria-labelledby="fqHelpTitle">
+      <h2 id="fqHelpTitle">Writing answers</h2>
+      <ul>
+        <li>Leave a <strong>blank line</strong> to start a new paragraph.</li>
+        <li>Start lines with <code>- </code> for bullet points, or <code>1. </code> <code>2. </code> for numbered steps.</li>
+        <li>Put <code>**two stars**</code> either side of words to make them <strong>bold</strong>.</li>
+        <li>Links: <code>[Book an Activity](activitybooking.html)</code> or <code>[Pitchbooking](https://…)</code>. Email and web addresses link themselves.</li>
+        <li>Tap <strong>Preview</strong> under an answer to see how it will look.</li>
+      </ul>
+    </section>
+
+    <div class="fq-list" id="fqList"></div>
+    <button type="button" class="ma-mini-add-btn fq-add-sec" id="fqAddSec">+ Add a section</button>
+
+    <div class="fq-savebar">
+      <div class="ma-form-actions">
+        <button type="button" class="ma-submit-btn" id="fqSave">Save FAQs</button>
+      </div>
+      <p class="fq-dirty hidden" id="fqDirty">You have unsaved changes.</p>
+      <div class="form-message" id="fqMsg"></div>
+      <p class="pc-saved" id="fqSaved"></p>
+    </div>
+  </div>
+</div>
+
+<!-- Staff login modal -->
+<div class="staff-modal-overlay hidden" id="staffModalOverlay">
+  <div class="staff-modal">
+    <h3>Staff Login</h3>
+    <div class="form-row single">
+      <label for="staffEmail">Email</label>
+      <input type="email" id="staffEmail" autocomplete="username">
+    </div>
+    <div class="form-row single">
+      <label for="staffPassword">Password</label>
+      <input type="password" id="staffPassword" autocomplete="current-password">
+    </div>
+    <div class="form-message" id="staffLoginMsg"></div>
+    <div class="staff-modal-actions">
+      <button class="staff-modal-cancel" id="staffModalCancel">Cancel</button>
+      <button class="ma-submit-btn" id="staffModalSubmit">Log In</button>
+    </div>
+  </div>
+</div>
+
+<script src="faq-format.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FIREBASE CONFIG — same project as the other staff pages.
+   Writes to the "pageContent" collection, which live-content.js
+   reads on faq.html (document pageContent/faqs).
+   Firestore rule needed (staff write, public read):
+     match /pageContent/{docId} {
+       allow read: if true;
+       allow write: if request.auth != null
+         && exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+     }
+   ═══════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDGSOa02_oHzRARoisN-gA3zzsTTC9U9QQ",
+  authDomain: "northwood-stadium.firebaseapp.com",
+  projectId: "northwood-stadium",
+  storageBucket: "northwood-stadium.firebasestorage.app",
+  messagingSenderId: "146149087447",
+  appId: "1:146149087447:web:f5882364c8a525fa8c3892",
+  measurementId: "G-JKT47Q28YV"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+(function () {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+  function msg(el, text, type) { el.textContent = text; el.className = "form-message" + (type ? " " + type : ""); }
+  function savedLine(el, data) {
+    if (!data || !data.updatedAt) { el.textContent = "Not saved here yet: the FAQs page is showing its original questions. Saving here takes over from them."; return; }
+    const when = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
+    el.textContent = "Last saved " + when.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) +
+      (data.updatedBy ? " by " + data.updatedBy : "");
+  }
+  function isoLocal(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+
+  // ── Staff auth (same flow as Manage Activities) ─────────────
+  const staffGate = $("staffGate"), dashboard = $("dashboard"), staffLogoutBtn = $("staffLogoutBtn");
+  const gateMsg = $("gateMsg"), staffModalOverlay = $("staffModalOverlay");
+  let staffEmailAddr = "";
+
+  $("staffGateLoginBtn").addEventListener("click", () => staffModalOverlay.classList.remove("hidden"));
+  $("staffModalCancel").addEventListener("click", () => staffModalOverlay.classList.add("hidden"));
+  staffModalOverlay.addEventListener("click", e => { if (e.target === staffModalOverlay) staffModalOverlay.classList.add("hidden"); });
+  $("staffModalSubmit").addEventListener("click", async () => {
+    const email = $("staffEmail").value.trim(), password = $("staffPassword").value, m = $("staffLoginMsg");
+    msg(m, "");
+    if (!email || !password) { msg(m, "Enter your email and password.", "error"); return; }
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      const staffDoc = await db.collection("staff").doc(cred.user.uid).get();
+      if (!staffDoc.exists) { await auth.signOut(); msg(m, "This account isn't set up for staff access.", "error"); return; }
+      staffModalOverlay.classList.add("hidden");
+    } catch (err) {
+      msg(m, "Login failed — check your details and try again.", "error");
+    }
+  });
+  staffLogoutBtn.addEventListener("click", () => auth.signOut());
+
+  auth.onAuthStateChanged(async user => {
+    function lockOut(text) {
+      staffGate.classList.remove("hidden"); dashboard.classList.add("hidden"); staffLogoutBtn.classList.add("hidden");
+      if (text) msg(gateMsg, text, "error");
+    }
+    if (!user) { lockOut(); return; }
+    let staffDoc;
+    try { staffDoc = await db.collection("staff").doc(user.uid).get(); } catch (err) { staffDoc = { exists: false }; }
+    // Not staff: hide the tool, but don't sign them out (the session is
+    // shared with customer logins in other tabs — see Manage Activities).
+    if (!staffDoc.exists) { lockOut("That account doesn't have staff access."); return; }
+    staffEmailAddr = user.email;
+    staffGate.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    staffLogoutBtn.title = `Logged in as ${user.email}`;
+    staffLogoutBtn.classList.remove("hidden");
+    loadAll();
+  });
+
+  // ── FAQs editor ─────────────────────────────────────────────
+  // Saved as pageContent/faqs:
+  //   { sections: [ { id, title, nav, items: [ { id, q, a } ] } ], updatedAt, updatedBy }
+  // Ids are kept once given, so links like faq.html#receipt keep working.
+  const F = window.NWFaq;
+  let sections = [];
+  let dirty = false;
+  function setDirty(v) { dirty = v; $("fqDirty").classList.toggle("hidden", !v); }
+  window.addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
+
+  function escAttr(s) { return F.esc(s); }
+
+  function render() {
+    const list = $("fqList");
+    if (!sections.length) { list.innerHTML = '<div class="ma-form-card"><div class="fq-empty">No sections yet. Add a section, then add questions to it.</div></div>'; return; }
+    const secOptions = si => sections.map((s, k) => k === si ? "" : `<option value="${k}">${escAttr(s.title || "Section " + (k + 1))}</option>`).join("");
+    list.innerHTML = sections.map((sec, si) => `
+      <section class="ma-form-card fq-sec">
+        <div class="fq-sec-head">
+          <span class="fq-sec-num">Section ${si + 1}</span>
+          <div class="fq-tools">
+            <button type="button" data-act="sec-up" data-s="${si}" ${si === 0 ? "disabled" : ""} aria-label="Move section ${si + 1} up">↑</button>
+            <button type="button" data-act="sec-down" data-s="${si}" ${si === sections.length - 1 ? "disabled" : ""} aria-label="Move section ${si + 1} down">↓</button>
+            <button type="button" class="fq-remove" data-act="sec-remove" data-s="${si}">Remove section</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label for="fq-s${si}-title">Section heading <span class="required-mark">*</span></label>
+            <input type="text" id="fq-s${si}-title" data-s="${si}" data-k="title" maxlength="60" value="${escAttr(sec.title)}" placeholder="e.g. Payments">
+          </div>
+          <div>
+            <label for="fq-s${si}-nav">Short name for the jump buttons</label>
+            <input type="text" id="fq-s${si}-nav" data-s="${si}" data-k="nav" maxlength="24" value="${escAttr(sec.nav)}" placeholder="Optional, e.g. Payments">
+            <p class="field-hint">The buttons at the top of the page. Leave blank to use the heading.</p>
+          </div>
+        </div>
+        ${sec.items.length ? sec.items.map((it, ii) => `
+          <div class="fq-item">
+            <div class="fq-item-head">
+              <span class="fq-item-num">Question ${ii + 1}</span>
+              <div class="fq-tools">
+                <button type="button" data-act="q-up" data-s="${si}" data-i="${ii}" ${ii === 0 ? "disabled" : ""} aria-label="Move question up">↑</button>
+                <button type="button" data-act="q-down" data-s="${si}" data-i="${ii}" ${ii === sec.items.length - 1 ? "disabled" : ""} aria-label="Move question down">↓</button>
+                ${sections.length > 1 ? `<select data-act="q-move" data-s="${si}" data-i="${ii}" aria-label="Move question to another section"><option value="">Move to…</option>${secOptions(si)}</select>` : ""}
+                <button type="button" class="fq-remove" data-act="q-remove" data-s="${si}" data-i="${ii}">Remove</button>
+              </div>
+            </div>
+            <div class="form-row single">
+              <div>
+                <label for="fq-${si}-${ii}-q">Question <span class="required-mark">*</span></label>
+                <input type="text" id="fq-${si}-${ii}-q" data-s="${si}" data-i="${ii}" data-k="q" maxlength="200" value="${escAttr(it.q)}" placeholder="e.g. How can I pay?">
+              </div>
+            </div>
+            <div class="form-row single">
+              <div>
+                <label for="fq-${si}-${ii}-a">Answer <span class="required-mark">*</span></label>
+                <textarea id="fq-${si}-${ii}-a" data-s="${si}" data-i="${ii}" data-k="a" maxlength="4000" rows="${Math.min(14, Math.max(4, (it.a || "").split("\n").length + 1))}">${F.esc(it.a)}</textarea>
+              </div>
+            </div>
+            <details class="fq-preview">
+              <summary>Preview</summary>
+              <div class="fq-preview-body" data-preview="${si}-${ii}">${F.toHtml(it.a)}</div>
+            </details>
+          </div>`).join("") : '<div class="fq-empty">No questions in this section yet. Sections with no questions aren\'t shown on the page.</div>'}
+        <button type="button" class="ma-mini-add-btn" data-act="q-add" data-s="${si}">+ Add a question</button>
+      </section>`).join("");
+  }
+
+  $("fqList").addEventListener("input", e => {
+    const el = e.target; if (!el.dataset.k) return;
+    const si = Number(el.dataset.s);
+    if (el.dataset.i != null) {
+      const ii = Number(el.dataset.i);
+      sections[si].items[ii][el.dataset.k] = el.value;
+      if (el.dataset.k === "a") {
+        const pv = $("fqList").querySelector(`[data-preview="${si}-${ii}"]`);
+        if (pv) pv.innerHTML = F.toHtml(el.value);
+      }
+    } else {
+      sections[si][el.dataset.k] = el.value;
+    }
+    setDirty(true);
+  });
+
+  function focusLast(selector) {
+    const all = $("fqList").querySelectorAll(selector);
+    const el = all[all.length - 1]; if (el) { el.focus(); el.scrollIntoView({ block: "center" }); }
+  }
+
+  $("fqList").addEventListener("change", e => {
+    const el = e.target; if (el.dataset.act !== "q-move" || el.value === "") return;
+    const si = Number(el.dataset.s), ii = Number(el.dataset.i), to = Number(el.value);
+    const [item] = sections[si].items.splice(ii, 1);
+    sections[to].items.push(item);
+    setDirty(true); render();
+    msg($("fqMsg"), `Moved to the end of "${sections[to].title || "Section " + (to + 1)}".`, "success");
+  });
+
+  $("fqList").addEventListener("click", e => {
+    const b = e.target.closest("button[data-act]"); if (!b) return;
+    const act = b.dataset.act, si = Number(b.dataset.s), ii = Number(b.dataset.i);
+    const swap = (arr, i, j) => { [arr[i], arr[j]] = [arr[j], arr[i]]; };
+    if (act === "sec-up") swap(sections, si, si - 1);
+    else if (act === "sec-down") swap(sections, si, si + 1);
+    else if (act === "sec-remove") {
+      const n = sections[si].items.length;
+      if (!confirm(`Remove the "${sections[si].title || "Section " + (si + 1)}" section${n ? " and its " + n + " question" + (n === 1 ? "" : "s") : ""}? (Nothing changes on the site until you save.)`)) return;
+      sections.splice(si, 1);
+    }
+    else if (act === "q-up") swap(sections[si].items, ii, ii - 1);
+    else if (act === "q-down") swap(sections[si].items, ii, ii + 1);
+    else if (act === "q-remove") {
+      const q = sections[si].items[ii].q;
+      if (!confirm(`Remove "${q || "this question"}"? (Nothing changes on the site until you save.)`)) return;
+      sections[si].items.splice(ii, 1);
+    }
+    else if (act === "q-add") {
+      sections[si].items.push({ id: "", q: "", a: "" });
+      setDirty(true); render();
+      focusLast(`input[data-s="${si}"][data-k="q"]`);
+      return;
+    }
+    else return;
+    setDirty(true); render();
+  });
+
+  $("fqAddSec").addEventListener("click", () => {
+    sections.push({ id: "", title: "", nav: "", items: [{ id: "", q: "", a: "" }] });
+    setDirty(true); render();
+    focusLast('input[data-k="title"]');
+  });
+
+  $("fqSave").addEventListener("click", async () => {
+    const m = $("fqMsg"), btn = $("fqSave");
+    const used = new Set();
+    function uniqueId(want) { let id = want, n = 2; while (used.has(id)) id = want + "-" + n++; used.add(id); return id; }
+    // Keep ids already given; then give new ones.
+    sections.forEach(s => { if (s.id) used.add(s.id); s.items.forEach(it => { if (it.id) used.add(it.id); }); });
+
+    for (let si = 0; si < sections.length; si++) {
+      const sec = sections[si];
+      if (!(sec.title || "").trim()) { msg(m, `Section ${si + 1} needs a heading (or remove it).`, "error"); return; }
+      for (let ii = 0; ii < sec.items.length; ii++) {
+        const it = sec.items[ii];
+        if (!(it.q || "").trim() || !(it.a || "").trim()) {
+          msg(m, `"${sec.title}", question ${ii + 1} needs both a question and an answer (or remove it).`, "error"); return;
+        }
+      }
+    }
+    const clean = sections.map(sec => ({
+      id: sec.id || uniqueId("faq-" + F.slug(sec.title)),
+      title: sec.title.trim(), nav: (sec.nav || "").trim(),
+      items: sec.items.map(it => ({ id: it.id || uniqueId(F.slug(it.q)), q: it.q.trim(), a: it.a.replace(/\s+$/g, "") }))
+    }));
+    if (!clean.some(s => s.items.length)) { msg(m, "Add at least one question before saving.", "error"); return; }
+
+    btn.disabled = true; btn.textContent = "Saving…"; msg(m, "");
+    try {
+      await db.collection("pageContent").doc("faqs").set({
+        sections: clean, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: staffEmailAddr
+      });
+      sections = clean.map(s => ({ ...s, items: s.items.map(it => ({ ...it })) }));
+      render(); setDirty(false);
+      msg(m, "🎉 Saved — the FAQs page is updated.", "success");
+      savedLine($("fqSaved"), { updatedAt: new Date(), updatedBy: staffEmailAddr });
+    } catch (err) {
+      console.error("FAQs save failed:", err);
+      msg(m, "Couldn't save — please try again.", "error");
+    } finally { btn.disabled = false; btn.textContent = "Save FAQs"; }
+  });
+
+  // The FAQs already written into faq.html, used until staff first save here.
+  async function faqsFromPage() {
+    const html = await (await fetch("faq.html", { cache: "no-cache" })).text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const navLabels = {};
+    doc.querySelectorAll(".faq-quicknav a").forEach(a => { navLabels[(a.getAttribute("href") || "").slice(1)] = a.textContent.trim(); });
+    const out = [];
+    doc.querySelectorAll(".faq-group").forEach(h => {
+      const sec = { id: h.id || "", title: h.textContent.trim(), nav: navLabels[h.id] || "", items: [] };
+      for (let el = h.nextElementSibling; el && !el.classList.contains("faq-group"); el = el.nextElementSibling) {
+        if (el.tagName !== "DETAILS") continue;
+        const sum = el.querySelector("summary"), ans = el.querySelector(".faq-answer");
+        if (sum && ans) sec.items.push({ id: el.id || "", q: sum.textContent.trim(), a: F.fromHtml(ans) });
+      }
+      out.push(sec);
+    });
+    return out;
+  }
+
+  async function loadAll() {
+    msg($("fqMsg"), "");
+    try {
+      const snap = await db.collection("pageContent").doc("faqs").get();
+      if (snap.exists && Array.isArray(snap.data().sections)) {
+        sections = snap.data().sections.map(s => ({ id: s.id || "", title: s.title || "", nav: s.nav || "", items: (s.items || []).map(it => ({ id: it.id || "", q: it.q || "", a: it.a || "" })) }));
+        savedLine($("fqSaved"), snap.data());
+      } else {
+        sections = await faqsFromPage();
+        savedLine($("fqSaved"), null);
+      }
+    } catch (err) {
+      console.error("Couldn't load FAQs:", err);
+      try { sections = await faqsFromPage(); } catch (e) { sections = []; }
+      msg($("fqMsg"), "Couldn't load what's saved — check the Firestore rule for pageContent has been added.", "error");
+    }
+    setDirty(false);
+    render();
+  }
+})();
+</script>
+
+  <!-- Keyboard access for popups (focus in, Tab stays inside, Escape closes) -->
+  <script src="dialogs.js" defer></script>
+</body>
+</html>
