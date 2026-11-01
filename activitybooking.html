@@ -1476,6 +1476,17 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     if (isStaffMode) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     staffModalOverlay.classList.remove("hidden");
   });
+  // Arriving from "Staff Login" in the burger menu (activitybooking.html#staff-login):
+  // open the staff login popup, unless they're already logged in as staff.
+  if (location.hash === "#staff-login") {
+    history.replaceState(null, "", location.pathname + location.search);
+    const stopWaiting = auth.onAuthStateChanged(async user => {
+      stopWaiting();
+      let staff = false;
+      if (user) { try { staff = (await db.collection("staff").doc(user.uid).get()).exists; } catch (err) { staff = false; } }
+      if (!staff) staffModalOverlay.classList.remove("hidden");
+    });
+  }
   staffModalCancel.addEventListener("click", () => staffModalOverlay.classList.add("hidden"));
   staffModalOverlay.addEventListener("click", (e) => { if (e.target === staffModalOverlay) staffModalOverlay.classList.add("hidden"); });
 

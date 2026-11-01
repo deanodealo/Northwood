@@ -1557,7 +1557,20 @@ a { color: inherit; text-decoration: none; }
    tablets (desktop visitors have it in the footer). add-to-home.js opens
    the popup, and hides the link when already running as the app. */
 @media (min-width: 1001px) {
-  .main-nav .nav-get-app { display: none; }
+  .main-nav .nav-get-app, .main-nav .nav-staff { display: none; }
+}
+/* "Staff Login" in the burger menu (phones and tablets only, like Get the
+   App): last item, set apart and toned down so it reads as staff-only.
+   Opens the staff login popup on the booking page. */
+@media (max-width: 1000px) {
+  .main-nav .nav-staff {
+    color: rgba(255,255,255,0.6); font-size: 13px; letter-spacing: 0.5px;
+    padding-top: 18px; border-top: 1px solid var(--c-grey-line); align-self: stretch;
+  }
+  .main-nav .nav-staff::after { display: none; }
+  /* Longer menu now: let it scroll on short phones rather than run off
+     the bottom of the screen. */
+  .main-nav.is-open { max-height: calc(100dvh - var(--header-h)); overflow-y: auto; overscroll-behavior: contain; }
 }
 /* Inside the installed app the script marks these links hidden. Footer
    and menu links have their own display rules, which would otherwise
