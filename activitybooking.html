@@ -2671,7 +2671,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   // ── Panel interactivity ─────────────────────────────────────
   function wireUpPanel(activity) {
     formDirty = false; // freshly rendered — nothing typed into this copy yet
-    const cust = isStaffMode ? staffCustomer : cust; // see renderPanel()
+    const cust = isStaffMode ? staffCustomer : currentCustomer; // see renderPanel()
     if (isStaffMode) wireStaffCustomerPicker();
     const isFreeActivity = activity.price === 0; // recomputed here — renderPanel()'s copy is out of scope in this function
     function setSessionSelected(el, on) {
