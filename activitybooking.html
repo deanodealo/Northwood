@@ -492,6 +492,32 @@ label.xf-check { display: flex; align-items: flex-start; gap: 0.6rem; font-weigh
 .who-option input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--activity-accent, var(--c-red)); cursor: pointer; flex-shrink: 0; }
 .who-option label { margin: 0; cursor: pointer; font-size: 0.9rem; }
 
+/* — staff: book for an existing customer — */
+.staff-cust-hint { font-family: var(--f-body); font-size: 0.82rem; color: var(--c-grey-mid); margin: -0.4rem 0 0.75rem; }
+.staff-cust-results { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.6rem; }
+.staff-cust-results:empty { display: none; }
+.staff-cust-result {
+  display: flex; flex-direction: column; gap: 0.15rem; text-align: left; width: 100%;
+  font-family: var(--f-body); font-size: 0.88rem; color: var(--c-black);
+  background: white; border: 1.5px solid rgba(0,0,0,0.1); border-radius: 10px;
+  padding: 0.75rem 1rem; cursor: pointer; transition: border-color 0.15s;
+}
+.staff-cust-result:hover, .staff-cust-result:focus-visible { border-color: var(--activity-accent, var(--c-red)); outline: none; }
+.staff-cust-result strong { font-weight: 700; }
+.staff-cust-result span, .staff-cust-selected span { color: var(--c-grey-mid); font-size: 0.8rem; }
+.staff-cust-note { font-family: var(--f-body); font-size: 0.82rem; color: var(--c-grey-mid); padding: 0.25rem 0; }
+.staff-cust-selected {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  border: 1.5px solid var(--activity-accent, var(--c-red)); border-radius: 10px;
+  padding: 0.85rem 1rem; font-family: var(--f-body); font-size: 0.9rem; background: rgba(0,0,0,0.02);
+}
+.staff-cust-selected > div { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.staff-cust-selected button {
+  flex-shrink: 0; font-family: var(--f-body); font-size: 0.82rem; font-weight: 600;
+  background: none; border: 1.5px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0.5rem 0.9rem; cursor: pointer;
+}
+.staff-cust-selected button:hover { border-color: var(--c-black); }
+
 /* — child blocks — */
 .child-block {
   border: 1.5px solid rgba(0,0,0,0.1); border-radius: 10px;
@@ -1246,6 +1272,10 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   let selectedSessionIds = new Set(); // multiple sessions can be booked in one go
   let isStaffMode = false;
   let currentCustomer = null; // { uid, name, email, phone, familyMembers: [...] } or null if not logged in as a customer
+  // Staff mode only: the registered customer staff are booking on behalf of
+  // (same shape as currentCustomer), or null for a new / walk-in customer.
+  let staffCustomer = null;
+  let staffCustomersCache = null; // every customers doc, loaded the first time staff search
   let card; // Square card instance, (re)initialised per activity view
   // Bumped on every initSquare() call. The panel can re-render twice in
   // quick succession on first load (activities arriving + login state
@@ -1976,6 +2006,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   // staff and customer logins. On any change, work out which (if
   // either) applies and update all the account UI together.
   auth.onAuthStateChanged(async user => {
+    staffCustomer = null; // never carry a picked customer across logins
+    staffCustomersCache = null;
     if (!user) {
       isStaffMode = false;
       currentCustomer = null;
@@ -2291,7 +2323,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
 
     const noteEl = document.getElementById("confirmNote");
     if (b.isStaffMode) {
-      noteEl.textContent = "Give the customer the booking reference above if they need it.";
+      noteEl.textContent = "Give the customer the booking reference above if they need it."
+        + (b.familyNotSaved ? " Note: the booking is saved, but the new child couldn't be added to the customer's account. They'll need adding again next time." : "");
     } else if (CONFIRMATION_EMAILS_ENABLED && b.contactEmail) {
       noteEl.innerHTML = `A confirmation email is on its way to <strong>${esc(b.contactEmail)}</strong>. If it hasn't arrived in a few minutes, please check your junk folder.`;
     } else {
@@ -2316,9 +2349,131 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     confirmDoneBtn.focus();
   }
 
+  // ── Staff: book for an existing registered customer ────────
+  // Above the contact details in staff mode. Searching the customers list
+  // (by name, email, phone or a saved child's name) and picking someone
+  // pre-fills the form with their details and shows their saved children
+  // as tick-boxes, exactly as they'd see it themselves — and the booking
+  // is linked to their account, so it shows in their My Bookings.
+  function staffCustomerPickerHtml() {
+    if (staffCustomer) {
+      const famCount = staffCustomer.familyMembers.length;
+      const famNames = staffCustomer.familyMembers.map(m => escAttr(fullFamilyName(m))).join(", ");
+      return `
+        <div class="ab-section-label">Booking For</div>
+        <div class="staff-cust-selected">
+          <div>
+            <strong>${escAttr(staffCustomer.name)}</strong>
+            <span>${[staffCustomer.email, staffCustomer.phone].filter(Boolean).map(escAttr).join(" · ")}</span>
+            <span>${famCount ? "Saved family: " + famNames : "No saved family members"}</span>
+          </div>
+          <button type="button" id="staffCustClear">Change</button>
+        </div>`;
+    }
+    return `
+      <div class="ab-section-label">Booking For</div>
+      <p class="staff-cust-hint">Already registered? Search for them to use their saved details and children. For a new or walk-in customer, just fill in the form below.</p>
+      <label for="staffCustSearch">Find a registered customer</label>
+      <input type="text" id="staffCustSearch" placeholder="Name, email, phone or child's name" autocomplete="off" inputmode="search">
+      <div class="staff-cust-results" id="staffCustResults" aria-live="polite"></div>`;
+  }
+
+  function normaliseCustomer(uid, d) {
+    return {
+      uid,
+      name: d.name || "", email: d.email || "", phone: d.phone || "",
+      dob: d.dob || "", postcode: d.postcode || "",
+      familyMembers: Array.isArray(d.familyMembers) ? d.familyMembers.filter(m => m && !m.isNew) : [],
+      extraFieldAnswers: d.extraFieldAnswers || {}
+    };
+  }
+
+  function wireStaffCustomerPicker() {
+    const clearBtn = document.getElementById("staffCustClear");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        staffCustomer = null;
+        renderPanel();
+        const box = document.getElementById("staffCustSearch");
+        if (box) box.focus();
+      });
+      return;
+    }
+    const input = document.getElementById("staffCustSearch");
+    const resultsEl = document.getElementById("staffCustResults");
+    if (!input || !resultsEl) return;
+
+    async function ensureLoaded() {
+      if (staffCustomersCache) return true;
+      resultsEl.innerHTML = '<div class="staff-cust-note">Loading customers…</div>';
+      try {
+        const snap = await db.collection("customers").get();
+        staffCustomersCache = snap.docs.map(doc => normaliseCustomer(doc.id, doc.data()));
+        return true;
+      } catch (err) {
+        console.error("Failed to load customers:", err);
+        resultsEl.innerHTML = '<div class="staff-cust-note">Couldn\'t load the customer list. Please refresh and try again.</div>';
+        return false;
+      }
+    }
+
+    async function showResults() {
+      const term = input.value.trim().toLowerCase();
+      if (term.length < 2) { resultsEl.innerHTML = ""; return; }
+      if (!(await ensureLoaded())) return;
+      if (input.value.trim().toLowerCase() !== term) return; // typed on while loading
+      const digits = term.replace(/\D/g, "");
+      const matches = staffCustomersCache.filter(c => {
+        const text = [c.name, c.email, c.phone, ...c.familyMembers.map(fullFamilyName)].join(" ").toLowerCase();
+        if (text.includes(term)) return true;
+        return digits.length >= 4 && c.phone.replace(/\D/g, "").includes(digits);
+      }).sort((x, y) => x.name.localeCompare(y.name)).slice(0, 8);
+
+      if (!matches.length) {
+        resultsEl.innerHTML = '<div class="staff-cust-note">No registered customer found. Fill in the form below to book them in as a new customer.</div>';
+        return;
+      }
+      resultsEl.innerHTML = matches.map(c => `
+        <button type="button" class="staff-cust-result" data-uid="${escAttr(c.uid)}">
+          <strong>${escAttr(c.name)}</strong>
+          <span>${[c.email, c.phone].filter(Boolean).map(escAttr).join(" · ")}</span>
+          ${c.familyMembers.length ? `<span>Family: ${c.familyMembers.map(m => escAttr(fullFamilyName(m))).join(", ")}</span>` : ""}
+        </button>`).join("");
+      resultsEl.querySelectorAll("[data-uid]").forEach(btn => {
+        btn.addEventListener("click", () => pickCustomer(btn.dataset.uid));
+      });
+    }
+
+    async function pickCustomer(uid) {
+      // Re-read their profile so any family members they've added since
+      // the list was loaded are included.
+      let picked = staffCustomersCache.find(c => c.uid === uid) || null;
+      try {
+        const doc = await db.collection("customers").doc(uid).get();
+        if (doc.exists) picked = normaliseCustomer(doc.id, doc.data());
+      } catch (err) {
+        console.warn("Couldn't refresh customer, using cached copy:", err);
+      }
+      if (!picked) return;
+      staffCustomer = picked;
+      renderPanel();
+    }
+
+    let timer = null;
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(showResults, 200);
+    });
+    // Enter in the search box shouldn't do anything to the booking form.
+    input.addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
+  }
+
   function renderPanel() {
     const activity = activeActivities.find(a => a.id === currentActivityId);
     if (!activity) { panelEl.innerHTML = ""; return; }
+    // Whose saved details pre-fill the form: the signed-in customer, or (in
+    // staff mode) the registered customer staff have picked to book for.
+    const cust = isStaffMode ? staffCustomer : currentCustomer;
 
     // Grouped activity (e.g. WNF age groups): show the group picker, and
     // until a group is chosen show only that.
@@ -2432,30 +2587,31 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         <div class="session-grid">${sessionsHtml}</div>
 
         <form id="bookingForm">
+          ${isStaffMode ? staffCustomerPickerHtml() : ""}
           <div class="ab-section-label">Contact Details</div>
           <p style="font-family:var(--f-body); font-size:0.82rem; color:var(--c-grey-mid); margin-bottom:1rem;">This is who we'll contact about the booking — yourself, or the parent/guardian if booking for a child.</p>
           <div class="form-row">
             <div>
               <label>Name <span class="required-mark">*</span></label>
-              <input type="text" id="contactName" required value="${currentCustomer ? currentCustomer.name : ""}">
+              <input type="text" id="contactName" required value="${cust ? escAttr(cust.name) : ""}">
             </div>
             <div>
               <label>Phone <span class="required-mark">*</span></label>
-              <input type="tel" id="contactPhone" required value="${currentCustomer ? currentCustomer.phone : ""}">
+              <input type="tel" id="contactPhone" required value="${cust ? escAttr(cust.phone) : ""}">
             </div>
           </div>
           <div class="form-row">
             <div>
               <label>Email ${isStaffMode ? "" : '<span class="required-mark">*</span>'}</label>
-              <input type="email" id="contactEmail" ${isStaffMode ? "" : "required"} value="${currentCustomer ? currentCustomer.email : ""}">
+              <input type="email" id="contactEmail" ${isStaffMode ? "" : "required"} value="${cust ? escAttr(cust.email) : ""}">
             </div>
             <div>
               <label>Postcode ${isStaffMode ? "" : '<span class="required-mark">*</span>'}</label>
-              <input type="text" id="contactPostcode" ${isStaffMode ? "" : "required"} placeholder="e.g. ST1 6PA" value="${currentCustomer && currentCustomer.postcode ? currentCustomer.postcode : ""}">
+              <input type="text" id="contactPostcode" ${isStaffMode ? "" : "required"} placeholder="e.g. ST1 6PA" value="${cust && cust.postcode ? escAttr(cust.postcode) : ""}">
             </div>
           </div>
 
-          ${contactExtraFieldDefs(activity).map(f => renderExtraFieldHtml(f, `contactExtra_${f.id}`, currentCustomer && currentCustomer.extraFieldAnswers ? currentCustomer.extraFieldAnswers[f.id] : "")).join("")}
+          ${contactExtraFieldDefs(activity).map(f => renderExtraFieldHtml(f, `contactExtra_${f.id}`, cust && cust.extraFieldAnswers ? cust.extraFieldAnswers[f.id] : "")).join("")}
 
           <div class="ab-section-label">Who's Booking On?</div>
           <div class="who-toggle">
@@ -2472,15 +2628,15 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           <div id="selfNotesBlock" class="hidden">
             <label>Any notes for your own place (optional)</label>
             <textarea id="selfNotes" rows="2"></textarea>
-            ${selfOnlyExtraFieldDefs(activity).map(f => renderExtraFieldHtml(f, `selfExtra_${f.id}`, currentCustomer && currentCustomer.extraFieldAnswers ? currentCustomer.extraFieldAnswers[f.id] : "")).join("")}
+            ${selfOnlyExtraFieldDefs(activity).map(f => renderExtraFieldHtml(f, `selfExtra_${f.id}`, cust && cust.extraFieldAnswers ? cust.extraFieldAnswers[f.id] : "")).join("")}
           </div>
 
           <div id="childrenBlock" class="hidden">
-            ${currentCustomer && currentCustomer.familyMembers.length ? `
+            ${cust && cust.familyMembers.length ? `
               <div id="savedFamilyList" style="margin-bottom:0.9rem;"></div>
             ` : ""}
             <div id="childrenList"></div>
-            <button type="button" class="add-child-btn" id="addChildBtn">+ Add ${currentCustomer && currentCustomer.familyMembers.length ? "someone new" : "another child"}</button>
+            <button type="button" class="add-child-btn" id="addChildBtn">+ Add ${cust && cust.familyMembers.length ? "someone new" : "another child"}</button>
           </div>
 
           ${paymentSectionHtml}
@@ -2515,6 +2671,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
   // ── Panel interactivity ─────────────────────────────────────
   function wireUpPanel(activity) {
     formDirty = false; // freshly rendered — nothing typed into this copy yet
+    const cust = isStaffMode ? staffCustomer : cust; // see renderPanel()
+    if (isStaffMode) wireStaffCustomerPicker();
     const isFreeActivity = activity.price === 0; // recomputed here — renderPanel()'s copy is out of scope in this function
     function setSessionSelected(el, on) {
       const sessionId = el.dataset.session;
@@ -2574,8 +2732,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     // (so a returning family member isn't re-asked), but edits here only
     // persist back to their profile once the booking is actually submitted.
     const familyExtraAnswers = {};
-    if (currentCustomer) {
-      currentCustomer.familyMembers.forEach(m => { familyExtraAnswers[m.id] = { ...(m.extraFieldAnswers || {}) }; });
+    if (cust) {
+      cust.familyMembers.forEach(m => { familyExtraAnswers[m.id] = { ...(m.extraFieldAnswers || {}) }; });
     }
 
     const selfCheckbox = document.getElementById("bookSelf");
@@ -2592,7 +2750,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
     function renderSavedFamily() {
       if (!savedFamilyListEl) return;
       const extraFields = attendeeExtraFieldDefs(activity);
-      savedFamilyListEl.innerHTML = currentCustomer.familyMembers.map(m => {
+      savedFamilyListEl.innerHTML = cust.familyMembers.map(m => {
         const age = calcAge(m.dob);
         const checked = selectedFamilyMemberIds.has(m.id);
         const extraHtml = (checked && extraFields.length)
@@ -2601,7 +2759,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         return `
         <div class="who-option${checked ? " checked" : ""}" data-saved-member="${m.id}">
           <input type="checkbox" ${checked ? "checked" : ""} data-saved-checkbox="${m.id}">
-          <label>${fullFamilyName(m)}${age !== null ? " (" + age + ")" : ""}</label>
+          <label>${escAttr(fullFamilyName(m))}${age !== null ? " (" + age + ")" : ""}</label>
         </div>
         ${extraHtml}
       `;
@@ -2617,7 +2775,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       });
 
       extraFields.forEach(f => {
-        currentCustomer.familyMembers.forEach(m => {
+        cust.familyMembers.forEach(m => {
           const el = document.getElementById(`famExtra_${m.id}_${f.id}`);
           if (!el) return;
           el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
@@ -2631,7 +2789,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       childrenListEl.innerHTML = children.map((c, idx) => `
         <div class="child-block" data-child="${c.id}">
           <div class="child-block-header">
-            <span>${currentCustomer && currentCustomer.familyMembers.length ? "New Person " + (idx + 1) : "Child " + (idx + 1)}</span>
+            <span>${cust && cust.familyMembers.length ? "New Person " + (idx + 1) : "Child " + (idx + 1)}</span>
             <button type="button" class="child-remove-btn" data-remove="${c.id}">Remove</button>
           </div>
           <div class="form-row">
@@ -2653,10 +2811,10 @@ const CONFIRMATION_EMAILS_ENABLED = true;
             <textarea class="child-notes" data-field="notes" data-child="${c.id}" rows="2">${c.notes}</textarea>
           </div>
           ${attendeeExtraFieldDefs(activity).map(f => renderExtraFieldHtml(f, `childExtra_${c.id}_${f.id}`, c.extraFields ? c.extraFields[f.id] : "")).join("")}
-          ${currentCustomer ? `
+          ${cust ? `
             <div class="who-option${c.saveToAccount ? " checked" : ""}" style="margin-top:0.6rem;">
               <input type="checkbox" id="save-${c.id}" data-save-account="${c.id}" ${c.saveToAccount ? "checked" : ""}>
-              <label for="save-${c.id}">Save to my account for next time</label>
+              <label for="save-${c.id}">${isStaffMode ? `Save to ${escAttr(cust.name)}'s account for next time` : "Save to my account for next time"}</label>
             </div>
           ` : ""}
         </div>
@@ -2750,7 +2908,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       childOption.classList.toggle("checked", on);
       childrenBlock.classList.toggle("hidden", !on);
       if (on) {
-        if (currentCustomer && currentCustomer.familyMembers.length) {
+        if (cust && cust.familyMembers.length) {
           renderSavedFamily();
         } else if (children.length === 0) {
           addChild();
@@ -2760,7 +2918,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
       updateSummary();
     });
 
-    if (currentCustomer && currentCustomer.familyMembers.length) renderSavedFamily();
+    if (cust && cust.familyMembers.length) renderSavedFamily();
     addChildBtn.addEventListener("click", addChild);
     updateSummary();
 
@@ -2986,7 +3144,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         msg.className = "form-message error";
         return;
       }
-      if (currentCustomer && [...selectedFamilyMemberIds].some(id => !extraFieldsSatisfied(attendeeExtraDefs, familyExtraAnswers[id] || {}))) {
+      if (cust && [...selectedFamilyMemberIds].some(id => !extraFieldsSatisfied(attendeeExtraDefs, familyExtraAnswers[id] || {}))) {
         msg.textContent = "Please answer the required question(s) for each family member ticked above.";
         msg.className = "form-message error";
         return;
@@ -3011,8 +3169,8 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         Object.entries(selfExtraValues).forEach(([k, v]) => { if (v) selfExtra[k] = v; });
         attendees.push({ type: "adult", name: contactName, notes: selfNotes || null, extraFields: selfExtra });
       }
-      if (currentCustomer) {
-        currentCustomer.familyMembers
+      if (cust) {
+        cust.familyMembers
           .filter(m => selectedFamilyMemberIds.has(m.id))
           .forEach(m => {
             const memberExtra = {};
@@ -3107,7 +3265,10 @@ const CONFIRMATION_EMAILS_ENABLED = true;
             paymentMethod: effectivePaymentMethod,
             staffCollectState,
             payment,
-            expectedTotalPence: totalPence
+            expectedTotalPence: totalPence,
+            // Staff booking for a registered customer: links the booking to
+            // their account (the server checks the caller really is staff).
+            customerId: (isStaffMode && staffCustomer) ? staffCustomer.uid : null
           })
         });
         let booked = {};
@@ -3171,7 +3332,38 @@ const CONFIRMATION_EMAILS_ENABLED = true;
           }
         }
 
+        // Staff booking for a registered customer: add any newly typed-in
+        // children ticked "save to their account" to that customer's saved
+        // family. arrayUnion only adds — it can't overwrite or remove what
+        // the customer already has — and the Firestore rules let staff
+        // touch nothing on a customer's profile but familyMembers. The
+        // booking itself is already made, so a failure here is reported on
+        // the confirmation rather than shown as a booking error.
+        let familyNotSaved = false;
+        if (isStaffMode && staffCustomer) {
+          const newMembers = children.filter(c => c.saveToAccount).map(c => {
+            const memberExtra = {};
+            Object.entries(c.extraFields || {}).forEach(([k, v]) => { if (v) memberExtra[k] = v; });
+            return {
+              id: "fam_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+              name: c.name.trim(), surname: c.surname.trim(), dob: c.dob, notes: c.notes.trim() || null,
+              extraFieldAnswers: memberExtra
+            };
+          });
+          if (newMembers.length) {
+            try {
+              await db.collection("customers").doc(staffCustomer.uid).update({
+                familyMembers: firebase.firestore.FieldValue.arrayUnion(...newMembers)
+              });
+            } catch (err) {
+              console.error("Booking made, but saving the new child(ren) to the customer's account failed:", err);
+              familyNotSaved = true;
+            }
+          }
+        }
+
         showBookingConfirmation({
+          familyNotSaved,
           activityName: activity.name,
           venue: activity.venue,
           bookingRef,
@@ -3187,6 +3379,7 @@ const CONFIRMATION_EMAILS_ENABLED = true;
         document.getElementById("bookingForm").reset();
         selectedSessionIds = new Set();
         selectedSessions.forEach(s => { s.booked += attendeeCount; }); // reflect immediately in the session list
+        if (isStaffMode) staffCustomer = null; // next staff booking starts fresh, not on the same customer
         renderPanel(); // refreshes behind the popup, so it's ready when they close it
 
       } catch (err) {
